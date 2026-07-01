@@ -680,10 +680,9 @@ body.cmp-mode .card{cursor:default}
 .mood-tb-btn:hover{background:var(--s3);color:var(--t1)}
 .mood-tb-btn.on{background:var(--s4);color:var(--t1)}
 .mood-tb-sep{width:1px;background:var(--bd);margin:0 4px;align-self:stretch;flex-shrink:0}
-.mood-wrap{border-radius:12px;transition:background .25s,padding .25s}
-.mood-wrap.bg-dark{background:#0a0a0a;padding:14px}
-.mood-wrap.bg-light{background:#ffffff;padding:14px}
-.mood-wrap.bg-cream{background:#f5f0e8;padding:14px}
+.mood-bg-dark{background:#0a0a0a;padding:14px;border-radius:12px}
+.mood-bg-light{background:#ffffff;padding:14px;border-radius:12px}
+.mood-bg-cream{background:#f5f0e8;padding:14px;border-radius:12px}
 .mood{gap:10px;column-fill:balance}
 .mood-2{columns:2}.mood-3{columns:3}.mood-4{columns:4}
 .mood-editorial{display:grid!important;grid-template-columns:repeat(3,1fr);gap:10px}
@@ -2285,7 +2284,7 @@ function render(){
       );
     }
   }
-  grid.className=S.view==='list'?'lv':S.view==='mood'?'':'grid';
+  // class set inside mood/else branches below
   if(!items.length){
     grid.className='';
     const emptyIco=S.chip==='voglio'?ico('bag',36):S.chip==='comprato'?ico('check-circle',36):S.chip==='ordinato'?ico('box',36):S.chip==='visitare'?ico('pin',36):S.chip==='visitato'?ico('map',36):S.chip==='archivio'?ico('archive',36):ico('sparkle',36);
@@ -2296,18 +2295,15 @@ function render(){
     const layout=_moodLayout||'3';
     const theme=_moodTheme||'dark';
     const isEd=layout==='editorial';
-    grid.className=isEd?'mood mood-editorial':'mood mood-'+layout;
-    const wrap=document.createElement('div');
-    wrap.className='mood-wrap bg-'+theme;
-    wrap.innerHTML=sortedItems(items).map(item=>moodCardHTML(item)).join('');
-    grid.innerHTML='';
-    grid.appendChild(wrap);
-    // restore captions from items
-    wrap.querySelectorAll('.mood-caption').forEach(el=>{
+    // Apply layout + theme directly on grid (no wrapper — wrapper breaks CSS columns)
+    grid.className=(isEd?'mood mood-editorial':'mood mood-'+layout)+' mood-bg-'+theme;
+    grid.innerHTML=sortedItems(items).map(item=>moodCardHTML(item)).join('');
+    grid.querySelectorAll('.mood-caption').forEach(el=>{
       const item=S.items.find(i=>i.id===el.dataset.id);
       if(item?.moodCaption) el.value=item.moodCaption;
     });
   } else {
+    grid.className=S.view==='list'?'lv':'grid';
     grid.innerHTML=sortedItems(items).map(item=>cardHTML(item)).join('');
   }
 }
@@ -3798,16 +3794,12 @@ function openMoodFullscreen(){
   const grid=document.getElementById('moodFsGrid');
   if(!ov||!grid) return;
   // populate
-  const items=sortedItems(S.items.filter(i=>!i.archived));
-  const layout=_moodLayout;
-  const isEd=layout==='editorial';
-  grid.className=isEd?'mood mood-editorial':'mood mood-'+layout;
-  const wrap=document.createElement('div');
-  wrap.className='mood-wrap bg-'+_moodTheme;
-  wrap.innerHTML=items.map(item=>moodCardHTML(item)).join('');
-  grid.innerHTML=''; grid.appendChild(wrap);
-  // captions
-  wrap.querySelectorAll('.mood-caption').forEach(el=>{
+  const fsItems=sortedItems(S.items.filter(i=>!i.archived));
+  const fsLayout=_moodLayout;
+  const fsIsEd=fsLayout==='editorial';
+  grid.className=(fsIsEd?'mood mood-editorial':'mood mood-'+fsLayout)+' mood-bg-'+_moodTheme;
+  grid.innerHTML=fsItems.map(item=>moodCardHTML(item)).join('');
+  grid.querySelectorAll('.mood-caption').forEach(el=>{
     const item=S.items.find(i=>i.id===el.dataset.id);
     if(item?.moodCaption) el.value=item.moodCaption;
   });
@@ -3833,7 +3825,7 @@ async function exportMoodboard(fromFs){
         document.head.appendChild(s);
       });
     }
-    const target=fromFs?document.getElementById('moodFsGrid'):document.querySelector('#grid .mood-wrap')||document.getElementById('grid');
+    const target=fromFs?document.getElementById('moodFsGrid'):document.getElementById('grid');
     if(!target){showToast('Attiva la vista Moodboard prima.');return;}
     const bg=_moodTheme==='dark'?'#0a0a0a':_moodTheme==='cream'?'#f5f0e8':'#ffffff';
     const canvas=await window.html2canvas(target,{backgroundColor:bg,scale:2,useCORS:true,allowTaint:true,logging:false});
