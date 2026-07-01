@@ -1285,7 +1285,7 @@ body.cmp-mode .card{cursor:default}
   <div class="mo" style="max-width:560px">
     <div class="mo-hd"><svg class="ico" width="16" height="16" viewBox="0 0 16 16" style="margin-right:6px"><use href="#ic-chart"/></svg>Statistiche</div>
     <div id="statsIn"></div>
-    <div class="mo-acts"><button class="btn-s" onclick="document.getElementById('statsOv').classList.remove('open')">Chiudi</button></div>
+    <div class="mo-acts"><button class="btn-s" onclick="document.getElementById('statsOv').classList.remove('open')">Close</button></div>
   </div>
 </div>
 
@@ -1540,9 +1540,9 @@ body.cmp-mode .card{cursor:default}
     <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px;color:var(--t2)"><span>Vista griglia</span><span style="background:var(--s3);border:1px solid var(--bd2);border-radius:5px;padding:2px 8px;font-size:11px;font-family:monospace;color:var(--t1)">G</span></div>
     <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px;color:var(--t2)"><span>Vista lista</span><span style="background:var(--s3);border:1px solid var(--bd2);border-radius:5px;padding:2px 8px;font-size:11px;font-family:monospace;color:var(--t1)">L</span></div>
     <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px;color:var(--t2)"><span>Mood board</span><span style="background:var(--s3);border:1px solid var(--bd2);border-radius:5px;padding:2px 8px;font-size:11px;font-family:monospace;color:var(--t1)">M</span></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px;color:var(--t2)"><span>Chiudi</span><span style="background:var(--s3);border:1px solid var(--bd2);border-radius:5px;padding:2px 8px;font-size:11px;font-family:monospace;color:var(--t1)">Esc</span></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px;color:var(--t2)"><span>Close</span><span style="background:var(--s3);border:1px solid var(--bd2);border-radius:5px;padding:2px 8px;font-size:11px;font-family:monospace;color:var(--t1)">Esc</span></div>
     <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px;color:var(--t2)"><span>Questo pannello</span><span style="background:var(--s3);border:1px solid var(--bd2);border-radius:5px;padding:2px 8px;font-size:11px;font-family:monospace;color:var(--t1)">?</span></div>
-    <button style="width:100%;margin-top:12px;background:var(--s3);border:1px solid var(--bd);border-radius:8px;padding:7px;font-size:12px;color:var(--t2);cursor:pointer;font-family:inherit" onclick="document.getElementById('kbOv').style.display='none'">Chiudi</button>
+    <button style="width:100%;margin-top:12px;background:var(--s3);border:1px solid var(--bd);border-radius:8px;padding:7px;font-size:12px;color:var(--t2);cursor:pointer;font-family:inherit" onclick="document.getElementById('kbOv').style.display='none'">Close</button>
   </div>
 </div>
 
@@ -1595,7 +1595,7 @@ body.cmp-mode .card{cursor:default}
   <div class="mo wide">
     <div id="detIn"></div>
     <div class="mo-acts">
-      <button class="btn-s" onclick="closeDetMo()">Chiudi</button>
+      <button class="btn-s" onclick="closeDetMo()">Close</button>
       <a class="btn-p" id="detLink" href="#" target="_blank" rel="noopener">Apri sito ↗</a>
     </div>
   </div>
@@ -4857,7 +4857,7 @@ function fmtCard(el){let v=el.value.replace(/\D/g,'').slice(0,16);el.value=v.rep
 function fmtExp(el){let v=el.value.replace(/\D/g,'').slice(0,4);if(v.length>=3)v=v.slice(0,2)+'/'+v.slice(2);el.value=v;}
 
 function openPlusTutorial(){document.getElementById('tutorialOv').classList.add('open');}
-function closePlusTutorial(){document.getElementById('tutorialOv').classList.remove('open');}
+function closePlusTutorial(){document.getElementById('tutorialOv').classList.remove('open');localStorage.setItem('vaultPlusTutorialSeen','1');}
 function activatePlus(){
   localStorage.setItem('vaultPlan','plus');
   closeCheckout();
@@ -5066,7 +5066,7 @@ setInterval(checkServer,30000);
     const synced=await _sbPull();
     if(synced){
       renderSidebar();render();_updatePlusSideBtn();_showSyncDot('ok');
-      if(prevPlan!=='plus'&&_sbPlan==='plus') setTimeout(openPlusTutorial,600);
+      if(prevPlan!=='plus'&&_sbPlan==='plus'&&!localStorage.getItem('vaultPlusTutorialSeen')) setTimeout(openPlusTutorial,600);
     }
     // Subscribe to realtime plan changes (catches Stripe webhook updates)
     if(_sbUser&&_sbPlan==='free'){
@@ -5379,8 +5379,8 @@ async function _initGlobe(){
       <div class="tutorial-crown-wrap">
         <svg width="26" height="26" viewBox="0 0 16 16"><use href="#ic-crown"/></svg>
       </div>
-      <div class="tutorial-title">Vault Plus — Guida completa</div>
-      <div class="tutorial-sub">Tutto quello che hai sbloccato con il tuo abbonamento.<br>Ogni funzione spiegata nel dettaglio.</div>
+      <div class="tutorial-title">Vault Plus — Complete Guide</div>
+      <div class="tutorial-sub">Everything you've unlocked with your subscription.<br>Every feature explained in detail.</div>
       <div class="tutorial-divider"></div>
     </div>
     <div class="tutorial-body">
@@ -5390,10 +5390,10 @@ async function _initGlobe(){
         <div class="tutorial-step-num">1</div>
         <div class="tutorial-icon-wrap gold"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-trend-up"/></svg></div>
         <div style="flex:1">
-          <div class="tutorial-sec-title">Monitoraggio automatico dei prezzi</div>
-          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-price-tag"/></svg> Scheda prodotto</div>
-          <div class="tutorial-sec-desc">Vault controlla in automatico il prezzo di ogni prodotto salvato e lo aggiorna ogni volta che apri la scheda. Se il prezzo cambia rispetto a quello originale, la variazione viene evidenziata direttamente sulla card — in verde se il prezzo scende, in rosso se sale.</div>
-          <div class="tutorial-sec-note">Aggiunge il prezzo corrente cronologicamente alla history del prodotto. Nessuna azione richiesta da parte tua.</div>
+          <div class="tutorial-sec-title">Automatic price tracking</div>
+          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-price-tag"/></svg> Product card</div>
+          <div class="tutorial-sec-desc">Vault automatically checks the price of every saved product each time you open its card. If the price changes from the original, the variation is highlighted directly on the card — green if the price drops, red if it rises.</div>
+          <div class="tutorial-sec-note">Chronologically adds the current price to the product history. No action required from you.</div>
         </div>
       </div>
 
@@ -5402,10 +5402,10 @@ async function _initGlobe(){
         <div class="tutorial-step-num">2</div>
         <div class="tutorial-icon-wrap gold"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-bell-ring"/></svg></div>
         <div style="flex:1">
-          <div class="tutorial-sec-title">Avvisi calo prezzi</div>
-          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-crown"/></svg> Vault Plus nel menu laterale</div>
-          <div class="tutorial-sec-desc">La sezione Price Alerts elenca tutti i prodotti salvati che hanno un prezzo registrato. Puoi impostare una soglia: quando il prezzo scende sotto quella soglia, ricevi una notifica nella barra di stato dell'app. Ogni prodotto mostra il prezzo corrente, quello di partenza e la variazione percentuale.</div>
-          <div class="tutorial-sec-note">Accedi tramite il pulsante Vault Plus nella sidebar, poi seleziona Price Alerts dalla schermata Plus.</div>
+          <div class="tutorial-sec-title">Price drop alerts</div>
+          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-crown"/></svg> Vault Plus in the sidebar</div>
+          <div class="tutorial-sec-desc">The Price Alerts section lists all saved products that have a recorded price. You can set a threshold: when the price drops below it, you receive a notification in the app status bar. Each product shows the current price, the starting price, and the percentage change.</div>
+          <div class="tutorial-sec-note">Access via the Vault Plus button in the sidebar, then select Price Alerts from the Plus screen.</div>
         </div>
       </div>
 
@@ -5414,10 +5414,10 @@ async function _initGlobe(){
         <div class="tutorial-step-num">3</div>
         <div class="tutorial-icon-wrap blue"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-line-chart"/></svg></div>
         <div style="flex:1">
-          <div class="tutorial-sec-title">Cronologia prezzi avanzata</div>
-          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-chart"/></svg> Statistiche</div>
-          <div class="tutorial-sec-desc">All'interno della sezione Statistiche trovi un grafico a linee che mostra l'andamento dei prezzi nel tempo per ogni prodotto. Il grafico è interattivo: puoi passare il cursore sui punti per vedere il prezzo esatto in quella data. La timeline copre tutta la storia dal giorno in cui hai aggiunto il prodotto.</div>
-          <div class="tutorial-sec-note">La cronologia viene costruita automaticamente ogni volta che il prezzo cambia. Prodotti aggiunti senza prezzo non appaiono nel grafico.</div>
+          <div class="tutorial-sec-title">Advanced price history</div>
+          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-chart"/></svg> Statistics</div>
+          <div class="tutorial-sec-desc">Inside the Statistics section you'll find a line chart showing price trends over time for each product. The chart is interactive: hover over points to see the exact price on that date. The timeline covers the full history from the day you added the product.</div>
+          <div class="tutorial-sec-note">The history is built automatically every time the price changes. Products added without a price do not appear in the chart.</div>
         </div>
       </div>
 
@@ -5426,10 +5426,10 @@ async function _initGlobe(){
         <div class="tutorial-step-num">4</div>
         <div class="tutorial-icon-wrap blue"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-chart"/></svg></div>
         <div style="flex:1">
-          <div class="tutorial-sec-title">Statistiche avanzate</div>
-          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-line-chart"/></svg> Statistiche nel menu laterale</div>
-          <div class="tutorial-sec-desc">La sezione Analytics avanzate sblocca una serie di metriche dettagliate: spesa media per categoria, distribuzione dei prodotti per fascia di prezzo, tasso di acquisto (quanti prodotti nella wishlist vengono poi comprati), prodotti con il maggior risparmio rispetto al prezzo originale e un riepilogo mensile degli acquisti.</div>
-          <div class="tutorial-sec-note">Nella versione Free questa sezione appare oscurata con un blocco. Con Plus il blocco scompare e i dati reali diventano visibili.</div>
+          <div class="tutorial-sec-title">Advanced statistics</div>
+          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-line-chart"/></svg> Statistics in the sidebar</div>
+          <div class="tutorial-sec-desc">Advanced Analytics unlocks detailed metrics: average spend by category, product distribution by price range, purchase rate (how many wishlist items get bought), products with the biggest savings vs original price, and a monthly purchase summary.</div>
+          <div class="tutorial-sec-note">In the Free version this section appears locked. With Plus the lock disappears and real data becomes visible.</div>
         </div>
       </div>
 
@@ -5439,9 +5439,9 @@ async function _initGlobe(){
         <div class="tutorial-icon-wrap purple"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-brain"/></svg></div>
         <div style="flex:1">
           <div class="tutorial-sec-title">AI Taste Profile</div>
-          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-crown"/></svg> Vault Plus nel menu laterale</div>
-          <div class="tutorial-sec-desc">Analizza tutti i prodotti salvati nel tuo vault e costruisce un profilo stilistico personale. Il sistema calcola: la fascia di prezzo dominante (budget, mid-range, premium), la categoria preferita, il rapporto tra prodotti esplorati e acquistati, i prodotti preferiti (con stella), il prezzo medio della wishlist e il tasso di conversione da "lo voglio" a "comprato".</div>
-          <div class="tutorial-sec-note">Il profilo si aggiorna ogni volta che apri il pannello. Richiede almeno 3 prodotti nel vault per generare risultati significativi.</div>
+          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-crown"/></svg> Vault Plus in the sidebar</div>
+          <div class="tutorial-sec-desc">Analyses all saved products and builds a personal style profile. The system calculates: dominant price range (budget, mid-range, premium), favourite category, ratio of explored vs purchased products, starred favourites, average wishlist price, and conversion rate from "want it" to "bought".</div>
+          <div class="tutorial-sec-note">The profile updates every time you open the panel. Requires at least 3 products in the vault for meaningful results.</div>
         </div>
       </div>
 
@@ -5450,10 +5450,10 @@ async function _initGlobe(){
         <div class="tutorial-step-num">6</div>
         <div class="tutorial-icon-wrap purple"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-wand"/></svg></div>
         <div style="flex:1">
-          <div class="tutorial-sec-title">Suggerimenti AI</div>
-          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-sparkle"/></svg> In arrivo</div>
-          <div class="tutorial-sec-desc">Basandosi sul Taste Profile, il sistema genererà suggerimenti di prodotti coerenti con il tuo stile di acquisto: stessa categoria, fascia di prezzo simile, brand che ricorrono nella tua lista. I suggerimenti vengono presentati come card cliccabili che aprono direttamente la pagina del prodotto.</div>
-          <div class="tutorial-sec-note">Funzionalità in sviluppo attivo — disponibile nel prossimo aggiornamento per tutti gli utenti Plus.</div>
+          <div class="tutorial-sec-title">AI suggestions</div>
+          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-sparkle"/></svg> Coming soon</div>
+          <div class="tutorial-sec-desc">Based on your Taste Profile, the system will generate product suggestions consistent with your shopping style: same category, similar price range, recurring brands from your list. Suggestions appear as clickable cards that open directly to the product page.</div>
+          <div class="tutorial-sec-note">Feature in active development — available in the next update for all Plus users.</div>
         </div>
       </div>
 
@@ -5462,10 +5462,10 @@ async function _initGlobe(){
         <div class="tutorial-step-num">7</div>
         <div class="tutorial-icon-wrap green"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-workspace"/></svg></div>
         <div style="flex:1">
-          <div class="tutorial-sec-title">Workspace multipli</div>
-          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-layers"/></svg> In arrivo</div>
-          <div class="tutorial-sec-desc">Permette di creare vault separati e indipendenti: uno per uso personale, uno per i regali, uno per i progetti professionali. Ogni workspace ha le proprie sezioni, prodotti, statistiche e tema visivo. Lo switch tra workspace avviene con un singolo click dal menu laterale senza perdere dati.</div>
-          <div class="tutorial-sec-note">Funzionalità in sviluppo — i dati di ogni workspace vengono salvati separatamente nel browser locale.</div>
+          <div class="tutorial-sec-title">Multiple workspaces</div>
+          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-layers"/></svg> Coming soon</div>
+          <div class="tutorial-sec-desc">Create separate independent vaults: one for personal use, one for gifts, one for professional projects. Each workspace has its own sections, products, statistics and visual theme. Switch between workspaces with a single click from the sidebar without losing data.</div>
+          <div class="tutorial-sec-note">Feature in development — each workspace's data is saved separately in local storage.</div>
         </div>
       </div>
 
@@ -5475,9 +5475,9 @@ async function _initGlobe(){
         <div class="tutorial-icon-wrap green"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-cloud-check"/></svg></div>
         <div style="flex:1">
           <div class="tutorial-sec-title">Cloud Backup</div>
-          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-crown"/></svg> Vault Plus nel menu laterale</div>
-          <div class="tutorial-sec-desc">Sincronizza automaticamente il contenuto del vault su cloud, rendendo i dati accessibili da qualsiasi dispositivo. Il pannello Cloud Backup mostra quanti item sono presenti nel vault e lo stato della sincronizzazione. Il backup avviene in modo incrementale — solo le modifiche vengono inviate, non l'intero archivio ogni volta.</div>
-          <div class="tutorial-sec-note">Attualmente in fase di implementazione del backend. Il pannello mostra il conteggio degli item salvati localmente.</div>
+          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-crown"/></svg> Vault Plus in the sidebar</div>
+          <div class="tutorial-sec-desc">Automatically syncs your vault to the cloud, making your data accessible from any device. The Cloud Backup panel shows how many items are in your vault and the sync status. Backup is incremental — only changes are sent, not the entire archive every time.</div>
+          <div class="tutorial-sec-note">Currently being implemented on the backend. The panel shows the count of locally saved items.</div>
         </div>
       </div>
 
@@ -5486,10 +5486,10 @@ async function _initGlobe(){
         <div class="tutorial-step-num">9</div>
         <div class="tutorial-icon-wrap red"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-palette"/></svg></div>
         <div style="flex:1">
-          <div class="tutorial-sec-title">Temi premium</div>
-          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-sun"/></svg> Impostazioni</div>
-          <div class="tutorial-sec-desc">Sblocca palette di colori esclusivi non disponibili nella versione Free: temi monocromatici ad alto contrasto, varianti cromatiche calde e fredde, modalità a sfondo bianco con accenti colorati, e temi stagionali. Ogni tema modifica colori di sfondo, bordi, testo e accenti in modo coerente su tutta l'interfaccia.</div>
-          <div class="tutorial-sec-note">In arrivo nella prossima versione. Il tema attuale chiaro/scuro rimane disponibile per tutti gli utenti.</div>
+          <div class="tutorial-sec-title">Premium themes</div>
+          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-sun"/></svg> Settings</div>
+          <div class="tutorial-sec-desc">Unlock exclusive colour palettes not available in the Free version: high-contrast monochromatic themes, warm and cool colour variants, white background with coloured accents, and seasonal themes. Each theme consistently modifies background, borders, text and accent colours across the entire interface.</div>
+          <div class="tutorial-sec-note">Coming in the next version. The current light/dark theme remains available for all users.</div>
         </div>
       </div>
 
@@ -5498,10 +5498,10 @@ async function _initGlobe(){
         <div class="tutorial-step-num">10</div>
         <div class="tutorial-icon-wrap red"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-mood-board"/></svg></div>
         <div style="flex:1">
-          <div class="tutorial-sec-title">Mood board avanzati</div>
-          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-layers"/></svg> Vista Mood Board (icona strati)</div>
-          <div class="tutorial-sec-desc">La vista mood board base mostra i prodotti come immagini affiancate. La versione Plus aggiunge la modalità fullscreen con layout libero a trascinamento, la possibilità di aggiungere etichette di testo e didascalie sopra le immagini, il ridimensionamento manuale delle card e l'esportazione del board come immagine PNG.</div>
-          <div class="tutorial-sec-note">La vista mood board base rimane disponibile per tutti. Le funzioni di editing avanzato si attivano automaticamente con Plus.</div>
+          <div class="tutorial-sec-title">Advanced mood boards</div>
+          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-layers"/></svg> Mood Board view (layers icon)</div>
+          <div class="tutorial-sec-desc">The basic mood board view shows products as side-by-side images. The Plus version adds fullscreen mode with free drag-and-drop layout, the ability to add text labels and captions over images, manual card resizing, and export of the board as a PNG image.</div>
+          <div class="tutorial-sec-note">The basic mood board view remains available to all. Advanced editing features activate automatically with Plus.</div>
         </div>
       </div>
 
@@ -5510,10 +5510,10 @@ async function _initGlobe(){
         <div class="tutorial-step-num">11</div>
         <div class="tutorial-icon-wrap gold"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-rocket"/></svg></div>
         <div style="flex:1">
-          <div class="tutorial-sec-title">Accesso prioritario alle novità</div>
-          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-crown"/></svg> Automatico con il piano Plus</div>
-          <div class="tutorial-sec-desc">Ogni nuova funzione viene rilasciata agli utenti Plus con settimane di anticipo rispetto alla versione Free. Questo include nuove integrazioni con shop online, nuovi tipi di item, nuove viste e ogni miglioramento dell'interfaccia. Non devi fare nulla: le funzioni appaiono direttamente nell'app non appena vengono rilasciate.</div>
-          <div class="tutorial-sec-note">Le funzioni contrassegnate con il badge Plus nel menu sono quelle in anteprima esclusiva per il tuo piano.</div>
+          <div class="tutorial-sec-title">Priority access to new features</div>
+          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-crown"/></svg> Automatic with Plus plan</div>
+          <div class="tutorial-sec-desc">Every new feature is released to Plus users weeks ahead of the Free version. This includes new online shop integrations, new item types, new views, and every interface improvement. You don't need to do anything: features appear directly in the app as soon as they're released.</div>
+          <div class="tutorial-sec-note">Features marked with the Plus badge in the menu are exclusive previews for your plan.</div>
         </div>
       </div>
 
@@ -5521,9 +5521,9 @@ async function _initGlobe(){
     <div class="tutorial-footer">
       <button class="btn-plus" onclick="closePlusTutorial()" style="flex:1">
         <svg width="14" height="14" viewBox="0 0 16 16"><use href="#ic-check-circle"/></svg>
-        Inizia a esplorare
+        Start exploring
       </button>
-      <button onclick="closePlusTutorial()" class="btn-s" style="flex-shrink:0">Chiudi</button>
+      <button onclick="closePlusTutorial()" class="btn-s" style="flex-shrink:0">Close</button>
     </div>
   </div>
 </div>
