@@ -818,6 +818,10 @@ body.cmp-mode .card{cursor:default}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
+<div id="bootLoader" style="position:fixed;inset:0;z-index:99999;background:var(--bg,#0a0a0a);display:flex;align-items:center;justify-content:center;transition:opacity .25s">
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" style="animation:spin 1s linear infinite"><circle cx="16" cy="16" r="13" stroke="rgba(201,162,39,.25)" stroke-width="3"/><path d="M16 3a13 13 0 0 1 13 13" stroke="#c9a227" stroke-width="3" stroke-linecap="round"/></svg>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
 <!-- ═══ SVG ICON SPRITES ═══ -->
 <svg id="ico-sprites" style="display:none" xmlns="http://www.w3.org/2000/svg">
@@ -4864,7 +4868,7 @@ function activatePlus(){
   closePlusModal();
   _updatePlusSideBtn();
   renderProfile();
-  setTimeout(openPlusTutorial, 320);
+  if(!localStorage.getItem('vaultPlusTutorialSeen')) setTimeout(openPlusTutorial, 320);
 }
 function deactivatePlus(){
   localStorage.removeItem('vaultPlan');
@@ -5042,7 +5046,18 @@ if(!_hasSession && !_wasGuest){
   document.getElementById('authOv').style.display='flex';
   _updatePlusSideBtn();
   checkServer();
+  // No Supabase session expected — hide loader immediately so auth overlay is visible
+  setTimeout(_hideBootLoader,0);
+} else if(!_sb){
+  // No Supabase configured — hide loader, render local data
+  initCurrencyUI();applyLang();renderSidebar();render();
+  if(S.sort){const sel=document.getElementById('sortSel');if(sel)sel.value=S.sort;}
+  _updatePlusSideBtn();
+  checkServer();checkShareParam();
+  setTimeout(()=>{_renderOnbLang();initOnboarding();},400);
+  setTimeout(_hideBootLoader,0);
 } else {
+  // Has local session — render local data first (loader covers it), Supabase restore will re-render and hide loader
   initCurrencyUI();applyLang();renderSidebar();render();
   if(S.sort){const sel=document.getElementById('sortSel');if(sel)sel.value=S.sort;}
   _updatePlusSideBtn();
@@ -5051,12 +5066,22 @@ if(!_hasSession && !_wasGuest){
 }
 setInterval(checkServer,30000);
 
+function _hideBootLoader(){
+  const bl=document.getElementById('bootLoader');
+  if(!bl||bl.dataset.hidden) return;
+  bl.dataset.hidden='1';
+  bl.style.opacity='0';
+  setTimeout(()=>bl.remove(),280);
+}
+// Max fallback: hide loader after 2s even if Supabase is slow
+setTimeout(_hideBootLoader, 2000);
+
 // Restore Supabase session in background (handles page refresh while logged in via Supabase)
 (async function _sbRestoreSession(){
-  if(!_sb) return;
+  if(!_sb){_hideBootLoader();return;}
   try{
     const {data:{session}}=await _sb.auth.getSession();
-    if(!session?.user) return;
+    if(!session?.user){_hideBootLoader();return;}
     _sbUser=session.user;
     if(!_currentUser){
       const eHash=await _sha256(session.user.email);
@@ -5066,7 +5091,7 @@ setInterval(checkServer,30000);
     const synced=await _sbPull();
     if(synced){
       renderSidebar();render();_updatePlusSideBtn();_showSyncDot('ok');
-      if(prevPlan!=='plus'&&_sbPlan==='plus'&&!localStorage.getItem('vaultPlusTutorialSeen')) setTimeout(openPlusTutorial,600);
+      // Tutorial only shown via Realtime (new upgrade), not on page load
     }
     // Subscribe to realtime plan changes (catches Stripe webhook updates)
     if(_sbUser&&_sbPlan==='free'){
@@ -5076,12 +5101,12 @@ setInterval(checkServer,30000);
             if(payload.new?.plan&&payload.new.plan!==_sbPlan){
               _sbPlan=payload.new.plan;
               _updatePlusSideBtn();renderSidebar();render();
-              if(_sbPlan==='plus') setTimeout(openPlusTutorial,400);
+              if(_sbPlan==='plus'&&!localStorage.getItem('vaultPlusTutorialSeen')) setTimeout(openPlusTutorial,400);
             }
           })
         .subscribe();
     }
-  }catch(e){}
+  }catch(e){}finally{_hideBootLoader();}
 })();
 
 // ── MAP / GLOBE ──
