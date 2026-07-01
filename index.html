@@ -672,15 +672,48 @@ body.cmp-mode .card{cursor:default}
 /* ── FEATURE 5: GIFT MODE ── */
 .c-gift{display:inline-flex;align-items:center;gap:3px;font-size:10px;color:var(--accent);padding:2px 7px;border-radius:8px;background:var(--ax);border:1px solid var(--bd);margin-top:3px}
 
-/* ── FEATURE 8: MOOD BOARD ── */
-.mood{columns:3;gap:10px;column-fill:balance}
-.mood .card{break-inside:avoid;margin-bottom:10px;display:block;cursor:pointer}
-.mood .c-img{height:auto;max-height:260px}
-.mood .c-acts{opacity:0;transition:opacity .15s}
-.mood .card:hover .c-acts{opacity:1}
-.mood .c-note,.mood .c-tags,.mood .c-user-rating,.mood .drag-handle{display:none}
-@media(max-width:860px){.mood{columns:2}}
-@media(max-width:560px){.mood{columns:1}}
+/* ── ADVANCED MOOD BOARD ── */
+.mood-toolbar{display:none;align-items:center;gap:6px;padding:6px 0 8px;flex-wrap:wrap}
+.mood-toolbar.show{display:flex}
+.mood-tb-grp{display:flex;gap:2px;background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:3px}
+.mood-tb-btn{background:none;border:none;color:var(--t2);cursor:pointer;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:600;font-family:inherit;transition:all .12s;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.mood-tb-btn:hover{background:var(--s3);color:var(--t1)}
+.mood-tb-btn.on{background:var(--s4);color:var(--t1)}
+.mood-tb-sep{width:1px;background:var(--bd);margin:0 4px;align-self:stretch;flex-shrink:0}
+.mood-wrap{border-radius:12px;transition:background .25s,padding .25s}
+.mood-wrap.bg-dark{background:#0a0a0a;padding:14px}
+.mood-wrap.bg-light{background:#ffffff;padding:14px}
+.mood-wrap.bg-cream{background:#f5f0e8;padding:14px}
+.mood{gap:10px;column-fill:balance}
+.mood-2{columns:2}.mood-3{columns:3}.mood-4{columns:4}
+.mood-editorial{display:grid!important;grid-template-columns:repeat(3,1fr);gap:10px}
+.mood-editorial .mood-card:nth-child(4n+1){grid-row:span 2}
+.mood-editorial .mood-card:nth-child(7n){grid-column:span 2}
+.mood-card{position:relative;break-inside:avoid;margin-bottom:10px;border-radius:12px;overflow:hidden;cursor:pointer;background:var(--s2);display:block;transition:transform .2s}
+.mood-card:hover{transform:translateY(-2px)}
+.mood-editorial .mood-card{margin-bottom:0}
+.mood-img-wrap{position:relative;overflow:hidden;line-height:0}
+.mood-img{width:100%;height:auto;display:block;object-fit:cover;transition:transform .35s}
+.mood-card:hover .mood-img{transform:scale(1.04)}
+.mood-title-ov{position:absolute;bottom:0;left:0;right:0;padding:28px 12px 12px;background:linear-gradient(transparent,rgba(0,0,0,.72));color:#fff;font-size:12px;font-weight:600;opacity:0;transition:opacity .2s;line-height:1.35;pointer-events:none}
+.mood-card:hover .mood-title-ov{opacity:1}
+.mood-no-img{width:100%;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;background:var(--s3);color:var(--t3)}
+.mood-caption-wrap{padding:7px 10px 8px}
+.mood-caption{font-size:11px;color:var(--t2);outline:none;min-height:1em;cursor:text;width:100%;display:block;font-family:inherit;background:transparent;border:none;resize:none;line-height:1.4;padding:0}
+.mood-caption::placeholder{color:var(--t3)}
+.mood-price-badge{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.72);color:#fff;font-size:9px;font-weight:700;padding:3px 7px;border-radius:6px;pointer-events:none;backdrop-filter:blur(4px)}
+.mood-status-dot{position:absolute;top:8px;left:8px;width:8px;height:8px;border-radius:50%;box-shadow:0 0 0 2px rgba(0,0,0,.4)}
+/* Fullscreen overlay */
+.mood-fs-ov{position:fixed;inset:0;z-index:9200;display:none;flex-direction:column}
+.mood-fs-ov.open{display:flex}
+.mood-fs-body{flex:1;overflow-y:auto;padding:20px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.15) transparent}
+.mood-fs-bar{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:rgba(0,0,0,.35);backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.07);gap:10px}
+.mood-fs-title{font-size:13px;font-weight:600;color:rgba(255,255,255,.7)}
+.mood-fs-actions{display:flex;gap:6px}
+.mood-fs-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);color:#fff;cursor:pointer;border-radius:8px;padding:7px 13px;font-size:11px;font-weight:600;font-family:inherit;transition:all .13s;display:flex;align-items:center;gap:5px}
+.mood-fs-btn:hover{background:rgba(255,255,255,.2)}
+@media(max-width:860px){.mood-3,.mood-4{columns:2}.mood-editorial{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.mood-2,.mood-3,.mood-4{columns:1}.mood-editorial{grid-template-columns:1fr}}
 
 /* ── FEATURE 10: IMPORT LIST ── */
 .imp-list{max-height:300px;overflow-y:auto;margin:10px 0}
@@ -698,15 +731,6 @@ body.cmp-mode .card{cursor:default}
 .cmp-row-val{font-size:13px;color:var(--t1)}
 /* ── STALE BADGE ── */
 .c-stale{position:absolute;top:6px;right:6px;background:rgba(210,120,10,.92);color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:6px;display:flex;align-items:center;gap:3px;z-index:3;pointer-events:none}
-/* ── MOOD BOARD ── */
-.mood{columns:3;gap:10px;column-fill:balance}
-.mood .card{break-inside:avoid;margin-bottom:10px;display:block}
-.mood .c-img{height:auto;max-height:260px}
-.mood .c-acts{opacity:0;transition:opacity .15s}
-.mood .card:hover .c-acts{opacity:1}
-.mood .c-note,.mood .c-tags,.mood .c-user-rating,.mood .drag-handle{display:none}
-@media(max-width:860px){.mood{columns:2}}
-@media(max-width:560px){.mood{columns:1}}
 
 /* ══ PLUS TUTORIAL ══ */
 .tutorial-ov{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9999;display:none;align-items:center;justify-content:center;padding:16px}
@@ -1220,6 +1244,29 @@ body.cmp-mode .card{cursor:default}
     <button class="add-btn" id="addTopBtn" onclick="openAddMo()"><svg class="ico" width="13" height="13" viewBox="0 0 16 16"><use href="#ic-plus"/></svg> Aggiungi</button>
   </div>
   <button id="focusBtn" onclick="toggleFocus()"><svg class="ico" width="12" height="12" viewBox="0 0 16 16"><use href="#ic-close"/></svg> Esci dal focus</button>
+
+  <!-- MOODBOARD TOOLBAR -->
+  <div class="mood-toolbar" id="moodToolbar">
+    <div class="mood-tb-grp">
+      <button class="mood-tb-btn" id="moodL2" onclick="setMoodLayout('2')" title="2 colonne">2</button>
+      <button class="mood-tb-btn on" id="moodL3" onclick="setMoodLayout('3')" title="3 colonne">3</button>
+      <button class="mood-tb-btn" id="moodL4" onclick="setMoodLayout('4')" title="4 colonne">4</button>
+      <button class="mood-tb-btn" id="moodLe" onclick="setMoodLayout('editorial')" title="Layout editoriale">Editorial</button>
+    </div>
+    <div class="mood-tb-sep"></div>
+    <div class="mood-tb-grp">
+      <button class="mood-tb-btn on" id="moodTdark" onclick="setMoodTheme('dark')" title="Sfondo scuro">● Dark</button>
+      <button class="mood-tb-btn" id="moodTlight" onclick="setMoodTheme('light')" title="Sfondo chiaro">○ Light</button>
+      <button class="mood-tb-btn" id="moodTcream" onclick="setMoodTheme('cream')" title="Sfondo crema">◐ Cream</button>
+    </div>
+    <div class="mood-tb-sep"></div>
+    <button class="mood-tb-btn" onclick="openMoodFullscreen()" title="Modalità schermo intero">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/></svg> Fullscreen
+    </button>
+    <button class="mood-tb-btn" id="moodExportBtn" onclick="exportMoodboard()" title="Esporta come immagine">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M5 7l3 3 3-3M2 12v2h12v-2"/></svg> Export PNG
+    </button>
+  </div>
 
   <!-- quick paste bar -->
   <div class="paste-bar">
@@ -2238,14 +2285,31 @@ function render(){
       );
     }
   }
-  grid.className=S.view==='list'?'lv':S.view==='mood'?'mood':'grid';
+  grid.className=S.view==='list'?'lv':S.view==='mood'?'':'grid';
   if(!items.length){
     grid.className='';
     const emptyIco=S.chip==='voglio'?ico('bag',36):S.chip==='comprato'?ico('check-circle',36):S.chip==='ordinato'?ico('box',36):S.chip==='visitare'?ico('pin',36):S.chip==='visitato'?ico('map',36):S.chip==='archivio'?ico('archive',36):ico('sparkle',36);
     grid.innerHTML=`<div class="empty"><div class="empty-icon" style="opacity:.35;color:var(--accent)">${emptyIco}</div><h3>${t('emptyTitle')||'Nessun elemento'}</h3></div>`;
     return;
   }
-  grid.innerHTML=sortedItems(items).map(item=>cardHTML(item)).join('');
+  if(S.view==='mood'){
+    const layout=_moodLayout||'3';
+    const theme=_moodTheme||'dark';
+    const isEd=layout==='editorial';
+    grid.className=isEd?'mood mood-editorial':'mood mood-'+layout;
+    const wrap=document.createElement('div');
+    wrap.className='mood-wrap bg-'+theme;
+    wrap.innerHTML=sortedItems(items).map(item=>moodCardHTML(item)).join('');
+    grid.innerHTML='';
+    grid.appendChild(wrap);
+    // restore captions from items
+    wrap.querySelectorAll('.mood-caption').forEach(el=>{
+      const item=S.items.find(i=>i.id===el.dataset.id);
+      if(item?.moodCaption) el.value=item.moodCaption;
+    });
+  } else {
+    grid.innerHTML=sortedItems(items).map(item=>cardHTML(item)).join('');
+  }
 }
 
 function cardHTML(item){
@@ -3674,8 +3738,116 @@ function setView(v){
   document.getElementById('gBtn').classList.toggle('on',v==='grid');
   document.getElementById('lBtn').classList.toggle('on',v==='list');
   const mb=document.getElementById('mBtn');if(mb)mb.classList.toggle('on',v==='mood');
+  const mt=document.getElementById('moodToolbar');if(mt)mt.classList.toggle('show',v==='mood');
   render();
 }
+
+// ── ADVANCED MOODBOARD ──
+let _moodLayout=localStorage.getItem('vaultMoodLayout')||'3';
+let _moodTheme=localStorage.getItem('vaultMoodTheme')||'dark';
+
+function _moodUpdateToolbar(){
+  ['2','3','4','editorial'].forEach(l=>{const b=document.getElementById('moodL'+l);if(b)b.classList.toggle('on',_moodLayout===l);});
+  ['dark','light','cream'].forEach(t=>{const b=document.getElementById('moodT'+t);if(b)b.classList.toggle('on',_moodTheme===t);});
+}
+function setMoodLayout(l){
+  _moodLayout=l;localStorage.setItem('vaultMoodLayout',l);_moodUpdateToolbar();render();
+}
+function setMoodTheme(t){
+  _moodTheme=t;localStorage.setItem('vaultMoodTheme',t);_moodUpdateToolbar();render();
+  // also update fullscreen bg if open
+  const fsOv=document.getElementById('moodFsOv');
+  if(fsOv&&fsOv.classList.contains('open')) fsOv.style.background=t==='dark'?'#0a0a0a':t==='cream'?'#f5f0e8':'#ffffff';
+}
+
+function moodCardHTML(item){
+  const imgs=item.images||[];
+  const img=imgs[0]||'';
+  const ph=item.type==='luogo'?ico('pin',32):ico('bag',32);
+  const st=getStatus(item.status)||getStatus('voglio');
+  const priceStr=item.price?`<span class="mood-price-badge">${cur()}${fmt(item.price)}</span>`:'';
+  const dotColor=st?.color||'var(--accent)';
+  const caption=item.moodCaption||'';
+  const imgHtml=img
+    ?`<img class="mood-img" src="${esc(img)}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+    +'<div class="mood-no-img" style="display:none">'+ph+'</div>'
+    :`<div class="mood-no-img">${ph}</div>`;
+  return `<div class="mood-card" onclick="openDet('${item.id}')">
+    <div class="mood-img-wrap">
+      ${imgHtml}
+      ${priceStr}
+      <div class="mood-status-dot" style="background:${dotColor}" title="${esc(st?.label||'')}"></div>
+      <div class="mood-title-ov">${esc(item.title||'')}</div>
+    </div>
+    <div class="mood-caption-wrap" onclick="event.stopPropagation()">
+      <textarea class="mood-caption" rows="1" placeholder="Aggiungi didascalia..." data-id="${item.id}" onblur="saveMoodCaption('${item.id}',this.value)" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'">${esc(caption)}</textarea>
+    </div>
+  </div>`;
+}
+
+function saveMoodCaption(id,text){
+  const item=S.items.find(i=>i.id===id);
+  if(!item) return;
+  item.moodCaption=text.trim()||undefined;
+  save();
+  if(_sbUser) _sbPush();
+}
+
+function openMoodFullscreen(){
+  const ov=document.getElementById('moodFsOv');
+  const grid=document.getElementById('moodFsGrid');
+  if(!ov||!grid) return;
+  // populate
+  const items=sortedItems(S.items.filter(i=>!i.archived));
+  const layout=_moodLayout;
+  const isEd=layout==='editorial';
+  grid.className=isEd?'mood mood-editorial':'mood mood-'+layout;
+  const wrap=document.createElement('div');
+  wrap.className='mood-wrap bg-'+_moodTheme;
+  wrap.innerHTML=items.map(item=>moodCardHTML(item)).join('');
+  grid.innerHTML=''; grid.appendChild(wrap);
+  // captions
+  wrap.querySelectorAll('.mood-caption').forEach(el=>{
+    const item=S.items.find(i=>i.id===el.dataset.id);
+    if(item?.moodCaption) el.value=item.moodCaption;
+  });
+  ov.style.background=_moodTheme==='dark'?'#0a0a0a':_moodTheme==='cream'?'#f5f0e8':'#ffffff';
+  ov.classList.add('open');
+  document.addEventListener('keydown',_moodFsEsc);
+}
+function closeMoodFullscreen(){
+  document.getElementById('moodFsOv')?.classList.remove('open');
+  document.removeEventListener('keydown',_moodFsEsc);
+}
+function _moodFsEsc(e){if(e.key==='Escape') closeMoodFullscreen();}
+
+async function exportMoodboard(fromFs){
+  const btn=document.getElementById(fromFs?'moodFsExportBtn':'moodExportBtn');
+  if(btn){btn.textContent='Elaborazione...';btn.disabled=true;}
+  try{
+    if(!window.html2canvas){
+      await new Promise((res,rej)=>{
+        const s=document.createElement('script');
+        s.src='https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+        s.onload=res;s.onerror=rej;
+        document.head.appendChild(s);
+      });
+    }
+    const target=fromFs?document.getElementById('moodFsGrid'):document.querySelector('#grid .mood-wrap')||document.getElementById('grid');
+    if(!target){showToast('Attiva la vista Moodboard prima.');return;}
+    const bg=_moodTheme==='dark'?'#0a0a0a':_moodTheme==='cream'?'#f5f0e8':'#ffffff';
+    const canvas=await window.html2canvas(target,{backgroundColor:bg,scale:2,useCORS:true,allowTaint:true,logging:false});
+    const a=document.createElement('a');
+    a.download='vault-moodboard.png';
+    a.href=canvas.toDataURL('image/png');
+    a.click();
+    showToast('Export completato!');
+  }catch(e){showToast('Errore export. Prova a fare screenshot manuale.');}
+  finally{if(btn){btn.innerHTML='<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M5 7l3 3 3-3M2 12v2h12v-2"/></svg> Export PNG';btn.disabled=false;}}
+}
+
+// initialise toolbar state on load
+setTimeout(_moodUpdateToolbar,0);
 
 // ── SORT ──
 function setSort(v){S.sort=v;save();render();}
@@ -5072,12 +5244,14 @@ if(!_hasSession && !_wasGuest){
   checkServer();checkShareParam();
   setTimeout(()=>{_renderOnbLang();initOnboarding();},400);
   setTimeout(_hideBootLoader,0);
+  if(S.view==='mood'){const mt=document.getElementById('moodToolbar');if(mt)mt.classList.add('show');}
 } else {
   // Has local session — render local data first (loader covers it), Supabase restore will re-render and hide loader
   initCurrencyUI();applyLang();renderSidebar();render();
   if(S.sort){const sel=document.getElementById('sortSel');if(sel)sel.value=S.sort;}
   _updatePlusSideBtn();
   checkServer();checkShareParam();
+  if(S.view==='mood'){const mt=document.getElementById('moodToolbar');if(mt)mt.classList.add('show');}
   setTimeout(()=>{_renderOnbLang();initOnboarding();},400);
 }
 setInterval(checkServer,30000);
@@ -5411,6 +5585,24 @@ async function _initGlobe(){
 </div>
 
 <!-- VAULT PLUS TUTORIAL MODAL -->
+<!-- ═══ MOODBOARD FULLSCREEN ═══ -->
+<div class="mood-fs-ov" id="moodFsOv">
+  <div class="mood-fs-body" id="moodFsBody">
+    <div id="moodFsGrid" class="mood mood-3"></div>
+  </div>
+  <div class="mood-fs-bar">
+    <span class="mood-fs-title">Vault Moodboard</span>
+    <div class="mood-fs-actions">
+      <button class="mood-fs-btn" id="moodFsExportBtn" onclick="exportMoodboard(true)">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M5 7l3 3 3-3M2 12v2h12v-2"/></svg> Export PNG
+      </button>
+      <button class="mood-fs-btn" onclick="closeMoodFullscreen()">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 2l12 12M14 2L2 14"/></svg> Chiudi
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="tutorial-ov" id="tutorialOv" onclick="if(event.target===this)closePlusTutorial()">
   <div class="tutorial-mo">
     <div class="tutorial-hdr">
