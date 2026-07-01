@@ -4835,13 +4835,19 @@ function renderPlusModal(){
 }
 
 function showCheckout(){
+  if(!_sbUser){
+    closePlusModal();
+    showToast('Create a free account first to subscribe.');
+    setTimeout(()=>document.getElementById('authOv')?.style.setProperty('display','flex'),400);
+    return;
+  }
   const isAnnual=_plusBilling==='annual';
   const base=isAnnual?STRIPE_ANNUAL:STRIPE_MONTHLY;
   const email=_currentUser?.email||'';
-  const uid=_sbUser?.id||'';
+  const uid=_sbUser.id;
   let url=base;
   if(email) url+=`?prefilled_email=${encodeURIComponent(email)}`;
-  if(uid) url+=(email?'&':'?')+`client_reference_id=${uid}`;
+  url+=(email?'&':'?')+`client_reference_id=${uid}`;
   closePlusModal();
   const a=document.createElement('a');
   a.href=url; a.target='_blank'; a.rel='noopener';
