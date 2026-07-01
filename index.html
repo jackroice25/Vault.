@@ -673,7 +673,7 @@ body.cmp-mode .card{cursor:default}
 .c-gift{display:inline-flex;align-items:center;gap:3px;font-size:10px;color:var(--accent);padding:2px 7px;border-radius:8px;background:var(--ax);border:1px solid var(--bd);margin-top:3px}
 
 /* ── ADVANCED MOOD BOARD ── */
-.mood-toolbar{display:none;align-items:center;gap:6px;padding:6px 0 8px;flex-wrap:wrap}
+.mood-toolbar{display:none;align-items:center;gap:6px;padding:6px 0 8px;padding-left:12px;flex-wrap:wrap}
 .mood-toolbar.show{display:flex}
 .mood-tb-grp{display:flex;gap:2px;background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:3px}
 .mood-tb-btn{background:none;border:none;color:var(--t2);cursor:pointer;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:600;font-family:inherit;transition:all .12s;display:flex;align-items:center;gap:4px;white-space:nowrap}
@@ -1262,9 +1262,6 @@ body.cmp-mode .card{cursor:default}
     <div class="mood-tb-sep"></div>
     <button class="mood-tb-btn" onclick="openMoodFullscreen()" title="Modalità schermo intero">
       <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/></svg> Fullscreen
-    </button>
-    <button class="mood-tb-btn" id="moodExportBtn" onclick="exportMoodboard()" title="Esporta come immagine">
-      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M5 7l3 3 3-3M2 12v2h12v-2"/></svg> Export PNG
     </button>
   </div>
 
@@ -3769,7 +3766,7 @@ function moodCardHTML(item){
     ?`<img class="mood-img" src="${esc(img)}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
     +'<div class="mood-no-img" style="display:none">'+ph+'</div>'
     :`<div class="mood-no-img">${ph}</div>`;
-  return `<div class="mood-card" onclick="openDet('${item.id}')">
+  return `<div class="mood-card" onclick="openDetMo('${item.id}')">
     <div class="mood-img-wrap">
       ${imgHtml}
       ${priceStr}
