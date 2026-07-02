@@ -846,6 +846,32 @@ body.cmp-mode .card{cursor:default}
   <svg width="32" height="32" viewBox="0 0 32 32" fill="none" style="animation:spin 1s linear infinite"><circle cx="16" cy="16" r="13" stroke="rgba(201,162,39,.25)" stroke-width="3"/><path d="M16 3a13 13 0 0 1 13 13" stroke="#c9a227" stroke-width="3" stroke-linecap="round"/></svg>
 </div>
 <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+<script>
+/* Boot failsafe: if the main script throws before it can boot the app, don't leave the
+   user staring at a black screen with a spinner. Show the auth screen (or a reload prompt). */
+(function(){
+  var recovered=false;
+  function recover(reason){
+    if(recovered) return; recovered=true;
+    var bl=document.getElementById('bootLoader');
+    if(bl) bl.remove();
+    var auth=document.getElementById('authOv');
+    if(auth){ auth.style.display='flex'; return; }
+    // authOv not even in the DOM yet -> minimal fallback message
+    var d=document.createElement('div');
+    d.style.cssText='position:fixed;inset:0;z-index:99998;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0a0a0a;color:#c9a227;font-family:system-ui,sans-serif;gap:14px;text-align:center;padding:24px';
+    d.innerHTML='<div style="font-size:15px;color:#f0f0f0">Vault didn’t load correctly.</div>'+
+      '<button onclick="location.reload()" style="background:#c9a227;color:#000;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer">Reload</button>';
+    document.body.appendChild(d);
+  }
+  window.addEventListener('error', function(e){
+    // Only recover for genuine script errors, and only while the boot loader is still up.
+    if(document.getElementById('bootLoader')) setTimeout(function(){ recover('error'); }, 100);
+  });
+  // Hard safety net: if nothing hid the boot loader within 6s, force-recover.
+  setTimeout(function(){ if(document.getElementById('bootLoader')) recover('timeout'); }, 6000);
+})();
+</script>
 
 <!-- ═══ SVG ICON SPRITES ═══ -->
 <svg id="ico-sprites" style="display:none" xmlns="http://www.w3.org/2000/svg">
@@ -3467,13 +3493,15 @@ function checkShareParam(){
   if(hash.startsWith('#vault=')){
     const b64=hash.slice(7);
     _decompress(b64).then(data=>{
-      if(data&&Array.isArray(data.items)) showReadOnlyVault(data);
+      if(data&&Array.isArray(data.items)) showReadOnlyVault(_sanitizeImportedVault(data));
     }).catch(()=>{});
     return;
   }
   if(!hash.startsWith('#share='))return;
   try{
-    const item=JSON.parse(decodeURIComponent(escape(atob(hash.slice(7)))));
+    const raw=JSON.parse(decodeURIComponent(escape(atob(hash.slice(7)))));
+    const item=_sanitizeImportedItem(raw);
+    if(!item)return;
     item.id='shared-preview';
     S.items.unshift(item);
     setTimeout(()=>openDetMo('shared-preview'),300);
@@ -4154,6 +4182,42 @@ function esc(s){if(s==null)return'';return String(s).replace(/&/g,'&amp;').repla
 // Only http(s), mailto and protocol-relative/relative links are allowed through; everything else becomes a no-op.
 // Open an untrusted URL in a new tab only if it uses a safe scheme.
 function _openExt(u){if(u==null)return;const scheme=String(u).trim().replace(/[\x00-\x1f\x7f-\x9f\s]/g,'').toLowerCase();if(/^(?:javascript|data|vbscript|file):/i.test(scheme))return;window.open(String(u),'_blank','noopener');}
+// ── Sanitise items coming from an untrusted shared link before they touch app state ──
+const IMPORT_MAX_ITEMS=1000, IMPORT_STR_MAX=2000, IMPORT_URL_MAX=2048;
+function _clampStr(v,max){return v==null?'':String(v).slice(0,max||IMPORT_STR_MAX);}
+function _cleanImgList(imgs){
+  if(!Array.isArray(imgs))return [];
+  return imgs.filter(u=>{
+    const s=String(u==null?'':u).trim().replace(/[\x00-\x1f\x7f-\x9f\s]/g,'').toLowerCase();
+    // allow only http(s) and inline image data URIs; block javascript:/text-html/etc.
+    return /^https?:\/\//.test(s)||/^data:image\//.test(s);
+  }).slice(0,12).map(u=>_clampStr(u,IMPORT_URL_MAX));
+}
+function _sanitizeImportedItem(raw){
+  if(!raw||typeof raw!=='object')return null;
+  const url=_clampStr(raw.url,IMPORT_URL_MAX);
+  const safeScheme=(()=>{const s=url.trim().replace(/[\x00-\x1f\x7f-\x9f\s]/g,'').toLowerCase();return !s||/^https?:\/\//.test(s)||/^mailto:/.test(s)?url:'';})();
+  return {
+    id:uid(),
+    url:safeScheme,
+    title:_clampStr(raw.title,300),
+    type:raw.type==='luogo'?'luogo':'prodotto',
+    status:_clampStr(raw.status,40)||'voglio',
+    price:(()=>{const n=parseFloat(raw.price);return isNaN(n)||n<0||n>1e9?0:Math.round(n*100)/100;})(),
+    images:_cleanImgList(raw.images),
+    note:_clampStr(raw.note,IMPORT_STR_MAX),
+    variant:_clampStr(raw.variant,300),
+    qty:(()=>{const n=parseInt(raw.qty,10);return isNaN(n)||n<1||n>9999?1:n;})(),
+    moodCaption:_clampStr(raw.moodCaption,500),
+    star:!!raw.star,
+    archived:!!raw.archived
+  };
+}
+function _sanitizeImportedVault(data){
+  const items=(data&&Array.isArray(data.items)?data.items:[]).slice(0,IMPORT_MAX_ITEMS)
+    .map(_sanitizeImportedItem).filter(Boolean);
+  return {items, by:_clampStr(data&&data.by,120)||'Vault condiviso'};
+}
 function safeUrl(u){
   if(u==null) return '';
   const raw=String(u).trim();
@@ -4778,6 +4842,29 @@ async function _sha256(str){
   const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
+// Strong password hashing for the local-only fallback account store (PBKDF2, salted, 150k iters).
+// Resists offline cracking if localStorage is ever exfiltrated. Format: "pbkdf2$<saltHex>$<hashHex>".
+const _hex=buf=>Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+async function _pbkdf2(pass,saltBytes){
+  const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(pass),'PBKDF2',false,['deriveBits']);
+  const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:saltBytes,iterations:150000,hash:'SHA-256'},key,256);
+  return _hex(bits);
+}
+async function _hashPassword(pass){
+  const salt=crypto.getRandomValues(new Uint8Array(16));
+  return 'pbkdf2$'+_hex(salt)+'$'+await _pbkdf2(pass,salt);
+}
+async function _verifyPassword(pass,stored){
+  if(typeof stored!=='string')return false;
+  const parts=stored.split('$');
+  if(parts[0]!=='pbkdf2'||parts.length!==3)return false;
+  const salt=Uint8Array.from(parts[1].match(/../g).map(h=>parseInt(h,16)));
+  const calc=await _pbkdf2(pass,salt);
+  // constant-time-ish compare
+  if(calc.length!==parts[2].length)return false;
+  let diff=0;for(let i=0;i<calc.length;i++)diff|=calc.charCodeAt(i)^parts[2].charCodeAt(i);
+  return diff===0;
+}
 function togglePassVis(id,btn){
   const el=document.getElementById(id);
   if(!el)return;
@@ -4876,7 +4963,7 @@ async function _doRegister(email,pass){
   const accounts=JSON.parse(localStorage.getItem('vault_accounts')||'{}');
   const eHash=await _sha256(email);
   if(accounts[eHash]){_authErr('An account with this email already exists.');return;}
-  const pHash=await _sha256(email+':'+pass);
+  const pHash=await _hashPassword(pass);
   accounts[eHash]={email,pHash,joined:new Date().toISOString()};
   localStorage.setItem('vault_accounts',JSON.stringify(accounts));
   const guest=localStorage.getItem('vault5');
@@ -4907,8 +4994,15 @@ async function _doLogin(email,pass){
   const accounts=JSON.parse(localStorage.getItem('vault_accounts')||'{}');
   const eHash=await _sha256(email);
   if(!accounts[eHash]){_authErr('No account found with this email.');return;}
-  const pHash=await _sha256(email+':'+pass);
-  if(accounts[eHash].pHash!==pHash){_authErr('Incorrect password.');return;}
+  const rec=accounts[eHash];
+  // New PBKDF2 records verify directly; legacy unsalted-SHA256 records are re-hashed on successful login.
+  let ok=false;
+  if(typeof rec.pHash==='string'&&rec.pHash.startsWith('pbkdf2$')){
+    ok=await _verifyPassword(pass,rec.pHash);
+  }else if(rec.pHash===await _sha256(email+':'+pass)){
+    ok=true; rec.pHash=await _hashPassword(pass); accounts[eHash]=rec; localStorage.setItem('vault_accounts',JSON.stringify(accounts));
+  }
+  if(!ok){_authErr('Incorrect password.');return;}
   _startSession(eHash,accounts[eHash]);
 }
 function _startSession(eHash,account,isNew=false){
