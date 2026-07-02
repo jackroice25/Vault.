@@ -3540,6 +3540,12 @@ function checkShareParam(){
     if(/^[0-9a-f-]{10,}$/i.test(id)) _openGiftView(id);
     return;
   }
+  if(hash.startsWith('#add=')){
+    const url=decodeURIComponent(hash.slice(5));
+    history.replaceState(null,'',location.pathname);
+    if(/^https?:\/\//i.test(url)) _extAdd(url.slice(0,2048));
+    return;
+  }
   if(hash.startsWith('#vault=')){
     const b64=hash.slice(7);
     _decompress(b64).then(data=>{
@@ -5108,7 +5114,7 @@ function _initAuthSession(){
 // ══ VAULT PLUS ══
 const PLANS={
   free:{name:'Free',features:[]},
-  plus:{name:'Plus',price:'€4.99/month',features:['sharedLists','giftMode','advancedStats','folders','aiProfile','aiSuggestions','multiWorkspace','cloudBackup','premiumThemes','advancedMoodboard']}
+  plus:{name:'Plus',price:'€4.99/month',features:['sharedLists','giftMode','browserExtension','advancedStats','folders','aiProfile','aiSuggestions','multiWorkspace','cloudBackup','premiumThemes','advancedMoodboard']}
 };
 function getCurrentPlan(){return _sbPlan!=='free'?_sbPlan:(localStorage.getItem('vaultPlan')||'free');}
 function isPlus(){return getCurrentPlan()==='plus';}
@@ -5697,11 +5703,20 @@ async function giftUnreserve(itemId){
   }catch(e){ showToast('Could not cancel — try again.'); }
 }
 
+// ══ BROWSER EXTENSION HOOK (#add=<url>) ══
+function _extAdd(url){
+  requirePlus('browserExtension',()=>{ openAddMo(url); });
+}
 function _consumePendingJoin(){
   const id=localStorage.getItem('vault_pendingJoin');
   if(id&&_sb&&_sbUser){
     localStorage.removeItem('vault_pendingJoin');
     setTimeout(()=>_joinSharedList(id),600);
+  }
+  const pa=localStorage.getItem('vault_pendingAdd');
+  if(pa){
+    localStorage.removeItem('vault_pendingAdd');
+    if(/^https?:\/\//i.test(pa)) setTimeout(()=>_extAdd(pa),700);
   }
 }
 async function _joinSharedList(id){
@@ -5735,6 +5750,14 @@ if(!_hasSession && !_wasGuest){
   if(location.hash.startsWith('#gift=')){
     const _gid=location.hash.slice(6);
     if(/^[0-9a-f-]{10,}$/i.test(_gid)) setTimeout(()=>_openGiftView(_gid),100);
+  }
+  // Extension add-link arrived while logged out — save it for after login
+  if(location.hash.startsWith('#add=')){
+    try{
+      const _au=decodeURIComponent(location.hash.slice(5));
+      if(/^https?:\/\//i.test(_au)) localStorage.setItem('vault_pendingAdd',_au.slice(0,2048));
+    }catch(e){}
+    history.replaceState(null,'',location.pathname);
   }
 } else if(!_sb){
   // No Supabase configured — hide loader, render local data
