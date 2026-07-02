@@ -802,12 +802,27 @@ body.cmp-mode .card{cursor:default}
 .ai-trait-dot{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:17px;background:var(--s3)}
 .ai-trait-name{font-size:10px;font-weight:700;color:var(--t3);margin-bottom:2px;text-transform:uppercase;letter-spacing:.5px}
 .ai-trait-val{font-size:13px;font-weight:600;color:var(--t1)}
-.price-alert-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bd)}
-.price-alert-row:last-child{border-bottom:none}
-.price-alert-img{width:40px;height:40px;border-radius:7px;object-fit:cover;background:var(--s3);flex-shrink:0}
-.price-alert-info{flex:1;min-width:0}
-.price-alert-title{font-size:13px;font-weight:600;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.price-alert-price{font-size:12px;color:var(--accent);margin-top:2px}
+/* ── SHARED / COLLABORATIVE LISTS ── */
+.shared-list{display:flex;flex-direction:column;gap:8px}
+.shared-row{display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid var(--bd);border-radius:11px;background:var(--s2);cursor:pointer;transition:background .12s,border-color .12s}
+.shared-row:hover{background:var(--s3);border-color:var(--bd2)}
+.shared-row-emoji{font-size:20px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:var(--s3);border-radius:9px;flex-shrink:0}
+.shared-row-name{font-size:13px;font-weight:700;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.shared-row-sub{font-size:11px;color:var(--t3);margin-top:2px}
+.shared-row-arrow{color:var(--t3);font-size:16px;flex-shrink:0}
+.shared-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;max-height:52vh;overflow-y:auto}
+.shared-card{border:1px solid var(--bd);border-radius:11px;overflow:hidden;background:var(--s2);display:flex;flex-direction:column}
+.shared-card img{width:100%;height:110px;object-fit:cover;display:block;background:var(--s3)}
+.shared-card-ph{width:100%;height:110px;display:flex;align-items:center;justify-content:center;color:var(--t3);background:var(--s3)}
+.shared-card-body{padding:8px 9px;display:flex;flex-direction:column;gap:3px;flex:1}
+.shared-card-title{font-size:12px;font-weight:600;color:var(--t1);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.shared-card-price{font-size:12px;font-weight:800;color:var(--accent)}
+.shared-card-foot{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:auto;padding-top:4px}
+.shared-card-foot a{font-size:10px;color:var(--t3);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.shared-card-foot a:hover{color:var(--accent)}
+.shared-card-x{background:none;border:none;color:var(--t3);cursor:pointer;font-size:12px;padding:2px 5px;border-radius:5px;flex-shrink:0;font-family:inherit}
+.shared-card-x:hover{color:#cc4444;background:rgba(204,68,68,.1)}
+.shared-by{font-size:9px;color:var(--t3);opacity:.7}
 
 /* ── GIFT BADGE ── */
 .c-gift{display:inline-flex;align-items:center;gap:3px;font-size:10px;color:var(--accent);padding:2px 7px;border-radius:8px;background:var(--ax);border:1px solid var(--bd);margin-top:3px}
@@ -3490,6 +3505,12 @@ function shareItem(id){
 }
 function checkShareParam(){
   const hash=window.location.hash;
+  if(hash.startsWith('#join=')){
+    const id=hash.slice(6);
+    history.replaceState(null,'',location.pathname);
+    if(/^[0-9a-f-]{10,}$/i.test(id)) _joinSharedList(id);
+    return;
+  }
   if(hash.startsWith('#vault=')){
     const b64=hash.slice(7);
     _decompress(b64).then(data=>{
@@ -4989,6 +5010,7 @@ async function _doLogin(email,pass){
       const synced=await _sbPull();
       if(synced){renderSidebar();render();_showSyncDot('ok');}
       _renderOnbLang();initOnboarding();
+      _consumePendingJoin();
     },200);
     return;
   }
@@ -5016,7 +5038,7 @@ function _startSession(eHash,account,isNew=false){
   initCurrencyUI();applyTheme();applyStatusColors();applyLang();renderSidebar();render();
   if(S.sort){const sel=document.getElementById('sortSel');if(sel)sel.value=S.sort;}
   _updatePlusSideBtn();
-  setTimeout(()=>{_renderOnbLang();initOnboarding();},400);
+  setTimeout(()=>{_renderOnbLang();initOnboarding();_consumePendingJoin();},400);
 }
 function continueAsGuest(){
   _currentUser=null;
@@ -5057,7 +5079,7 @@ function _initAuthSession(){
 // ══ VAULT PLUS ══
 const PLANS={
   free:{name:'Free',features:[]},
-  plus:{name:'Plus',price:'€4.99/month',features:['advancedStats','folders','aiProfile','aiSuggestions','multiWorkspace','cloudBackup','premiumThemes','advancedMoodboard']}
+  plus:{name:'Plus',price:'€4.99/month',features:['sharedLists','advancedStats','folders','aiProfile','aiSuggestions','multiWorkspace','cloudBackup','premiumThemes','advancedMoodboard']}
 };
 function getCurrentPlan(){return _sbPlan!=='free'?_sbPlan:(localStorage.getItem('vaultPlan')||'free');}
 function isPlus(){return getCurrentPlan()==='plus';}
@@ -5190,6 +5212,7 @@ function _getPlanSectionHTML(){
     <button class="prof-btn" onclick="openAIProfile();closeProfileMo()">${ico('sparkle',13)} AI Profile</button>
     <button class="prof-btn" onclick="openCloudBackup();closeProfileMo()">${ico('upload',13)} Cloud backup</button>
   </div>
+  <button class="prof-btn" style="width:100%;margin-bottom:10px" onclick="openSharedLists();closeProfileMo()">${ico('share',13)} Shared lists</button>
   <button class="prof-btn" style="width:100%;margin-bottom:8px;background:linear-gradient(135deg,rgba(201,162,39,.1),rgba(232,200,74,.05));border-color:rgba(201,162,39,.25);color:#c9a227" onclick="closeProfileMo();openPlusTutorial()">${ico('crown',13)} ${t('plusGuide')}</button>
   <button class="prof-btn" style="width:100%;margin-bottom:14px;border-color:rgba(220,60,60,.25);color:#cc4444" onclick="openStripePortal()">${ico('gear',13)} Manage subscription</button>`:''}`;
 }
@@ -5288,6 +5311,203 @@ function openCloudBackup(){
   });
 }
 
+// ══ SHARED / COLLABORATIVE LISTS ══
+let _sharedLists=[];      // metadata of lists the user can access (owned + joined)
+let _activeShared=null;   // {id,name,emoji,data,owner,members} currently open
+let _sharedChannel=null;  // realtime subscription
+
+// Reusable scraper (no add-form UI). Best-effort {title,img,price,currency}.
+async function _scrapeUrl(url){
+  let r=null;
+  if(serverOk) r=await fetchLocal(url);
+  if(!r) r=await fetchSupabaseScraper(url);
+  if(!r){
+    const [ml,proxyHtml]=await Promise.all([fetchMicrolink(url),fetchViaProxy(url)]);
+    const fromHtml=parseHTML(proxyHtml,url);
+    if(ml||fromHtml) r={title:fromHtml?.title||ml?.title||'',img:fromHtml?.img||ml?.img||'',price:fromHtml?.price||ml?.price||null,currency:fromHtml?.currency||null};
+  }
+  if(!r) r={};
+  if(!r.title) r.title=titleFromUrl(url)||brandFromUrl(url)||getDomain(url);
+  return r;
+}
+
+function openSharedLists(){
+  // Viewing is open to any signed-in user (invited guests). Creating is Plus-gated.
+  if(!_sb||!_sbUser){showToast('Sign in to use shared lists.');return;}
+  _activeShared=null;
+  document.getElementById('sharedOv').classList.add('open');
+  document.getElementById('sharedIn').innerHTML='<div style="text-align:center;padding:30px;color:var(--t3);font-size:13px">Loading…</div>';
+  _loadSharedLists().then(renderSharedView);
+}
+function closeSharedLists(){
+  document.getElementById('sharedOv').classList.remove('open');
+  _sharedUnsubscribe();
+  _activeShared=null;
+}
+async function _loadSharedLists(){
+  try{
+    const {data,error}=await _sb.from('shared_lists').select('id,name,emoji,owner,members,data,updated_at').order('updated_at',{ascending:false});
+    if(error) throw error;
+    _sharedLists=data||[];
+  }catch(e){ _sharedLists=[]; showToast('Could not load shared lists.'); }
+}
+function renderSharedView(){
+  const el=document.getElementById('sharedIn');
+  if(!el) return;
+  if(_activeShared){ el.innerHTML=_sharedDetailHTML(); return; }
+  const rows=_sharedLists.map(l=>{
+    const count=(l.data&&Array.isArray(l.data.items))?l.data.items.length:0;
+    const isOwner=l.owner===_sbUser.id;
+    const memCount=(Array.isArray(l.members)?l.members.length:0)+1;
+    return `<div class="shared-row" onclick="openSharedList('${esc(l.id)}')">
+      <div class="shared-row-emoji">${esc(l.emoji||'👥')}</div>
+      <div style="flex:1;min-width:0">
+        <div class="shared-row-name">${esc(l.name||'Shared list')}</div>
+        <div class="shared-row-sub">${count} item${count===1?'':'s'} · ${memCount} member${memCount===1?'':'s'}${isOwner?' · you own this':''}</div>
+      </div>
+      <span class="shared-row-arrow">›</span>
+    </div>`;
+  }).join('')||'<div style="text-align:center;padding:24px;color:var(--t3);font-size:13px;line-height:1.6">No shared lists yet.<br>Create one to plan together in real time.</div>';
+  el.innerHTML=`
+    <button class="btn-plus" style="width:100%;margin-bottom:14px" onclick="createSharedList()">${ico('plus',14)} New shared list</button>
+    <div class="shared-list">${rows}</div>`;
+}
+function createSharedList(){
+  requirePlus('sharedLists',async()=>{
+    const name=prompt('Name your shared list:','Our list');
+    if(name===null) return;
+    try{
+      const {data,error}=await _sb.from('shared_lists').insert({owner:_sbUser.id,name:(name||'Shared list').trim().slice(0,60)||'Shared list',data:{items:[]}}).select().single();
+      if(error) throw error;
+      await _loadSharedLists();
+      openSharedList(data.id);
+    }catch(e){ showToast('Could not create list.'); }
+  });
+}
+async function openSharedList(id){
+  try{
+    const {data,error}=await _sb.from('shared_lists').select('*').eq('id',id).single();
+    if(error||!data){ showToast('List not found.'); return; }
+    _activeShared=data;
+    if(!_activeShared.data||typeof _activeShared.data!=='object') _activeShared.data={items:[]};
+    if(!Array.isArray(_activeShared.data.items)) _activeShared.data.items=[];
+    _sharedSubscribe(id);
+    renderSharedView();
+  }catch(e){ showToast('Could not open list.'); }
+}
+function _sharedBack(){ _sharedUnsubscribe(); _activeShared=null; renderSharedView(); }
+function _sharedDetailHTML(){
+  const l=_activeShared;
+  const items=(l.data&&Array.isArray(l.data.items))?l.data.items:[];
+  const isOwner=l.owner===_sbUser.id;
+  const cards=items.map(it=>{
+    const img=it.image?`<img src="${safeUrl(it.image)}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="shared-card-ph" style="display:none">${ico('bag',22)}</div>`:`<div class="shared-card-ph">${ico('bag',22)}</div>`;
+    const price=it.price?`<div class="shared-card-price">${cur()}${fmt(it.price)}</div>`:'';
+    const dom=it.url?getDomain(it.url):'';
+    const link=it.url?`<a href="${safeUrl(it.url)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">${esc(dom)} ↗</a>`:'<span></span>';
+    return `<div class="shared-card">${img}
+      <div class="shared-card-body">
+        <div class="shared-card-title">${esc(it.title||dom||'Item')}</div>
+        ${price}
+        <div class="shared-card-foot">${link}<button class="shared-card-x" onclick="sharedRemoveItem('${esc(it.id)}')" title="Remove">✕</button></div>
+      </div></div>`;
+  }).join('')||'<div style="grid-column:1/-1;text-align:center;padding:28px;color:var(--t3);font-size:13px">No items yet.<br>Paste a link below to add the first one.</div>';
+  return `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <button class="btn-s" style="padding:6px 9px" onclick="_sharedBack()">←</button>
+      <div style="flex:1;font-size:15px;font-weight:800;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.emoji||'👥')} ${esc(l.name||'Shared list')}</div>
+      <button class="btn-s" style="padding:6px 10px;display:flex;align-items:center;gap:5px" onclick="copySharedInvite('${esc(l.id)}')">${ico('link',12)} Invite</button>
+      ${isOwner?`<button class="btn-s" style="padding:6px 9px;color:#cc4444" onclick="deleteSharedList('${esc(l.id)}')" title="Delete list">${ico('trash',12)}</button>`:''}
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:12px">
+      <input id="sharedAddInp" class="inp" placeholder="Paste a product link…" style="flex:1" onkeydown="if(event.key==='Enter')sharedAddByUrl()">
+      <button class="btn-plus" style="padding:0 15px" onclick="sharedAddByUrl()">Add</button>
+    </div>
+    <div class="shared-grid">${cards}</div>`;
+}
+async function sharedAddByUrl(){
+  if(!_activeShared) return;
+  const inp=document.getElementById('sharedAddInp');
+  const url=(inp?inp.value:'').trim();
+  if(!/^https?:\/\//i.test(url)){ showToast('Enter a valid link (https://…).'); return; }
+  if(inp){ inp.disabled=true; inp.value='Fetching…'; }
+  const d=await _scrapeUrl(url);
+  const item={id:uid(),title:(d.title||getDomain(url)).slice(0,300),url:url.slice(0,2048),image:(d.img||'').slice(0,2048),price:d.price||null,addedBy:_sbUser.id,ts:Date.now()};
+  if(!_activeShared.data) _activeShared.data={items:[]};
+  if(!Array.isArray(_activeShared.data.items)) _activeShared.data.items=[];
+  _activeShared.data.items.unshift(item);
+  renderSharedView();
+  _sharedPush();
+}
+function sharedRemoveItem(itemId){
+  if(!_activeShared) return;
+  _activeShared.data.items=(_activeShared.data.items||[]).filter(i=>i.id!==itemId);
+  renderSharedView();
+  _sharedPush();
+}
+async function _sharedPush(){
+  if(!_activeShared) return;
+  try{
+    const {error}=await _sb.from('shared_lists').update({data:_activeShared.data,updated_at:new Date().toISOString()}).eq('id',_activeShared.id);
+    if(error) throw error;
+    _showSyncDot('ok');
+  }catch(e){ _showSyncDot('err'); showToast('Sync failed — check your connection.'); }
+}
+function _sharedSubscribe(id){
+  _sharedUnsubscribe();
+  try{
+    _sharedChannel=_sb.channel('shared-'+id)
+      .on('postgres_changes',{event:'UPDATE',schema:'public',table:'shared_lists',filter:`id=eq.${id}`},payload=>{
+        if(_activeShared&&_activeShared.id===id&&payload.new){
+          _activeShared.data=payload.new.data||{items:[]};
+          _activeShared.name=payload.new.name;
+          _activeShared.members=payload.new.members;
+          renderSharedView();
+        }
+      })
+      .subscribe();
+  }catch(e){}
+}
+function _sharedUnsubscribe(){
+  if(_sharedChannel){ try{_sb.removeChannel(_sharedChannel);}catch(e){} _sharedChannel=null; }
+}
+function copySharedInvite(id){
+  const link=location.origin+location.pathname+'#join='+id;
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(link).then(()=>showToast('Invite link copied — share it with anyone!')).catch(()=>prompt('Invite link:',link));
+  }else{ prompt('Invite link:',link); }
+}
+function deleteSharedList(id){
+  if(!confirm('Delete this shared list for everyone? This cannot be undone.')) return;
+  _sb.from('shared_lists').delete().eq('id',id).then(({error})=>{
+    if(error){ showToast('Could not delete.'); return; }
+    _sharedUnsubscribe(); _activeShared=null;
+    _loadSharedLists().then(renderSharedView);
+    showToast('Shared list deleted.');
+  });
+}
+function _consumePendingJoin(){
+  const id=localStorage.getItem('vault_pendingJoin');
+  if(id&&_sb&&_sbUser){
+    localStorage.removeItem('vault_pendingJoin');
+    setTimeout(()=>_joinSharedList(id),600);
+  }
+}
+async function _joinSharedList(id){
+  if(!_sb||!_sbUser){
+    localStorage.setItem('vault_pendingJoin',id);
+    showToast('Sign in to join this shared list.');
+    return;
+  }
+  try{
+    const {data,error}=await _sb.rpc('join_shared_list',{list_id:id});
+    if(error) throw error;
+    if(!data||!data.length){ showToast('This invite is invalid or expired.'); return; }
+    openSharedLists();
+    setTimeout(()=>openSharedList(id),300);
+  }catch(e){ showToast('Could not join this list.'); }
+}
+
 // ── BOOT ──
 const _hasSession=_initAuthSession(); // sync: sets _currentUser if session exists
 const _wasGuest=localStorage.getItem('vault_guest')==='1';
@@ -5360,6 +5580,7 @@ setTimeout(_hideBootLoader, 2000);
           })
         .subscribe();
     }
+    _consumePendingJoin();
   }catch(e){}finally{_hideBootLoader();}
 })();
 
@@ -5630,6 +5851,18 @@ async function _initGlobe(){
       <button class="btn-s" onclick="closeAIProfile()">Close</button>
       <button class="btn-plus" style="flex:1" onclick="renderAIProfile()">Refresh profile</button>
     </div>
+  </div>
+</div>
+
+<!-- ═══ SHARED LISTS MODAL ═══ -->
+<div class="ov" id="sharedOv" onclick="if(event.target===this)closeSharedLists()">
+  <div class="plus-mo">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px">
+      <div style="flex:1;font-size:16px;font-weight:800;color:var(--t1)">👥 Shared lists</div>
+      <span class="plus-badge">Plus</span>
+      <button style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:18px;line-height:1;padding:2px 4px;border-radius:6px;font-family:inherit" onclick="closeSharedLists()">×</button>
+    </div>
+    <div id="sharedIn"></div>
   </div>
 </div>
 
