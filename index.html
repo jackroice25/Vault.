@@ -2361,7 +2361,7 @@ function cardHTML(item){
     </div>
     <div class="c-acts">
       <button class="ca del" onclick="event.stopPropagation();del('${item.id}')" title="Elimina">✕</button>
-      <a class="ca" href="${esc(item.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Apri">↗</a>
+      <a class="ca" href="${safeUrl(item.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Apri">↗</a>
     </div>
     <div class="c-body">
       ${sec?`<div class="c-tag">${secIcon(sec,11)} ${esc(sec.name)}</div>`:''}
@@ -2504,7 +2504,7 @@ function openDetMo(id){
     ${item.archived?`<button class="btn-s" style="flex:1" onclick="unarchiveItem('${item.id}');closeDetMo()">${ico('upload',13)} ${t('unarchive')}</button>`:`<button class="btn-s" style="flex:1" onclick="archiveItem('${item.id}');closeDetMo()">${ico('archive',13)} ${t('archive')}</button>`}
   </div>`;
   document.getElementById('detIn').innerHTML=h;
-  document.getElementById('detLink').href=item.url;
+  document.getElementById('detLink').href=safeUrl(item.url);
   document.getElementById('detOv').classList.add('open');
 }
 
@@ -3078,7 +3078,7 @@ function showCtxCard(e,id){
   m.innerHTML=`
     <div class="ctx-item" onclick="hideCtx();editItem('${id}')"><span class="ctx-ico">${ico('pencil',13)}</span> ${t('ctxEdit')}</div>
     <div class="ctx-item" onclick="hideCtx();star('${id}');"><span class="ctx-ico">${item.star?ico('star',13):ico('star-filled',13)}</span> ${item.star?t('ctxRmPrio'):t('ctxAddPrio')}</div>
-    <div class="ctx-item" onclick="hideCtx();window.open('${esc(item.url)}','_blank')"><span class="ctx-ico">${ico('external',13)}</span> ${t('ctxOpen')}</div>
+    <div class="ctx-item" onclick="hideCtx();_openExt('${esc(item.url)}')"><span class="ctx-ico">${ico('external',13)}</span> ${t('ctxOpen')}</div>
     <div class="ctx-item" onclick="hideCtx();shareItem('${id}')"><span class="ctx-ico">${ico('share',13)}</span> ${t('shareLink')}</div>
     <div class="ctx-item" onclick="hideCtx();${item.archived?`unarchiveItem('${id}')`:`archiveItem('${id}')`}"><span class="ctx-ico">${item.archived?ico('upload',13):ico('archive',13)}</span> ${item.archived?t('unarchive'):t('archive')}</div>
     <div class="ctx-div"></div>
@@ -3546,7 +3546,7 @@ function showReadOnlyVault(data){
     const price=item.price>0?`<div class="ro-card-price">${cur()}${fmt(item.price)}</div>`:'';
     const note=item.note?`<div class="ro-card-note" style="display:flex;align-items:center;gap:4px">${ico('note',10)} ${esc(item.note)}</div>`:'';
     const domain=getDomain(item.url||'');
-    const link=item.url?`<a class="ro-card-domain" href="${esc(item.url)}" target="_blank" rel="noopener">${esc(domain)}</a>`:`<div class="ro-card-domain">${esc(domain)}</div>`;
+    const link=item.url?`<a class="ro-card-domain" href="${safeUrl(item.url)}" target="_blank" rel="noopener">${esc(domain)}</a>`:`<div class="ro-card-domain">${esc(domain)}</div>`;
     return `<div class="ro-card">${img}<div class="ro-card-body"><div class="ro-card-title">${esc(item.title||domain)}</div>${price}${note}${link}</div></div>`;
   }).join('');
   ro.innerHTML=`
@@ -4015,7 +4015,7 @@ function openCompare(){
       ${it.deadline?`<div class="cmp-row-lbl">${t('lbl_deadline')}</div><div class="cmp-row-val">${it.deadline}</div>`:''}
       ${(it.tags||[]).length?`<div class="cmp-row-lbl">${t('lbl_tags')}</div><div class="cmp-row-val">${it.tags.map(tg=>`<span class="c-tag-pill">#${esc(tg)}</span>`).join(' ')}</div>`:''}
       ${it.note?`<div class="cmp-row-lbl">${t('noteLabel')}</div><div class="cmp-row-val" style="font-size:12px;color:var(--t2)">${esc(it.note)}</div>`:''}
-      <a class="btn-p" href="${esc(it.url)}" target="_blank" style="margin-top:auto;font-size:12px;text-align:center;text-decoration:none">${t('visitSite')} ↗</a>
+      <a class="btn-p" href="${safeUrl(it.url)}" target="_blank" style="margin-top:auto;font-size:12px;text-align:center;text-decoration:none">${t('visitSite')} ↗</a>
     </div>`;
   }).join('');
   document.getElementById('cmpOv').classList.add('open');
@@ -4150,6 +4150,18 @@ function rWrapHTML(containerId, itemId, val, label){
   </div>`;
 }
 function esc(s){if(s==null)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+// Neutralise dangerous URL schemes (javascript:, data:, vbscript:) before putting a URL in href/window.open.
+// Only http(s), mailto and protocol-relative/relative links are allowed through; everything else becomes a no-op.
+// Open an untrusted URL in a new tab only if it uses a safe scheme.
+function _openExt(u){if(u==null)return;const scheme=String(u).trim().replace(/[\x00-\x1f\x7f-\x9f\s]/g,'').toLowerCase();if(/^(?:javascript|data|vbscript|file):/i.test(scheme))return;window.open(String(u),'_blank','noopener');}
+function safeUrl(u){
+  if(u==null) return '';
+  const raw=String(u).trim();
+  // strip control chars/whitespace that browsers ignore inside scheme (e.g. "java\tscript:")
+  const scheme=raw.replace(/[\x00-\x1f\x7f-\x9f\s]/g,'').toLowerCase();
+  if(/^(?:javascript|data|vbscript|file):/i.test(scheme)) return '#';
+  return esc(raw);
+}
 
 // close on backdrop
 document.querySelectorAll('.ov').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
