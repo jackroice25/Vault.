@@ -847,6 +847,25 @@ body.cmp-mode .card{cursor:default}
 .gift-pick-row{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--bd);font-size:12px;cursor:pointer}
 .gift-pick-row:last-child{border-bottom:none}
 .gift-pick-row img{width:34px;height:34px;border-radius:6px;object-fit:cover;background:var(--s3);flex-shrink:0}
+/* ── SAVINGS GOAL ── */
+.sv-wrap{margin-top:12px;padding:12px 13px;border:1px solid var(--bd);border-radius:11px;background:var(--s2)}
+.sv-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.sv-title{font-size:12px;font-weight:800;color:var(--t1);display:flex;align-items:center;gap:6px}
+.sv-amts{font-size:11px;color:var(--t2);font-weight:600}
+.sv-amts b{color:var(--accent);font-weight:800}
+.sv-bar{height:8px;border-radius:6px;background:var(--s3);overflow:hidden}
+.sv-bar-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#c9a227,#e8c84a);transition:width .35s ease}
+.sv-bar-fill.done{background:linear-gradient(90deg,#22c55e,#4ade80)}
+.sv-acts{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.sv-btn{background:var(--s3);border:1px solid var(--bd);color:var(--t1);border-radius:8px;padding:6px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .12s}
+.sv-btn:hover{background:var(--s4);border-color:var(--bd2)}
+.sv-btn.reset{color:var(--t3)}
+.sv-btn.reset:hover{color:#cc4444}
+.sv-done-msg{font-size:11px;font-weight:800;color:#4ade80;margin-top:8px;text-align:center}
+.c-sv{margin-top:6px}
+.c-sv .sv-bar{height:4px}
+.c-sv-lbl{font-size:9px;color:var(--t3);font-weight:700;margin-top:3px;display:flex;justify-content:space-between}
+.c-sv-lbl b{color:var(--accent)}
 
 /* ── GIFT BADGE ── */
 .c-gift{display:inline-flex;align-items:center;gap:3px;font-size:10px;color:var(--accent);padding:2px 7px;border-radius:8px;background:var(--ax);border:1px solid var(--bd);margin-top:3px}
@@ -1796,6 +1815,7 @@ function load(){
         if(it.voiceMemo===undefined) it.voiceMemo=null;
         if(!it.giftFor) it.giftFor='';
         if(it.userRating===undefined) it.userRating=0;
+        if(typeof it.saved!=='number'||it.saved<0) it.saved=0;
         if(it.isPlace===undefined) it.isPlace=(it.type==='luogo'||!!(it.address||it.hours||it.cuisine));
         return it;
       });
@@ -1860,6 +1880,7 @@ function _applyRemoteData(remote){
     if(it.voiceMemo===undefined) it.voiceMemo=null;
     if(!it.giftFor) it.giftFor='';
     if(it.userRating===undefined) it.userRating=0;
+    if(typeof it.saved!=='number'||it.saved<0) it.saved=0;
     if(it.isPlace===undefined) it.isPlace=(it.type==='luogo'||!!(it.address||it.hours||it.cuisine));
     return it;
   });
@@ -2445,6 +2466,7 @@ function cardHTML(item){
       ${tagPills?`<div class="c-tags">${tagPills}</div>`:''}
       ${giftBadge}
       ${voiceIco}
+      ${(item.saved>0&&item.price>0&&item.status!=='comprato')?(()=>{const g=item.price*(item.qty||1);const s=Math.min(item.saved,g);const p=Math.min(100,Math.round(s/g*100));return `<div class="c-sv"><div class="sv-bar"><div class="sv-bar-fill${s>=g?' done':''}" style="width:${p}%"></div></div><div class="c-sv-lbl"><span>${ico('wallet',9)} saved</span><b>${p}%</b></div></div>`;})():''}
     </div>
     <span class="drag-handle" onclick="event.stopPropagation()">⠿</span>
   </div>`;
@@ -2520,6 +2542,10 @@ function openDetMo(id){
     const cls=pct<=0?'save':'over';
     const sign=pct>0?'+':'';
     h+=`<div style="margin:6px 0;font-size:13px">${t('priceFound')}: <strong>${cur()}${fmt(item.priceFound)}</strong> <span class="pdiff ${cls}">${sign}${pct}%</span></div>`;
+  }
+  // savings goal (products with a price, not yet bought)
+  if(item.price>0&&!item.isPlace&&item.type!=='luogo'&&item.status!=='comprato'){
+    h+=svSectionHTML(item);
   }
   if(item.type==='luogo'){
     const cells=[];
@@ -5114,7 +5140,7 @@ function _initAuthSession(){
 // ══ VAULT PLUS ══
 const PLANS={
   free:{name:'Free',features:[]},
-  plus:{name:'Plus',price:'€4.99/month',features:['sharedLists','giftMode','browserExtension','advancedStats','folders','aiProfile','aiSuggestions','multiWorkspace','cloudBackup','premiumThemes','advancedMoodboard']}
+  plus:{name:'Plus',price:'€4.99/month',features:['sharedLists','giftMode','browserExtension','savingsGoal','advancedStats','folders','aiProfile','aiSuggestions','multiWorkspace','cloudBackup','premiumThemes','advancedMoodboard']}
 };
 function getCurrentPlan(){return _sbPlan!=='free'?_sbPlan:(localStorage.getItem('vaultPlan')||'free');}
 function isPlus(){return getCurrentPlan()==='plus';}
@@ -5524,6 +5550,63 @@ function deleteSharedList(id){
     showToast('Shared list deleted.');
   });
 }
+// ══ SAVINGS GOAL (budget per item) ══
+function svSectionHTML(item){
+  const goal=item.price*(item.qty||1);
+  const saved=Math.min(item.saved||0,goal);
+  const pct=goal>0?Math.min(100,Math.round(saved/goal*100)):0;
+  const done=saved>=goal;
+  const left=Math.max(0,goal-saved);
+  if(!isPlus()&&!(item.saved>0)){
+    // Free: single discreet upsell row
+    return `<div class="sv-wrap" style="cursor:pointer" onclick="showPlusModal('savingsGoal')">
+      <div class="sv-hd"><div class="sv-title">${ico('wallet',13)} Savings goal <span class="plus-badge" style="margin-left:2px">${ico('crown',9)} Plus</span></div>
+      <span style="font-size:11px;color:var(--t3)">Track how much you've set aside →</span></div>
+    </div>`;
+  }
+  const bar=`<div class="sv-bar"><div class="sv-bar-fill${done?' done':''}" style="width:${pct}%"></div></div>`;
+  const acts=done
+    ?`<div class="sv-done-msg">🎉 Goal reached — treat yourself!</div>
+      <div class="sv-acts"><button class="sv-btn reset" onclick="svReset('${item.id}')">↺ Reset</button></div>`
+    :`<div class="sv-acts">
+        <button class="sv-btn" onclick="svAdd('${item.id}',10)">+${cur()}10</button>
+        <button class="sv-btn" onclick="svAdd('${item.id}',50)">+${cur()}50</button>
+        <button class="sv-btn" onclick="svAddCustom('${item.id}')">+ custom</button>
+        ${saved>0?`<button class="sv-btn reset" onclick="svReset('${item.id}')">↺</button>`:''}
+      </div>`;
+  return `<div class="sv-wrap">
+    <div class="sv-hd">
+      <div class="sv-title">${ico('wallet',13)} Savings goal</div>
+      <div class="sv-amts"><b>${cur()}${fmt(saved)}</b> / ${cur()}${fmt(goal)}${done?'':` · ${cur()}${fmt(left)} to go`}</div>
+    </div>
+    ${bar}${acts}
+  </div>`;
+}
+function svAdd(id,amt){
+  requirePlus('savingsGoal',()=>{
+    const item=S.items.find(i=>i.id===id); if(!item||!(item.price>0)) return;
+    const goal=item.price*(item.qty||1);
+    item.saved=Math.min(goal,Math.max(0,(item.saved||0)+amt));
+    save();render();openDetMo(id);
+    if(item.saved>=goal) showToast('🎉 Goal reached — you can buy it!');
+  });
+}
+function svAddCustom(id){
+  requirePlus('savingsGoal',()=>{
+    const v=prompt('How much did you set aside?','20');
+    if(v===null) return;
+    const n=parseFloat(String(v).replace(',','.'));
+    if(isNaN(n)||n<=0){showToast('Enter a valid amount.');return;}
+    svAdd(id,Math.round(n*100)/100);
+  });
+}
+function svReset(id){
+  const item=S.items.find(i=>i.id===id); if(!item) return;
+  if(!confirm('Reset savings for this item?')) return;
+  item.saved=0;
+  save();render();openDetMo(id);
+}
+
 // ══ GIFT MODE (registries with reservations) ══
 let _giftRegs=[];        // registries owned by the user
 let _activeGiftPub=null; // public registry currently displayed {id,name,emoji,items,reservations}
