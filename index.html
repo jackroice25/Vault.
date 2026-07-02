@@ -823,6 +823,30 @@ body.cmp-mode .card{cursor:default}
 .shared-card-x{background:none;border:none;color:var(--t3);cursor:pointer;font-size:12px;padding:2px 5px;border-radius:5px;flex-shrink:0;font-family:inherit}
 .shared-card-x:hover{color:#cc4444;background:rgba(204,68,68,.1)}
 .shared-by{font-size:9px;color:var(--t3);opacity:.7}
+/* ── GIFT MODE ── */
+.gift-pub-wrap{max-width:860px;margin:0 auto;padding:26px 16px 60px}
+.gift-pub-hd{text-align:center;margin-bottom:26px}
+.gift-pub-emoji{font-size:44px;line-height:1;margin-bottom:10px}
+.gift-pub-title{font-size:24px;font-weight:900;color:var(--t1);letter-spacing:-.02em}
+.gift-pub-sub{font-size:13px;color:var(--t3);margin-top:6px;line-height:1.5}
+.gift-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+.gift-card{border:1px solid var(--bd);border-radius:13px;overflow:hidden;background:var(--s2);display:flex;flex-direction:column;transition:transform .15s}
+.gift-card:not(.taken):hover{transform:translateY(-2px)}
+.gift-card img{width:100%;height:140px;object-fit:cover;display:block;background:var(--s3)}
+.gift-card-ph{width:100%;height:140px;display:flex;align-items:center;justify-content:center;color:var(--t3);background:var(--s3)}
+.gift-card-body{padding:10px 12px 12px;display:flex;flex-direction:column;gap:5px;flex:1}
+.gift-card-title{font-size:13px;font-weight:700;color:var(--t1);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.gift-card-price{font-size:13px;font-weight:800;color:var(--accent)}
+.gift-reserve-btn{margin-top:auto;background:var(--accent);color:#111;border:none;border-radius:9px;padding:8px 10px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.gift-reserve-btn:hover{opacity:.85}
+.gift-card.taken img,.gift-card.taken .gift-card-ph{filter:grayscale(1);opacity:.45}
+.gift-card.taken .gift-card-title{color:var(--t3)}
+.gift-taken-tag{margin-top:auto;text-align:center;font-size:11px;font-weight:700;color:var(--t3);background:var(--s3);border-radius:9px;padding:8px 10px}
+.gift-mine-btn{margin-top:auto;background:none;border:1px solid var(--bd);color:var(--t2);border-radius:9px;padding:8px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit}
+.gift-mine-btn:hover{color:#cc4444;border-color:rgba(204,68,68,.4)}
+.gift-pick-row{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--bd);font-size:12px;cursor:pointer}
+.gift-pick-row:last-child{border-bottom:none}
+.gift-pick-row img{width:34px;height:34px;border-radius:6px;object-fit:cover;background:var(--s3);flex-shrink:0}
 
 /* ── GIFT BADGE ── */
 .c-gift{display:inline-flex;align-items:center;gap:3px;font-size:10px;color:var(--accent);padding:2px 7px;border-radius:8px;background:var(--ax);border:1px solid var(--bd);margin-top:3px}
@@ -3511,6 +3535,11 @@ function checkShareParam(){
     if(/^[0-9a-f-]{10,}$/i.test(id)) _joinSharedList(id);
     return;
   }
+  if(hash.startsWith('#gift=')){
+    const id=hash.slice(6);
+    if(/^[0-9a-f-]{10,}$/i.test(id)) _openGiftView(id);
+    return;
+  }
   if(hash.startsWith('#vault=')){
     const b64=hash.slice(7);
     _decompress(b64).then(data=>{
@@ -5079,7 +5108,7 @@ function _initAuthSession(){
 // ══ VAULT PLUS ══
 const PLANS={
   free:{name:'Free',features:[]},
-  plus:{name:'Plus',price:'€4.99/month',features:['sharedLists','advancedStats','folders','aiProfile','aiSuggestions','multiWorkspace','cloudBackup','premiumThemes','advancedMoodboard']}
+  plus:{name:'Plus',price:'€4.99/month',features:['sharedLists','giftMode','advancedStats','folders','aiProfile','aiSuggestions','multiWorkspace','cloudBackup','premiumThemes','advancedMoodboard']}
 };
 function getCurrentPlan(){return _sbPlan!=='free'?_sbPlan:(localStorage.getItem('vaultPlan')||'free');}
 function isPlus(){return getCurrentPlan()==='plus';}
@@ -5212,7 +5241,10 @@ function _getPlanSectionHTML(){
     <button class="prof-btn" onclick="openAIProfile();closeProfileMo()">${ico('sparkle',13)} AI Profile</button>
     <button class="prof-btn" onclick="openCloudBackup();closeProfileMo()">${ico('upload',13)} Cloud backup</button>
   </div>
-  <button class="prof-btn" style="width:100%;margin-bottom:10px" onclick="openSharedLists();closeProfileMo()">${ico('share',13)} Shared lists</button>
+  <div class="prof-btn-row" style="margin-bottom:10px">
+    <button class="prof-btn" onclick="openSharedLists();closeProfileMo()">${ico('share',13)} Shared lists</button>
+    <button class="prof-btn" onclick="openGiftMode();closeProfileMo()">🎁 Gift lists</button>
+  </div>
   <button class="prof-btn" style="width:100%;margin-bottom:8px;background:linear-gradient(135deg,rgba(201,162,39,.1),rgba(232,200,74,.05));border-color:rgba(201,162,39,.25);color:#c9a227" onclick="closeProfileMo();openPlusTutorial()">${ico('crown',13)} ${t('plusGuide')}</button>
   <button class="prof-btn" style="width:100%;margin-bottom:14px;border-color:rgba(220,60,60,.25);color:#cc4444" onclick="openStripePortal()">${ico('gear',13)} Manage subscription</button>`:''}`;
 }
@@ -5486,6 +5518,185 @@ function deleteSharedList(id){
     showToast('Shared list deleted.');
   });
 }
+// ══ GIFT MODE (registries with reservations) ══
+let _giftRegs=[];        // registries owned by the user
+let _activeGiftPub=null; // public registry currently displayed {id,name,emoji,items,reservations}
+let _giftPollT=null;     // public page auto-refresh timer
+
+function _giftTokKey(regId,itemId){return 'vault_giftTok_'+regId+'_'+itemId;}
+
+// ── Owner: manage registries ──
+function openGiftMode(){
+  if(!_sb||!_sbUser){showToast('Sign in to use gift lists.');return;}
+  document.getElementById('giftOv').classList.add('open');
+  document.getElementById('giftIn').innerHTML='<div style="text-align:center;padding:30px;color:var(--t3);font-size:13px">Loading…</div>';
+  _loadGiftRegs().then(renderGiftMode);
+}
+function closeGiftMode(){document.getElementById('giftOv').classList.remove('open');}
+async function _loadGiftRegs(){
+  try{
+    const {data,error}=await _sb.from('gift_registries').select('id,name,emoji,items,reservations,updated_at').order('updated_at',{ascending:false});
+    if(error) throw error;
+    _giftRegs=data||[];
+  }catch(e){ _giftRegs=[]; showToast('Could not load gift lists.'); }
+}
+function renderGiftMode(){
+  const el=document.getElementById('giftIn');
+  if(!el) return;
+  const rows=_giftRegs.map(r=>{
+    const items=Array.isArray(r.items)?r.items:[];
+    const resCount=r.reservations?Object.keys(r.reservations).length:0;
+    return `<div class="shared-row" onclick="event.stopPropagation()" style="cursor:default">
+      <div class="shared-row-emoji">${esc(r.emoji||'🎁')}</div>
+      <div style="flex:1;min-width:0">
+        <div class="shared-row-name">${esc(r.name||'Gift list')}</div>
+        <div class="shared-row-sub">${items.length} gift${items.length===1?'':'s'} · ${resCount} reserved</div>
+      </div>
+      <button class="btn-s" style="padding:5px 9px;font-size:11px" onclick="copyGiftLink('${esc(r.id)}')">${ico('link',11)} Copy link</button>
+      <button class="shared-card-x" onclick="deleteGiftRegistry('${esc(r.id)}')" title="Delete">✕</button>
+    </div>`;
+  }).join('')||'<div style="text-align:center;padding:24px;color:var(--t3);font-size:13px;line-height:1.6">No gift lists yet.<br>Create one for your birthday, Christmas, a wedding…<br>Friends reserve gifts — nobody buys the same thing twice.</div>';
+  el.innerHTML=`
+    <button class="btn-plus" style="width:100%;margin-bottom:14px" onclick="startGiftPicker()">${ico('plus',14)} New gift list</button>
+    <div class="shared-list">${rows}</div>`;
+}
+function startGiftPicker(){
+  requirePlus('giftMode',()=>{
+    const items=S.items.filter(i=>!i.archived&&!i.isPlace&&i.type!=='luogo');
+    if(!items.length){showToast('Add some products to your vault first.');return;}
+    const rows=items.map((it,idx)=>{
+      const img=it.images&&it.images[0]?`<img src="${safeUrl(it.images[0])}" alt="" onerror="this.style.display='none'">`:`<div class="imp-row-ph">${ico('bag',16)}</div>`;
+      const sub=it.price?`${cur()}${fmt(it.price)}`:getDomain(it.url||'');
+      return `<label class="gift-pick-row">
+        <input type="checkbox" data-gidx="${idx}" checked style="flex-shrink:0">
+        ${img}
+        <div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(it.title||'Untitled')} <span style="color:var(--t3);font-size:10px">${esc(sub)}</span></div>
+      </label>`;
+    }).join('');
+    window._giftPickItems=items;
+    document.getElementById('giftIn').innerHTML=`
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <button class="btn-s" style="padding:6px 9px" onclick="renderGiftMode()">←</button>
+        <div style="flex:1;font-size:14px;font-weight:800;color:var(--t1)">Choose the gifts</div>
+      </div>
+      <input id="giftNameInp" class="inp" placeholder="List name — e.g. Compleanno di Giulia 🎂" style="width:100%;margin-bottom:10px" maxlength="60">
+      <div style="max-height:44vh;overflow-y:auto;border:1px solid var(--bd);border-radius:10px;padding:4px 10px;margin-bottom:12px">${rows}</div>
+      <button class="btn-plus" style="width:100%" onclick="giftCreateConfirm()">Create gift list →</button>`;
+  });
+}
+async function giftCreateConfirm(){
+  const items=window._giftPickItems||[];
+  const sel=[...document.querySelectorAll('#giftIn input[data-gidx]:checked')].map(c=>items[+c.dataset.gidx]).filter(Boolean);
+  if(!sel.length){showToast('Select at least one gift.');return;}
+  const name=(document.getElementById('giftNameInp')?.value||'').trim().slice(0,60)||'Gift list';
+  const clean=sel.map(it=>({id:it.id,title:(it.title||'').slice(0,300),image:(it.images&&it.images[0]?String(it.images[0]):'').slice(0,2048),url:(it.url||'').slice(0,2048),price:it.price||null}));
+  try{
+    const {data,error}=await _sb.from('gift_registries').insert({owner:_sbUser.id,name,items:clean}).select().single();
+    if(error) throw error;
+    await _loadGiftRegs();
+    renderGiftMode();
+    copyGiftLink(data.id);
+  }catch(e){ showToast('Could not create gift list.'); }
+}
+function copyGiftLink(id){
+  const link=location.origin+location.pathname+'#gift='+id;
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(link).then(()=>showToast('🎁 Gift link copied — send it to friends & family!')).catch(()=>prompt('Gift link:',link));
+  }else{ prompt('Gift link:',link); }
+}
+function deleteGiftRegistry(id){
+  if(!confirm('Delete this gift list? Guests will no longer see it.')) return;
+  _sb.from('gift_registries').delete().eq('id',id).then(({error})=>{
+    if(error){ showToast('Could not delete.'); return; }
+    _loadGiftRegs().then(renderGiftMode);
+    showToast('Gift list deleted.');
+  });
+}
+
+// ── Public: view + reserve (no account needed) ──
+async function _openGiftView(id){
+  if(!_sb){showToast('Service unavailable.');return;}
+  try{
+    const {data,error}=await _sb.rpc('get_gift_registry',{reg_id:id});
+    if(error||!data){ showToast('This gift list does not exist anymore.'); return; }
+    _activeGiftPub=data;
+    _renderGiftPub();
+    document.getElementById('giftPubOv').style.display='block';
+    clearInterval(_giftPollT);
+    _giftPollT=setInterval(_giftRefreshPub,15000); // reservations refresh
+  }catch(e){ showToast('Could not open the gift list.'); }
+}
+function closeGiftPub(){
+  document.getElementById('giftPubOv').style.display='none';
+  clearInterval(_giftPollT); _giftPollT=null; _activeGiftPub=null;
+  history.replaceState(null,'',location.pathname);
+}
+async function _giftRefreshPub(){
+  if(!_activeGiftPub) return;
+  try{
+    const {data}=await _sb.rpc('get_gift_registry',{reg_id:_activeGiftPub.id});
+    if(data){ _activeGiftPub=data; _renderGiftPub(); }
+  }catch(e){}
+}
+function _renderGiftPub(){
+  const g=_activeGiftPub;
+  const el=document.getElementById('giftPubOv');
+  if(!g||!el) return;
+  const items=Array.isArray(g.items)?g.items:[];
+  const res=g.reservations||{};
+  const cards=items.map(it=>{
+    const r=res[it.id];
+    const mine=r&&localStorage.getItem(_giftTokKey(g.id,it.id));
+    const img=it.image?`<img src="${safeUrl(it.image)}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="gift-card-ph" style="display:none">${ico('bag',26)}</div>`:`<div class="gift-card-ph">${ico('bag',26)}</div>`;
+    const price=it.price?`<div class="gift-card-price">${cur()}${fmt(it.price)}</div>`:'';
+    const dom=it.url?`<a href="${safeUrl(it.url)}" target="_blank" rel="noopener noreferrer" style="font-size:10px;color:var(--t3);text-decoration:none">${esc(getDomain(it.url))} ↗</a>`:'';
+    let action;
+    if(mine) action=`<button class="gift-mine-btn" onclick="giftUnreserve('${esc(it.id)}')">You reserved this — tap to undo</button>`;
+    else if(r) action=`<div class="gift-taken-tag">🎁 Taken by ${esc(r.name||'someone')}</div>`;
+    else action=`<button class="gift-reserve-btn" onclick="giftReserve('${esc(it.id)}')">🎁 I'll take this one</button>`;
+    return `<div class="gift-card${r?' taken':''}">${img}
+      <div class="gift-card-body">
+        <div class="gift-card-title">${esc(it.title||'Gift')}</div>
+        ${price}${dom}${action}
+      </div></div>`;
+  }).join('');
+  const taken=Object.keys(res).length;
+  el.innerHTML=`<div class="gift-pub-wrap">
+    <div style="display:flex;justify-content:flex-end"><button class="btn-s" onclick="closeGiftPub()">✕ Close</button></div>
+    <div class="gift-pub-hd">
+      <div class="gift-pub-emoji">${esc(g.emoji||'🎁')}</div>
+      <div class="gift-pub-title">${esc(g.name||'Gift list')}</div>
+      <div class="gift-pub-sub">Pick a gift and reserve it — everyone sees what's taken,<br>so nobody buys the same thing twice. ${taken}/${items.length} reserved.</div>
+    </div>
+    <div class="gift-grid">${cards}</div>
+    <div style="text-align:center;margin-top:28px;font-size:11px;color:var(--t3)">Made with <a href="${location.origin+location.pathname}" style="color:var(--accent);text-decoration:none;font-weight:700">Vault</a></div>
+  </div>`;
+}
+async function giftReserve(itemId){
+  if(!_activeGiftPub) return;
+  const name=prompt('Your name (shown to others so they know it\'s taken):','');
+  if(name===null) return;
+  try{
+    const {data:tok,error}=await _sb.rpc('reserve_gift',{reg_id:_activeGiftPub.id,item_id:itemId,guest_name:name});
+    if(error) throw error;
+    if(!tok){ showToast('Oops — someone reserved it seconds ago!'); _giftRefreshPub(); return; }
+    localStorage.setItem(_giftTokKey(_activeGiftPub.id,itemId),tok);
+    showToast('🎁 Reserved! It\'s yours to gift.');
+    _giftRefreshPub();
+  }catch(e){ showToast('Could not reserve — try again.'); }
+}
+async function giftUnreserve(itemId){
+  if(!_activeGiftPub) return;
+  const tok=localStorage.getItem(_giftTokKey(_activeGiftPub.id,itemId));
+  if(!tok) return;
+  try{
+    const {data:ok,error}=await _sb.rpc('cancel_gift_reservation',{reg_id:_activeGiftPub.id,item_id:itemId,cancel_token:tok});
+    if(error) throw error;
+    if(ok){ localStorage.removeItem(_giftTokKey(_activeGiftPub.id,itemId)); showToast('Reservation cancelled.'); }
+    _giftRefreshPub();
+  }catch(e){ showToast('Could not cancel — try again.'); }
+}
+
 function _consumePendingJoin(){
   const id=localStorage.getItem('vault_pendingJoin');
   if(id&&_sb&&_sbUser){
@@ -5520,6 +5731,11 @@ if(!_hasSession && !_wasGuest){
   checkServer();
   // No Supabase session expected — hide loader immediately so auth overlay is visible
   setTimeout(_hideBootLoader,0);
+  // Gift links are public — open them even without an account (overlay sits above auth)
+  if(location.hash.startsWith('#gift=')){
+    const _gid=location.hash.slice(6);
+    if(/^[0-9a-f-]{10,}$/i.test(_gid)) setTimeout(()=>_openGiftView(_gid),100);
+  }
 } else if(!_sb){
   // No Supabase configured — hide loader, render local data
   initCurrencyUI();applyLang();renderSidebar();render();
@@ -5853,6 +6069,21 @@ async function _initGlobe(){
     </div>
   </div>
 </div>
+
+<!-- ═══ GIFT MODE — OWNER MODAL ═══ -->
+<div class="ov" id="giftOv" onclick="if(event.target===this)closeGiftMode()">
+  <div class="plus-mo">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px">
+      <div style="flex:1;font-size:16px;font-weight:800;color:var(--t1)">🎁 Gift lists</div>
+      <span class="plus-badge">Plus</span>
+      <button style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:18px;line-height:1;padding:2px 4px;border-radius:6px;font-family:inherit" onclick="closeGiftMode()">×</button>
+    </div>
+    <div id="giftIn"></div>
+  </div>
+</div>
+
+<!-- ═══ GIFT MODE — PUBLIC PAGE (no account needed) ═══ -->
+<div id="giftPubOv" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:1000001;overflow-y:auto"></div>
 
 <!-- ═══ SHARED LISTS MODAL ═══ -->
 <div class="ov" id="sharedOv" onclick="if(event.target===this)closeSharedLists()">
