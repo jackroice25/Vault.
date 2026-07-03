@@ -1376,7 +1376,7 @@ body.cmp-mode .card{cursor:default}
   <!-- quick paste bar -->
   <div class="paste-bar">
     <input class="paste-input" type="url" id="quickUrl" placeholder="Incolla un link prodotto o URL lista Amazon..." onkeydown="if(event.key==='Enter')quickAdd()">
-    <button class="paste-go" onclick="quickAdd()">Aggiungi →</button>
+    <button class="paste-go" id="pasteGoBtn" onclick="quickAdd()">Add →</button>
     <div id="srvBadge" style="display:none">
       <span id="srvDot"></span>
       <span id="srvTxt" data-state="init"></span>
@@ -1424,14 +1424,14 @@ body.cmp-mode .card{cursor:default}
     <div class="auth-switch" id="authSwitch">Don't have an account? <b onclick="setAuthMode('register')">Create one</b></div>
     <div class="auth-guest" id="authGuestBtn" onclick="continueAsGuest()">Continue without account →</div>
     <div class="auth-lang-row" id="authLangRow"></div>
-    <div style="text-align:center;margin-top:14px;font-size:10px;color:var(--t3);line-height:1.6">By continuing you accept the <a href="terms.html" target="_blank" rel="noopener" style="color:var(--t2);font-weight:600">Terms of Service</a> and the <a href="privacy.html" target="_blank" rel="noopener" style="color:var(--t2);font-weight:600">Privacy Policy</a></div>
+    <div id="authLegal" style="text-align:center;margin-top:14px;font-size:10px;color:var(--t3);line-height:1.6">By continuing you accept the <a href="terms.html" target="_blank" rel="noopener" style="color:var(--t2);font-weight:600">Terms of Service</a> and the <a href="privacy.html" target="_blank" rel="noopener" style="color:var(--t2);font-weight:600">Privacy Policy</a></div>
   </div>
 </div>
 
 <!-- ═══ PRIVACY NOTICE BANNER (technical storage only — informational, ePrivacy/GDPR) ═══ -->
 <div id="privacyNotice" style="display:none;position:fixed;left:14px;right:14px;bottom:14px;z-index:1000002;max-width:520px;margin:0 auto;background:var(--s2,#141414);border:1px solid var(--bd,#2a2a2a);border-radius:14px;padding:14px 16px;box-shadow:0 8px 32px rgba(0,0,0,.5);align-items:center;gap:12px;flex-wrap:wrap">
-  <div style="flex:1;min-width:220px;font-size:11.5px;color:var(--t2,#a8a8a8);line-height:1.55">🍪 Vault uses <b style="color:var(--t1,#f0f0f0)">only technical storage</b> needed for the app to work (sign-in, your data, preferences). No tracking, no ads, no profiling. <a href="privacy.html" target="_blank" rel="noopener" style="color:var(--accent,#c9a227);font-weight:700">Privacy Policy</a></div>
-  <button onclick="dismissPrivacyNotice()" style="background:var(--accent,#c9a227);color:#111;border:none;border-radius:9px;padding:8px 16px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit">OK</button>
+  <div id="pnTextEl" style="flex:1;min-width:220px;font-size:11.5px;color:var(--t2,#a8a8a8);line-height:1.55">🍪 Vault uses <b style="color:var(--t1,#f0f0f0)">only technical storage</b> needed for the app to work (sign-in, your data, preferences). No tracking, no ads, no profiling. <a href="privacy.html" target="_blank" rel="noopener" style="color:var(--accent,#c9a227);font-weight:700">Privacy Policy</a></div>
+  <button id="pnOkBtn" onclick="dismissPrivacyNotice()" style="background:var(--accent,#c9a227);color:#111;border:none;border-radius:9px;padding:8px 16px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit">OK</button>
 </div>
 <div class="ov" id="profileOv">
   <div class="mo" style="max-width:460px">
@@ -1446,7 +1446,7 @@ body.cmp-mode .card{cursor:default}
 <input type="file" id="importFileIn" accept=".json" style="display:none" onchange="importVault(this)">
 <div class="ov" id="statsOv">
   <div class="mo" style="max-width:560px">
-    <div class="mo-hd"><svg class="ico" width="16" height="16" viewBox="0 0 16 16" style="margin-right:6px"><use href="#ic-chart"/></svg>Statistiche</div>
+    <div class="mo-hd" id="statsMoHd"><svg class="ico" width="16" height="16" viewBox="0 0 16 16" style="margin-right:6px"><use href="#ic-chart"/></svg>Statistics</div>
     <div id="statsIn"></div>
     <div class="mo-acts"><button class="btn-s" onclick="document.getElementById('statsOv').classList.remove('open')">Close</button></div>
   </div>
@@ -1509,7 +1509,7 @@ body.cmp-mode .card{cursor:default}
 <!-- ═══ ADD MODAL ═══ -->
 <div class="ov" id="addOv">
   <div class="mo">
-    <div class="mo-hd"><svg class="ico" width="14" height="14" viewBox="0 0 16 16" style="margin-right:5px"><use href="#ic-plus"/></svg>Aggiungi alla wishlist</div>
+    <div class="mo-hd" id="qaMoHd"><svg class="ico" width="14" height="14" viewBox="0 0 16 16" style="margin-right:5px"><use href="#ic-plus"/></svg>Add to wishlist</div>
 
     <div class="ttabs">
       <button class="tt on" id="tt-p" onclick="setType('prodotto')"><svg class="ico" width="13" height="13" viewBox="0 0 16 16"><use href="#ic-bag"/></svg> Prodotto</button>
@@ -1759,7 +1759,7 @@ body.cmp-mode .card{cursor:default}
     <div id="detIn"></div>
     <div class="mo-acts">
       <button class="btn-s" onclick="closeDetMo()">Close</button>
-      <a class="btn-p" id="detLink" href="#" target="_blank" rel="noopener">Apri sito ↗</a>
+      <a class="btn-p" id="detLink" href="#" target="_blank" rel="noopener">Visit site ↗</a>
     </div>
   </div>
 </div>
@@ -1782,6 +1782,22 @@ const TRANS={
   pl:{flag:'PL',lang:'Polski',addBtn:'Dodaj',addTitle:'Dodaj do skarbca',editTitle:'Edytuj',currency:'Waluta',sections:'Sekcje',newSection:'Nowa sekcja',allItems:'Wszystko',prodCat:'Produkty',luoghiCat:'Miejsca',total:'Łącznie',statusWant:'Chcę to',statusOrdered:'Zamówione',statusBought:'Kupione',statusVisit:'Do odwiedzenia',statusVisited:'Odwiedzone',urlLabel:'URL',titleLabel:'Tytuł',titlePh:'Nazwa produktu lub miejsca...',typeLabel:'Typ',typeProduct:'Produkt',typePlace:'Miejsce',typeOther:'Inne',statusLabel:'Status',sectionLabel:'Sekcja',noSection:'— Brak sekcji —',priceLabel:'Cena',avgSpend:'Średnie wydatki',noteLabel:'Notatka (opcjonalnie)',notePh:'Rozmiar, kolor, komentarz...',photosLabel:'Zdjęcia',imgPh:'https://...zdjęcie.jpg — naciśnij Dodaj lub Enter',addPhoto:'＋ Dodaj',fetchBtn:'Pobierz dane',cancel:'Anuluj',save:'Zapisz',create:'Utwórz',close:'Zamknij',newSecTitle:'Nowa sekcja',editSecTitle:'Edytuj sekcję',nameLabel:'Nazwa',namePh:'Np. Moda, Tech, Restauracje...',catLabel:'Kategoria',catProd:'Produkty',catPlaces:'Miejsca',iconLabel:'Ikona',ctxEdit:'Edytuj',ctxAddPrio:'Dodaj priorytet',ctxRmPrio:'Usuń priorytet',ctxOpen:'Otwórz stronę',ctxDelete:'Usuń',ctxEditSec:'Edytuj sekcję',ctxDeleteSec:'Usuń sekcję',confirmItem:'Usunąć ten element?',confirmSec:'Usunąć tę sekcję? Elementy zostaną bez sekcji.',errMsg:'Strona blokuje automatyczne żądania. Wypełnij pola ręcznie.',fetchOk:'✓ Dane pobrane',settingsTitle:'Ustawienia',langLabel:'Język',langMenuLabel:'Język',settingsColors:'Kolory statusów',back:'← Wstecz',reset:'↺ Resetuj',chipAll:'Wszystko',chipWant:'Chcę to',chipOrdered:'Zamówione',chipBought:'Kupione',chipVisit:'Do odwiedzenia',chipVisited:'Odwiedzone',visitSite:'Odwiedź stronę',detAddress:'Adres',detHours:'Godziny',detMenu:'Menu',detReviews:'Recenzje',hint:'szybkie dodawanie · widok',emptyTitle:'Brak elementów',emptyDesc:'Wklej link w pasku powyżej lub kliknij Dodaj.',emptyBtn:'Wklej link',allItemsTitle:'Wszystkie elementy',searchPh:'Szukaj...',quickPh:'Wklej link z dowolnej strony...',quickAdd:'Dodaj →',connection:'Łączenie...',focusExit:'✕ Wyjdź z trybu skupienia',lightMode:'Jasny motyw',darkMode:'Ciemny motyw',priceFound:'Znaleziona cena',archive:'Archiwum',unarchive:'Przywróć',shareLink:'Udostępnij link',priceHistory:'Historia cen',related:'Zobacz też',deadlineOver:'Przeterminowane',linkItems:'Połącz elementy',chipArchive:'Archiwum',exportCsv:'Eksportuj CSV',importCsv:'Importuj CSV',printPdf:'Drukuj PDF',lbl_pricefound:'Znaleziona cena',lbl_deadline:'Termin',lbl_tags:'Tagi',lbl_seccolor:'Kolor sekcji',lbl_voice:'Notatka głosowa',voiceRec:'Nagraj',sortManual:'Ręcznie',sortNewest:'Najnowsze',sortOldest:'Najstarsze',sortPriceAsc:'Cena ↑',sortPriceDesc:'Cena ↓',sortNameAz:'Nazwa A–Z',sortDeadline:'Termin',statsTitle:'Statystyki',statsTotalItems:'Łączna liczba elementów',statsTotalSpend:'Łączne wydatki',statsOnlyBought:'tylko kupione',statsByStatus:'Rozkład statusów',statsBySection:'Wydatki według sekcji',statsTimeline:'Dodane w ciągu ostatnich 6 miesięcy',statsNoSpend:'Brak zapisanych wydatków',statsPriority:'priorytet',onbTitle1:'Witaj w Vault!',onbDesc1:'Twoja osobista przestrzeń do zapisywania wszystkiego, co znajdziesz w internecie: produkty, restauracje, hotele — wszystko w jednym miejscu.',onbTitle2:'Dodaj cokolwiek w 3 sekundy',onbDesc2:'1. Znajdź coś online (Amazon, Mapy Google, Booking…)\n2. Skopiuj link z paska przeglądarki\n3. Wklej tutaj — szczegóły ładują się automatycznie!',onbTitle3:'Produkty i Miejsca',onbDesc3:'Vault automatycznie rozpoznaje, czy dodałeś produkt czy miejsce, i pokazuje odpowiednie opcje.',onbTitle4:'Wszystko pod kontrolą',onbDesc4:'Użyj kolorowych filtrów, aby natychmiast znaleźć to, czego szukasz: do kupienia, już kupione, do odwiedzenia lub już odwiedzone.',onbTitle5:'Gotowe!',onbDesc5:'Wklej link w pasku na górze lub kliknij przycisk + Dodaj. Vault zajmie się resztą!',onbNext:'Dalej →',onbStart:'Zacznij →',onbSkip:'Pomiń',kbarOpen:'otwórz',kbarNav:'nawiguj',kbarClose:'zamknij',lbl_qty:'Ilość',lbl_variant:'Wariant',qty:'Ilość',yourRating:'Twoja ocena',chipStale:'Zaległe',chipGift:'Prezenty',dayAbbr:'d',variantPh:'np. XL Czarny, 128GB...',giftForLabel:'Prezent dla (opcjonalnie)',giftForPh:'Imię osoby...',dupAlready:'Już w vault:',dupView:'Zobacz →',spent:'Wydatki',profileTitle:'Profil',uploadDevice:'Prześlij z urządzenia',plusUpgrTitle:'Przejdź na Vault Plus',plusUpgrSub:'Odblokuj statystyki AI, wiele przestrzeni i zaawansowane tablice nastrojów.',plusContinue:'Przejdź do płatności',plusMaybeLater:'Może później',plusBillingMonthly:'Miesięcznie',plusBillingAnnual:'Rocznie',plusMonthlyDesc:'miesięcznie · anuluj w dowolnym momencie',plusAnnualDesc:'rocznie · oszczędź 17%',plusAnnualSub:'≈ €4,17/mies.',plusSubMonthly:'Subskrypcja miesięczna',plusSubAnnual:'Subskrypcja roczna',plusAllFeatures:'Wszystkie funkcje odblokowane',plusLimitedFeatures:'Ograniczone funkcje',plusActive:'Aktywna',checkoutCardNum:'Numer karty',checkoutExpiry:'Data ważności',checkoutCVC:'CVC',checkoutCardName:'Imię na karcie',checkoutDemo:'Demo płatności — integracja Stripe gotowa.',checkoutStart:'Uruchom Vault Plus',cancelSubTitle:'Anulować subskrypcję?',cancelSubDesc:'Utracisz dostęp do wszystkich funkcji Plus po zakończeniu bieżącego okresu. Twoje dane pozostaną nienaruszone.',cancelSubConfirm:'Tak, anuluj subskrypcję',cancelSubKeep:'Zachowaj Vault Plus',titleRequired:'Proszę dodać tytuł',plusGuide:'Przewodnik po funkcjach Plus',cancelSub:'Anuluj subskrypcję'},
   de:{flag:'DE',lang:'Deutsch',addBtn:'Hinzufügen',addTitle:'Zum Vault hinzufügen',editTitle:'Bearbeiten',currency:'Währung',sections:'Abschnitte',newSection:'Neuer Abschnitt',allItems:'Alle',prodCat:'Produkte',luoghiCat:'Orte',total:'Gesamt',statusWant:'Möchte ich',statusOrdered:'Bestellt',statusBought:'Gekauft',statusVisit:'Zu besuchen',urlLabel:'URL',titleLabel:'Titel',titlePh:'Produkt- oder Ortsname...',typeLabel:'Typ',typeProduct:'Produkt',typePlace:'Ort',typeOther:'Sonstiges',statusLabel:'Status',sectionLabel:'Abschnitt',noSection:'— Kein Abschnitt —',priceLabel:'Preis',avgSpend:'Durchschn. Ausgaben',noteLabel:'Notiz (optional)',notePh:'Größe, Farbe, Kommentar...',photosLabel:'Fotos',imgPh:'https://...bild.jpg — Hinzufügen oder Enter',addPhoto:'＋ Hinzufügen',fetchBtn:'Daten laden',cancel:'Abbrechen',save:'Speichern',create:'Erstellen',close:'Schließen',newSecTitle:'Neuer Abschnitt',editSecTitle:'Abschnitt bearbeiten',nameLabel:'Name',namePh:'Z.B. Mode, Tech, Restaurants...',catLabel:'Kategorie',catProd:'Produkte',catPlaces:'Orte',iconLabel:'Symbol',ctxEdit:'Bearbeiten',ctxAddPrio:'Priorität hinzufügen',ctxRmPrio:'Priorität entfernen',ctxOpen:'Website öffnen',ctxDelete:'Löschen',ctxEditSec:'Abschnitt bearbeiten',ctxDeleteSec:'Abschnitt löschen',confirmItem:'Dieses Element löschen?',confirmSec:'Diesen Abschnitt löschen? Elemente bleiben ohne Abschnitt.',errMsg:'Geschützte Seite — Titel aus URL. Details manuell ergänzen.',fetchOk:'✓ Daten geladen',settingsTitle:'Einstellungen',langLabel:'Sprache',langMenuLabel:'Sprache',settingsColors:'Statusfarben',back:'← Zurück',reset:'↺ Zurücksetzen',chipAll:'Alle',chipWant:'Möchte ich',chipOrdered:'Bestellt',chipBought:'Gekauft',chipVisit:'Zu besuchen',chipVisited:'Besucht',statusVisited:'Besucht',visitSite:'Website besuchen',detAddress:'Adresse',detHours:'Öffnungszeiten',detMenu:'Speisekarte',detReviews:'Bewertungen',hint:'schnell hinzufügen · Ansicht',emptyTitle:'Keine Elemente',emptyDesc:'Füge einen Link in die Leiste oben ein oder klicke Hinzufügen.',emptyBtn:'Link einfügen',allItemsTitle:'Alle Elemente',searchPh:'Suchen...',quickPh:'Füge einen Link von einer beliebigen Website ein...',quickAdd:'Hinzufügen →',connection:'Verbindung...',focusExit:'✕ Fokus beenden',lightMode:'Helles Design',darkMode:'Dunkles Design',priceFound:'Gefundener Preis',archive:'Archivieren',unarchive:'Wiederherstellen',shareLink:'Link teilen',priceHistory:'Preisverlauf',related:'Siehe auch',deadlineOver:'Abgelaufen',linkItems:'Elemente verknüpfen',chipArchive:'Archiv',exportCsv:'CSV exportieren',importCsv:'CSV importieren',printPdf:'PDF drucken',lbl_pricefound:'Gefundener Preis',lbl_deadline:'Frist',lbl_tags:'Tags',lbl_seccolor:'Abschnittsfarbe',lbl_voice:'Sprachnotiz',voiceRec:'Aufnehmen',sortManual:'Manuelle Reihenfolge',sortNewest:'Neueste zuerst',sortOldest:'Älteste zuerst',sortPriceAsc:'Preis ↑',sortPriceDesc:'Preis ↓',sortNameAz:'Name A–Z',sortDeadline:'Frist',statsTitle:'Statistiken',statsTotalItems:'Elemente gesamt',statsTotalSpend:'Gesamtausgaben',statsOnlyBought:'nur Gekaufte',statsByStatus:'Statusverteilung',statsBySection:'Ausgaben nach Abschnitt',statsTimeline:'In den letzten 6 Monaten hinzugefügt',statsNoSpend:'Keine Ausgaben erfasst',statsPriority:'Priorität',onbTitle1:'Willkommen bei Vault!',onbDesc1:'Dein persönlicher Bereich für alles, was du online findest: Produkte, Restaurants, Hotels — alles an einem Ort.',onbTitle2:'In 3 Sekunden hinzufügen',onbDesc2:'1. Finde etwas online\n2. Kopiere den Link aus deinem Browser\n3. Füge ihn hier ein — Details laden automatisch!',onbTitle3:'Produkte und Orte',onbDesc3:'Vault erkennt automatisch, ob du ein Produkt oder einen Ort hinzugefügt hast, und zeigt die richtigen Optionen.',onbTitle4:'Alles im Überblick',onbDesc4:'Nutze die farbigen Filter, um schnell zu finden, was du suchst: kaufen, gekauft, besuchen oder besucht.',onbTitle5:'Los geht\'s!',onbDesc5:'Füge einen Link in die Leiste oben ein oder klicke auf + Hinzufügen. Vault erledigt den Rest!',onbNext:'Weiter →',onbStart:'Starten →',onbSkip:'Überspringen',kbarOpen:'öffnen',kbarNav:'navigieren',kbarClose:'schließen',lbl_qty:'Menge',lbl_variant:'Variante',qty:'Menge',yourRating:'Deine Bewertung',chipStale:'Liegengeblieben',chipGift:'Geschenke',dayAbbr:'T',variantPh:'z.B. XL Schwarz, 128GB...',giftForLabel:'Geschenk für (optional)',giftForPh:'Name der Person...',dupAlready:'Bereits im vault:',dupView:'Anzeigen →',spent:'Ausgaben',profileTitle:'Profil',uploadDevice:'Vom Gerät hochladen',plusUpgrTitle:'Auf Vault Plus upgraden',plusUpgrSub:'Schalte KI-Statistiken, mehrere Workspaces und erweiterte Mood Boards frei.',plusContinue:'Weiter zur Zahlung',plusMaybeLater:'Vielleicht später',plusBillingMonthly:'Monatlich',plusBillingAnnual:'Jährlich',plusMonthlyDesc:'pro Monat · jederzeit kündbar',plusAnnualDesc:'pro Jahr · spare 17%',plusAnnualSub:'≈ €4,17/Monat',plusSubMonthly:'Monatliches Abonnement',plusSubAnnual:'Jährliches Abonnement',plusAllFeatures:'Alle Funktionen freigeschaltet',plusLimitedFeatures:'Eingeschränkte Funktionen',plusActive:'Aktiv',checkoutCardNum:'Kartennummer',checkoutExpiry:'Ablaufdatum',checkoutCVC:'CVC',checkoutCardName:'Name auf der Karte',checkoutDemo:'Demo-Checkout — Stripe-Integration bereit.',checkoutStart:'Vault Plus starten',cancelSubTitle:'Abonnement kündigen?',cancelSubDesc:'Du verlierst den Zugang zu allen Plus-Funktionen am Ende des aktuellen Zeitraums. Deine Daten bleiben erhalten.',cancelSubConfirm:'Ja, Abonnement kündigen',cancelSubKeep:'Vault Plus behalten',titleRequired:'Bitte Titel hinzufügen',plusGuide:'Leitfaden für Plus-Funktionen',cancelSub:'Abonnement kündigen'},
 };
+// ── TRANSLATION EXTENSIONS ──
+// RULE for all future features: never hardcode UI text. Add the English key here
+// (en = source of truth) plus its 8 translations, then use t('key') in the code.
+// t() automatically falls back to English when a key is missing in a language.
+const TRANS_EXT={
+en:{ttCompare:'Compare',ttDelete:'Delete',ttOpen:'Open',prioBadge:'Priority',detInfo:'Information',detRating:'Rating',detPhone:'Phone',detCuisine:'Cuisine',themeBg:'Background',themeAccent:'Accent',fbarAnalyzing:'Analyzing link…',retryFill:'Retry auto-fill',importedN:'items imported.',nothingShare:'Nothing to share.',nothingImport:'Nothing to import.',amazonEmpty:'No products found in this Amazon list. It may be private.',roBy:'Shared vault',roReadOnly:'items · read only',roImportBtn:'Import into my vault',roAlreadyIn:'already in vault',noItemsShort:'No items',moodCaptionPh:'Add a caption...',colsTt:'columns',layoutEdTt:'Editorial layout',bgDarkTt:'Dark background',bgLightTt:'Light background',bgCreamTt:'Cream background',noneLbl:'None',addWishTitle:'Add to wishlist',svTitle:'Savings goal',svUpsell:'Track how much you\'ve set aside →',svToGo:'to go',svDoneMsg:'🎉 Goal reached — treat yourself!',svCustom:'+ custom',svPromptAmount:'How much did you set aside?',svInvalidAmount:'Enter a valid amount.',svConfirmReset:'Reset savings for this item?',svToastDone:'🎉 Goal reached — you can buy it!',svSavedLbl:'saved',remTitle:'Reminder',remUpsell:'Get pinged when it\'s time →',remNone:'None set',remDueTag:'due!',remRemove:'✕ Remove reminder',remTomorrow:'Tomorrow',remWeek:'In 1 week',remMonth:'In 1 month',remEom:'End of month',remPick:'📅 Pick date',remPrompt:'Remind me on (YYYY-MM-DD):',remInvalid:'Invalid date — use YYYY-MM-DD.',remFuture:'Pick a future date.',remSetFor:'🔔 Reminder set for',remBannerTitle:'Reminders',remMore:'more',chBtn:'🔍 Find cheaper',chTitle:'🔍 Find it cheaper',chSavedAt:'You saved it at',chBeat:'— beat that price:',chSearchAll:'Search this product across stores:',chPh:'Product name…',chEmptyQ:'Enter a product name to search.',chSubGshop:'Compare across hundreds of shops',chSubTrova:'Italian price comparison',chSubIdealo:'Price history & comparison',chSubAmazon:'Check the marketplace price',chSubEbay:'New & used deals',gfTitle:'🎁 Gift lists',gfNew:'New gift list',gfEmptyHtml:'No gift lists yet.<br>Create one for your birthday, Christmas, a wedding…<br>Friends reserve gifts — nobody buys the same thing twice.',gfGiftsLbl:'gifts',gfReservedLbl:'reserved',gfCopyLink:'Copy link',gfChoose:'Choose the gifts',gfNamePh:'List name — e.g. Birthday 🎂',gfCreateBtn:'Create gift list →',gfSelectOne:'Select at least one gift.',gfLinkCopied:'🎁 Gift link copied — send it to friends & family!',gfConfirmDel:'Delete this gift list? Guests will no longer see it.',gfDeleted:'Gift list deleted.',gfSignIn:'Sign in to use gift lists.',gfAddFirst:'Add some products to your vault first.',gfErrCreate:'Could not create gift list.',gfErrDelete:'Could not delete.',gfErrLoad:'Could not load gift lists.',gfGone:'This gift list does not exist anymore.',gfErrOpen:'Could not open the gift list.',gfPubSub:'Pick a gift and reserve it — everyone sees what\'s taken,<br>so nobody buys the same thing twice.',gfTake:'🎁 I\'ll take this one',gfTakenBy:'🎁 Taken by',gfMineUndo:'You reserved this — tap to undo',gfNamePrompt:'Your name (shown to others so they know it\'s taken):',gfReservedOk:'🎁 Reserved! It\'s yours to gift.',gfTooLate:'Oops — someone reserved it seconds ago!',gfCancelled:'Reservation cancelled.',gfErrReserve:'Could not reserve — try again.',gfErrCancel:'Could not cancel — try again.',gfMadeWith:'Made with',gfSomeone:'someone',gfDefault:'Gift list',shTitle:'Shared lists',shNew:'New shared list',shEmpty1:'No shared lists yet.',shEmpty2:'Create one to plan together in real time.',shDefault:'Shared list',shOur:'Our list',shItems:'items',shMembers:'members',shYouOwn:'you own this',shInvite:'Invite',shNamePrompt:'Name your shared list:',shInviteLink:'Invite link:',shInviteCopied:'Invite link copied — share it with anyone!',shConfirmDel:'Delete this shared list for everyone? This cannot be undone.',shDeleted:'Shared list deleted.',shNoItems:'No items yet.',shPasteFirst:'Paste a link below to add the first one.',shPastePh:'Paste a product link…',shAddBtn:'Add',shFetching:'Fetching…',shErrCreate:'Could not create list.',shErrOpen:'Could not open list.',shErrLoad:'Could not load shared lists.',shNotFound:'List not found.',shInvalidLink:'Enter a valid link (https://…).',shInvalidInvite:'This invite is invalid or expired.',shSignIn:'Sign in to use shared lists.',shJoinSignIn:'Sign in to join this shared list.',shErrJoin:'Could not join this list.',shSyncFail:'Sync failed — check your connection.',profCloud:'Cloud backup',profAI:'AI Profile',profManage:'Manage subscription',signInReq:'Sign in required.',legalPre:'By continuing you accept the',legalTerms:'Terms of Service',legalAnd:'and the',legalPrivacy:'Privacy Policy',pfSharedD:'Plan together in real time — home, trips, gifts.',pfGiftN:'Gift mode',pfGiftD:'Friends reserve gifts. No more duplicates.',pfExtN:'Browser extension',pfExtD:'Save from any site in one click.',pfSaveN:'Savings goals',pfSaveD:'Track what you set aside for each wish.',pfRemN:'Smart reminders',pfRemD:'Get pinged when it\'s time to buy.',pfCheapD:'Compare prices across stores instantly.',pfStatsN:'Advanced statistics',pfStatsD:'Deep insights into your spending and habits.',pfTasteN:'AI Taste Profile',pfTasteD:'Your personal style fingerprint.',pfMoodN:'Advanced mood boards',pfMoodD:'Fullscreen editing, labels and captions.',pfPrioN:'Priority future features',pfPrioD:'You get every new feature first.',spAI:'AI spending analysis',spAvg:'Avg item price',spTop:'Top category',spConv:'Conversion rate',spValue:'Total wishlist value',spAdv:'Advanced analytics',spLocked:'Available with Vault Plus',spUpgrade:'Upgrade →',pnText:'🍪 Vault uses <b>only technical storage</b> needed for the app to work (sign-in, your data, preferences). No tracking, no ads, no profiling.',pnOk:'OK'},
+it:{ttCompare:'Confronta',ttDelete:'Elimina',ttOpen:'Apri',prioBadge:'Priorità',detInfo:'Informazioni',detRating:'Valutazione',detPhone:'Telefono',detCuisine:'Cucina',themeBg:'Sfondo',themeAccent:'Accento',fbarAnalyzing:'Analisi del link…',retryFill:'Riprova auto-compilazione',importedN:'elementi importati.',nothingShare:'Nessun elemento da condividere.',nothingImport:'Nessun elemento da importare.',amazonEmpty:'Nessun prodotto trovato nella lista Amazon. Potrebbe essere privata.',roBy:'Vault condiviso',roReadOnly:'elementi · sola lettura',roImportBtn:'Importa nel mio vault',roAlreadyIn:'già nel vault',noItemsShort:'Nessun elemento',moodCaptionPh:'Aggiungi didascalia...',colsTt:'colonne',layoutEdTt:'Layout editoriale',bgDarkTt:'Sfondo scuro',bgLightTt:'Sfondo chiaro',bgCreamTt:'Sfondo crema',noneLbl:'Nessuno',addWishTitle:'Aggiungi alla wishlist',svTitle:'Obiettivo di risparmio',svUpsell:'Tieni traccia di quanto hai messo da parte →',svToGo:'mancanti',svDoneMsg:'🎉 Obiettivo raggiunto — regalatelo!',svCustom:'+ importo',svPromptAmount:'Quanto hai messo da parte?',svInvalidAmount:'Inserisci un importo valido.',svConfirmReset:'Azzerare i risparmi per questo elemento?',svToastDone:'🎉 Obiettivo raggiunto — puoi comprarlo!',svSavedLbl:'risparmiati',remTitle:'Promemoria',remUpsell:'Ricevi un avviso quando è il momento →',remNone:'Nessuno',remDueTag:'scaduto!',remRemove:'✕ Rimuovi promemoria',remTomorrow:'Domani',remWeek:'Tra 1 settimana',remMonth:'Tra 1 mese',remEom:'Fine mese',remPick:'📅 Scegli data',remPrompt:'Ricordamelo il (AAAA-MM-GG):',remInvalid:'Data non valida — usa AAAA-MM-GG.',remFuture:'Scegli una data futura.',remSetFor:'🔔 Promemoria impostato per',remBannerTitle:'Promemoria',remMore:'altri',chBtn:'🔍 Trova più economico',chTitle:'🔍 Trovalo più economico',chSavedAt:'L\'hai salvato a',chBeat:'— batti quel prezzo:',chSearchAll:'Cerca questo prodotto in altri negozi:',chPh:'Nome prodotto…',chEmptyQ:'Inserisci un nome prodotto da cercare.',chSubGshop:'Confronta centinaia di negozi',chSubTrova:'Comparatore prezzi italiano',chSubIdealo:'Storico e confronto prezzi',chSubAmazon:'Controlla il prezzo sul marketplace',chSubEbay:'Offerte nuovo e usato',gfTitle:'🎁 Liste regalo',gfNew:'Nuova lista regalo',gfEmptyHtml:'Nessuna lista regalo.<br>Creane una per compleanno, Natale, matrimonio…<br>Gli amici prenotano i regali — niente doppioni.',gfGiftsLbl:'regali',gfReservedLbl:'prenotati',gfCopyLink:'Copia link',gfChoose:'Scegli i regali',gfNamePh:'Nome lista — es. Compleanno 🎂',gfCreateBtn:'Crea lista regalo →',gfSelectOne:'Seleziona almeno un regalo.',gfLinkCopied:'🎁 Link copiato — invialo ad amici e parenti!',gfConfirmDel:'Eliminare questa lista regalo? Gli ospiti non la vedranno più.',gfDeleted:'Lista regalo eliminata.',gfSignIn:'Accedi per usare le liste regalo.',gfAddFirst:'Aggiungi prima qualche prodotto al tuo vault.',gfErrCreate:'Impossibile creare la lista regalo.',gfErrDelete:'Impossibile eliminare.',gfErrLoad:'Impossibile caricare le liste regalo.',gfGone:'Questa lista regalo non esiste più.',gfErrOpen:'Impossibile aprire la lista regalo.',gfPubSub:'Scegli un regalo e prenotalo — tutti vedono cosa è già preso,<br>così nessuno compra due volte la stessa cosa.',gfTake:'🎁 Lo prendo io',gfTakenBy:'🎁 Preso da',gfMineUndo:'L\'hai prenotato tu — tocca per annullare',gfNamePrompt:'Il tuo nome (visibile agli altri, così sanno che è preso):',gfReservedOk:'🎁 Prenotato! Il regalo è tuo.',gfTooLate:'Ops — qualcuno l\'ha prenotato pochi secondi fa!',gfCancelled:'Prenotazione annullata.',gfErrReserve:'Impossibile prenotare — riprova.',gfErrCancel:'Impossibile annullare — riprova.',gfMadeWith:'Creato con',gfSomeone:'qualcuno',gfDefault:'Lista regalo',shTitle:'Liste condivise',shNew:'Nuova lista condivisa',shEmpty1:'Nessuna lista condivisa.',shEmpty2:'Creane una per organizzarvi in tempo reale.',shDefault:'Lista condivisa',shOur:'La nostra lista',shItems:'elementi',shMembers:'membri',shYouOwn:'è tua',shInvite:'Invita',shNamePrompt:'Dai un nome alla lista condivisa:',shInviteLink:'Link di invito:',shInviteCopied:'Link di invito copiato — condividilo con chi vuoi!',shConfirmDel:'Eliminare questa lista per tutti? Non si può annullare.',shDeleted:'Lista condivisa eliminata.',shNoItems:'Ancora nessun elemento.',shPasteFirst:'Incolla un link qui sotto per aggiungere il primo.',shPastePh:'Incolla il link di un prodotto…',shAddBtn:'Aggiungi',shFetching:'Recupero…',shErrCreate:'Impossibile creare la lista.',shErrOpen:'Impossibile aprire la lista.',shErrLoad:'Impossibile caricare le liste condivise.',shNotFound:'Lista non trovata.',shInvalidLink:'Inserisci un link valido (https://…).',shInvalidInvite:'Invito non valido o scaduto.',shSignIn:'Accedi per usare le liste condivise.',shJoinSignIn:'Accedi per unirti a questa lista condivisa.',shErrJoin:'Impossibile unirsi alla lista.',shSyncFail:'Sincronizzazione fallita — controlla la connessione.',profCloud:'Backup cloud',profAI:'Profilo AI',profManage:'Gestisci abbonamento',signInReq:'Accesso richiesto.',legalPre:'Continuando accetti i',legalTerms:'Termini di Servizio',legalAnd:'e la',legalPrivacy:'Privacy Policy',pfSharedD:'Organizzatevi in tempo reale — casa, viaggi, regali.',pfGiftN:'Modalità regalo',pfGiftD:'Gli amici prenotano i regali. Niente doppioni.',pfExtN:'Estensione browser',pfExtD:'Salva da qualsiasi sito in un clic.',pfSaveN:'Obiettivi di risparmio',pfSaveD:'Traccia quanto metti da parte per ogni desiderio.',pfRemN:'Promemoria intelligenti',pfRemD:'Un avviso quando è il momento di comprare.',pfCheapD:'Confronta i prezzi tra negozi all\'istante.',pfStatsN:'Statistiche avanzate',pfStatsD:'Analisi approfondite su spese e abitudini.',pfTasteN:'Profilo AI dei gusti',pfTasteD:'L\'impronta del tuo stile personale.',pfMoodN:'Mood board avanzate',pfMoodD:'Fullscreen, etichette e didascalie.',pfPrioN:'Priorità sulle novità',pfPrioD:'Ogni nuova funzione arriva prima a te.',spAI:'Analisi di spesa AI',spAvg:'Prezzo medio',spTop:'Categoria top',spConv:'Tasso di conversione',spValue:'Valore wishlist totale',spAdv:'Analisi avanzate',spLocked:'Disponibile con Vault Plus',spUpgrade:'Passa a Plus →',pnText:'🍪 Vault usa <b>solo storage tecnico</b> necessario al funzionamento (accesso, i tuoi dati, preferenze). Niente tracciamento, pubblicità o profilazione.',pnOk:'OK'},
+es:{ttCompare:'Comparar',ttDelete:'Eliminar',ttOpen:'Abrir',prioBadge:'Prioridad',detInfo:'Información',detRating:'Valoración',detPhone:'Teléfono',detCuisine:'Cocina',themeBg:'Fondo',themeAccent:'Acento',fbarAnalyzing:'Analizando enlace…',retryFill:'Reintentar autorrelleno',importedN:'elementos importados.',nothingShare:'Nada que compartir.',nothingImport:'Nada que importar.',amazonEmpty:'No se encontraron productos en esta lista de Amazon. Puede ser privada.',roBy:'Vault compartido',roReadOnly:'elementos · solo lectura',roImportBtn:'Importar a mi vault',roAlreadyIn:'ya en el vault',noItemsShort:'Sin elementos',moodCaptionPh:'Añadir descripción...',colsTt:'columnas',layoutEdTt:'Diseño editorial',bgDarkTt:'Fondo oscuro',bgLightTt:'Fondo claro',bgCreamTt:'Fondo crema',noneLbl:'Ninguno',addWishTitle:'Añadir a la wishlist',svTitle:'Meta de ahorro',svUpsell:'Controla cuánto has apartado →',svToGo:'restantes',svDoneMsg:'🎉 ¡Meta alcanzada — date el capricho!',svCustom:'+ importe',svPromptAmount:'¿Cuánto has apartado?',svInvalidAmount:'Introduce un importe válido.',svConfirmReset:'¿Reiniciar los ahorros de este elemento?',svToastDone:'🎉 ¡Meta alcanzada — ya puedes comprarlo!',svSavedLbl:'ahorrado',remTitle:'Recordatorio',remUpsell:'Recibe un aviso cuando sea el momento →',remNone:'Ninguno',remDueTag:'¡vencido!',remRemove:'✕ Quitar recordatorio',remTomorrow:'Mañana',remWeek:'En 1 semana',remMonth:'En 1 mes',remEom:'Fin de mes',remPick:'📅 Elegir fecha',remPrompt:'Recuérdamelo el (AAAA-MM-DD):',remInvalid:'Fecha no válida — usa AAAA-MM-DD.',remFuture:'Elige una fecha futura.',remSetFor:'🔔 Recordatorio para',remBannerTitle:'Recordatorios',remMore:'más',chBtn:'🔍 Buscar más barato',chTitle:'🔍 Encuéntralo más barato',chSavedAt:'Lo guardaste a',chBeat:'— mejora ese precio:',chSearchAll:'Busca este producto en otras tiendas:',chPh:'Nombre del producto…',chEmptyQ:'Introduce un nombre de producto.',chSubGshop:'Compara cientos de tiendas',chSubTrova:'Comparador italiano de precios',chSubIdealo:'Historial y comparación de precios',chSubAmazon:'Consulta el precio del marketplace',chSubEbay:'Ofertas nuevo y usado',gfTitle:'🎁 Listas de regalos',gfNew:'Nueva lista de regalos',gfEmptyHtml:'Aún no hay listas de regalos.<br>Crea una para tu cumpleaños, Navidad, una boda…<br>Los amigos reservan regalos — nadie compra dos veces lo mismo.',gfGiftsLbl:'regalos',gfReservedLbl:'reservados',gfCopyLink:'Copiar enlace',gfChoose:'Elige los regalos',gfNamePh:'Nombre — ej. Cumpleaños 🎂',gfCreateBtn:'Crear lista de regalos →',gfSelectOne:'Selecciona al menos un regalo.',gfLinkCopied:'🎁 Enlace copiado — ¡envíalo a amigos y familia!',gfConfirmDel:'¿Eliminar esta lista? Los invitados ya no la verán.',gfDeleted:'Lista de regalos eliminada.',gfSignIn:'Inicia sesión para usar listas de regalos.',gfAddFirst:'Añade primero algunos productos a tu vault.',gfErrCreate:'No se pudo crear la lista.',gfErrDelete:'No se pudo eliminar.',gfErrLoad:'No se pudieron cargar las listas.',gfGone:'Esta lista de regalos ya no existe.',gfErrOpen:'No se pudo abrir la lista.',gfPubSub:'Elige un regalo y resérvalo — todos ven lo que está cogido,<br>así nadie compra dos veces lo mismo.',gfTake:'🎁 Me lo pido',gfTakenBy:'🎁 Reservado por',gfMineUndo:'Lo reservaste tú — toca para deshacer',gfNamePrompt:'Tu nombre (visible para que sepan que está cogido):',gfReservedOk:'🎁 ¡Reservado! El regalo es tuyo.',gfTooLate:'¡Vaya — alguien lo reservó hace segundos!',gfCancelled:'Reserva cancelada.',gfErrReserve:'No se pudo reservar — reintenta.',gfErrCancel:'No se pudo cancelar — reintenta.',gfMadeWith:'Hecho con',gfSomeone:'alguien',gfDefault:'Lista de regalos',shTitle:'Listas compartidas',shNew:'Nueva lista compartida',shEmpty1:'Aún no hay listas compartidas.',shEmpty2:'Crea una para planificar juntos en tiempo real.',shDefault:'Lista compartida',shOur:'Nuestra lista',shItems:'elementos',shMembers:'miembros',shYouOwn:'es tuya',shInvite:'Invitar',shNamePrompt:'Nombre de la lista compartida:',shInviteLink:'Enlace de invitación:',shInviteCopied:'Enlace copiado — ¡compártelo con quien quieras!',shConfirmDel:'¿Eliminar esta lista para todos? No se puede deshacer.',shDeleted:'Lista compartida eliminada.',shNoItems:'Aún sin elementos.',shPasteFirst:'Pega un enlace abajo para añadir el primero.',shPastePh:'Pega un enlace de producto…',shAddBtn:'Añadir',shFetching:'Obteniendo…',shErrCreate:'No se pudo crear la lista.',shErrOpen:'No se pudo abrir la lista.',shErrLoad:'No se pudieron cargar las listas.',shNotFound:'Lista no encontrada.',shInvalidLink:'Introduce un enlace válido (https://…).',shInvalidInvite:'Invitación no válida o caducada.',shSignIn:'Inicia sesión para usar listas compartidas.',shJoinSignIn:'Inicia sesión para unirte a esta lista.',shErrJoin:'No se pudo unir a la lista.',shSyncFail:'Sincronización fallida — revisa tu conexión.',profCloud:'Copia en la nube',profAI:'Perfil IA',profManage:'Gestionar suscripción',signInReq:'Inicio de sesión requerido.',legalPre:'Al continuar aceptas los',legalTerms:'Términos de Servicio',legalAnd:'y la',legalPrivacy:'Política de Privacidad',pfSharedD:'Planificad juntos en tiempo real — casa, viajes, regalos.',pfGiftN:'Modo regalo',pfGiftD:'Los amigos reservan regalos. Sin duplicados.',pfExtN:'Extensión de navegador',pfExtD:'Guarda desde cualquier sitio con un clic.',pfSaveN:'Metas de ahorro',pfSaveD:'Controla lo que apartas para cada deseo.',pfRemN:'Recordatorios inteligentes',pfRemD:'Un aviso cuando toca comprar.',pfCheapD:'Compara precios entre tiendas al instante.',pfStatsN:'Estadísticas avanzadas',pfStatsD:'Análisis profundo de gastos y hábitos.',pfTasteN:'Perfil IA de gustos',pfTasteD:'La huella de tu estilo personal.',pfMoodN:'Mood boards avanzados',pfMoodD:'Pantalla completa, etiquetas y descripciones.',pfPrioN:'Prioridad en novedades',pfPrioD:'Cada función nueva llega antes a ti.',spAI:'Análisis de gasto IA',spAvg:'Precio medio',spTop:'Categoría top',spConv:'Tasa de conversión',spValue:'Valor total wishlist',spAdv:'Análisis avanzado',spLocked:'Disponible con Vault Plus',spUpgrade:'Mejorar →',pnText:'🍪 Vault usa <b>solo almacenamiento técnico</b> necesario para funcionar (sesión, tus datos, preferencias). Sin rastreo, sin anuncios, sin perfiles.',pnOk:'OK'},
+fr:{ttCompare:'Comparer',ttDelete:'Supprimer',ttOpen:'Ouvrir',prioBadge:'Priorité',detInfo:'Informations',detRating:'Note',detPhone:'Téléphone',detCuisine:'Cuisine',themeBg:'Fond',themeAccent:'Accent',fbarAnalyzing:'Analyse du lien…',retryFill:'Réessayer le remplissage',importedN:'éléments importés.',nothingShare:'Rien à partager.',nothingImport:'Rien à importer.',amazonEmpty:'Aucun produit trouvé dans cette liste Amazon. Elle est peut-être privée.',roBy:'Vault partagé',roReadOnly:'éléments · lecture seule',roImportBtn:'Importer dans mon vault',roAlreadyIn:'déjà dans le vault',noItemsShort:'Aucun élément',moodCaptionPh:'Ajouter une légende...',colsTt:'colonnes',layoutEdTt:'Mise en page éditoriale',bgDarkTt:'Fond sombre',bgLightTt:'Fond clair',bgCreamTt:'Fond crème',noneLbl:'Aucun',addWishTitle:'Ajouter à la wishlist',svTitle:'Objectif d\'épargne',svUpsell:'Suivez ce que vous avez mis de côté →',svToGo:'restants',svDoneMsg:'🎉 Objectif atteint — faites-vous plaisir !',svCustom:'+ montant',svPromptAmount:'Combien avez-vous mis de côté ?',svInvalidAmount:'Saisissez un montant valide.',svConfirmReset:'Réinitialiser l\'épargne pour cet élément ?',svToastDone:'🎉 Objectif atteint — vous pouvez l\'acheter !',svSavedLbl:'épargnés',remTitle:'Rappel',remUpsell:'Recevez une alerte au bon moment →',remNone:'Aucun',remDueTag:'échu !',remRemove:'✕ Supprimer le rappel',remTomorrow:'Demain',remWeek:'Dans 1 semaine',remMonth:'Dans 1 mois',remEom:'Fin du mois',remPick:'📅 Choisir une date',remPrompt:'Rappelle-moi le (AAAA-MM-JJ) :',remInvalid:'Date invalide — utilisez AAAA-MM-JJ.',remFuture:'Choisissez une date future.',remSetFor:'🔔 Rappel fixé au',remBannerTitle:'Rappels',remMore:'de plus',chBtn:'🔍 Trouver moins cher',chTitle:'🔍 Trouvez-le moins cher',chSavedAt:'Enregistré à',chBeat:'— battez ce prix :',chSearchAll:'Cherchez ce produit dans d\'autres boutiques :',chPh:'Nom du produit…',chEmptyQ:'Saisissez un nom de produit.',chSubGshop:'Comparez des centaines de boutiques',chSubTrova:'Comparateur de prix italien',chSubIdealo:'Historique et comparaison de prix',chSubAmazon:'Vérifiez le prix marketplace',chSubEbay:'Offres neuf et occasion',gfTitle:'🎁 Listes cadeaux',gfNew:'Nouvelle liste cadeaux',gfEmptyHtml:'Aucune liste cadeaux.<br>Créez-en une pour un anniversaire, Noël, un mariage…<br>Les proches réservent — personne n\'achète deux fois la même chose.',gfGiftsLbl:'cadeaux',gfReservedLbl:'réservés',gfCopyLink:'Copier le lien',gfChoose:'Choisissez les cadeaux',gfNamePh:'Nom — ex. Anniversaire 🎂',gfCreateBtn:'Créer la liste cadeaux →',gfSelectOne:'Sélectionnez au moins un cadeau.',gfLinkCopied:'🎁 Lien copié — envoyez-le à vos proches !',gfConfirmDel:'Supprimer cette liste ? Les invités ne la verront plus.',gfDeleted:'Liste cadeaux supprimée.',gfSignIn:'Connectez-vous pour utiliser les listes cadeaux.',gfAddFirst:'Ajoutez d\'abord des produits à votre vault.',gfErrCreate:'Impossible de créer la liste.',gfErrDelete:'Impossible de supprimer.',gfErrLoad:'Impossible de charger les listes.',gfGone:'Cette liste cadeaux n\'existe plus.',gfErrOpen:'Impossible d\'ouvrir la liste.',gfPubSub:'Choisissez un cadeau et réservez-le — chacun voit ce qui est pris,<br>personne n\'achète deux fois la même chose.',gfTake:'🎁 Je le prends',gfTakenBy:'🎁 Pris par',gfMineUndo:'Réservé par vous — touchez pour annuler',gfNamePrompt:'Votre nom (visible pour indiquer que c\'est pris) :',gfReservedOk:'🎁 Réservé ! Ce cadeau est à vous.',gfTooLate:'Oups — quelqu\'un vient de le réserver !',gfCancelled:'Réservation annulée.',gfErrReserve:'Réservation impossible — réessayez.',gfErrCancel:'Annulation impossible — réessayez.',gfMadeWith:'Créé avec',gfSomeone:'quelqu\'un',gfDefault:'Liste cadeaux',shTitle:'Listes partagées',shNew:'Nouvelle liste partagée',shEmpty1:'Aucune liste partagée.',shEmpty2:'Créez-en une pour planifier ensemble en temps réel.',shDefault:'Liste partagée',shOur:'Notre liste',shItems:'éléments',shMembers:'membres',shYouOwn:'à vous',shInvite:'Inviter',shNamePrompt:'Nommez votre liste partagée :',shInviteLink:'Lien d\'invitation :',shInviteCopied:'Lien d\'invitation copié — partagez-le !',shConfirmDel:'Supprimer cette liste pour tout le monde ? Irréversible.',shDeleted:'Liste partagée supprimée.',shNoItems:'Aucun élément pour l\'instant.',shPasteFirst:'Collez un lien ci-dessous pour ajouter le premier.',shPastePh:'Collez un lien produit…',shAddBtn:'Ajouter',shFetching:'Récupération…',shErrCreate:'Impossible de créer la liste.',shErrOpen:'Impossible d\'ouvrir la liste.',shErrLoad:'Impossible de charger les listes.',shNotFound:'Liste introuvable.',shInvalidLink:'Saisissez un lien valide (https://…).',shInvalidInvite:'Invitation invalide ou expirée.',shSignIn:'Connectez-vous pour utiliser les listes partagées.',shJoinSignIn:'Connectez-vous pour rejoindre cette liste.',shErrJoin:'Impossible de rejoindre la liste.',shSyncFail:'Échec de synchro — vérifiez votre connexion.',profCloud:'Sauvegarde cloud',profAI:'Profil IA',profManage:'Gérer l\'abonnement',signInReq:'Connexion requise.',legalPre:'En continuant vous acceptez les',legalTerms:'Conditions d\'utilisation',legalAnd:'et la',legalPrivacy:'Politique de confidentialité',pfSharedD:'Planifiez ensemble en temps réel — maison, voyages, cadeaux.',pfGiftN:'Mode cadeau',pfGiftD:'Les proches réservent les cadeaux. Fini les doublons.',pfExtN:'Extension navigateur',pfExtD:'Enregistrez depuis n\'importe quel site en un clic.',pfSaveN:'Objectifs d\'épargne',pfSaveD:'Suivez ce que vous mettez de côté pour chaque envie.',pfRemN:'Rappels intelligents',pfRemD:'Une alerte quand c\'est le moment d\'acheter.',pfCheapD:'Comparez les prix entre boutiques instantanément.',pfStatsN:'Statistiques avancées',pfStatsD:'Analyses fines de vos dépenses et habitudes.',pfTasteN:'Profil IA de goûts',pfTasteD:'L\'empreinte de votre style personnel.',pfMoodN:'Mood boards avancés',pfMoodD:'Plein écran, étiquettes et légendes.',pfPrioN:'Priorité sur les nouveautés',pfPrioD:'Chaque nouvelle fonction arrive d\'abord chez vous.',spAI:'Analyse de dépenses IA',spAvg:'Prix moyen',spTop:'Top catégorie',spConv:'Taux de conversion',spValue:'Valeur totale wishlist',spAdv:'Analyses avancées',spLocked:'Disponible avec Vault Plus',spUpgrade:'Passer à Plus →',pnText:'🍪 Vault n\'utilise que le <b>stockage technique</b> nécessaire au fonctionnement (connexion, vos données, préférences). Pas de pistage, pas de pub, pas de profilage.',pnOk:'OK'},
+zh:{ttCompare:'对比',ttDelete:'删除',ttOpen:'打开',prioBadge:'优先',detInfo:'信息',detRating:'评分',detPhone:'电话',detCuisine:'菜系',themeBg:'背景',themeAccent:'强调色',fbarAnalyzing:'正在分析链接…',retryFill:'重试自动填充',importedN:'个项目已导入。',nothingShare:'没有可分享的内容。',nothingImport:'没有可导入的内容。',amazonEmpty:'未在此亚马逊清单中找到商品，可能是私密清单。',roBy:'共享的 Vault',roReadOnly:'个项目 · 只读',roImportBtn:'导入我的 vault',roAlreadyIn:'已在 vault 中',noItemsShort:'暂无项目',moodCaptionPh:'添加说明...',colsTt:'列',layoutEdTt:'杂志排版',bgDarkTt:'深色背景',bgLightTt:'浅色背景',bgCreamTt:'米色背景',noneLbl:'无',addWishTitle:'添加到心愿单',svTitle:'储蓄目标',svUpsell:'记录你已存下多少 →',svToGo:'还差',svDoneMsg:'🎉 目标达成 — 犒劳自己吧！',svCustom:'+ 自定义',svPromptAmount:'你存了多少？',svInvalidAmount:'请输入有效金额。',svConfirmReset:'重置此项目的储蓄？',svToastDone:'🎉 目标达成 — 可以买啦！',svSavedLbl:'已存',remTitle:'提醒',remUpsell:'到时间时收到提示 →',remNone:'未设置',remDueTag:'已到期！',remRemove:'✕ 移除提醒',remTomorrow:'明天',remWeek:'1 周后',remMonth:'1 个月后',remEom:'月底',remPick:'📅 选择日期',remPrompt:'提醒日期（YYYY-MM-DD）：',remInvalid:'日期无效 — 请用 YYYY-MM-DD。',remFuture:'请选择未来的日期。',remSetFor:'🔔 提醒已设为',remBannerTitle:'提醒',remMore:'更多',chBtn:'🔍 找更便宜的',chTitle:'🔍 找到更低价',chSavedAt:'你保存时价格为',chBeat:'— 试试更低价：',chSearchAll:'在各商店搜索该商品：',chPh:'商品名称…',chEmptyQ:'请输入商品名称。',chSubGshop:'对比数百家商店',chSubTrova:'意大利比价网站',chSubIdealo:'价格历史与对比',chSubAmazon:'查看市场价格',chSubEbay:'全新与二手优惠',gfTitle:'🎁 礼物清单',gfNew:'新建礼物清单',gfEmptyHtml:'还没有礼物清单。<br>为生日、圣诞或婚礼创建一个…<br>朋友们认领礼物 — 不会重复购买。',gfGiftsLbl:'件礼物',gfReservedLbl:'已认领',gfCopyLink:'复制链接',gfChoose:'选择礼物',gfNamePh:'清单名称 — 如 生日 🎂',gfCreateBtn:'创建礼物清单 →',gfSelectOne:'请至少选择一件礼物。',gfLinkCopied:'🎁 链接已复制 — 发给亲友吧！',gfConfirmDel:'删除此礼物清单？客人将无法再看到。',gfDeleted:'礼物清单已删除。',gfSignIn:'请登录以使用礼物清单。',gfAddFirst:'请先向 vault 添加一些商品。',gfErrCreate:'无法创建礼物清单。',gfErrDelete:'无法删除。',gfErrLoad:'无法加载礼物清单。',gfGone:'该礼物清单已不存在。',gfErrOpen:'无法打开礼物清单。',gfPubSub:'选一件礼物并认领 — 大家都能看到哪些已被认领，<br>不会有人买重复的礼物。',gfTake:'🎁 我来送这个',gfTakenBy:'🎁 已被认领：',gfMineUndo:'你已认领 — 点按可取消',gfNamePrompt:'你的名字（对其他人可见）：',gfReservedOk:'🎁 已认领！这份礼物由你来送。',gfTooLate:'哎呀 — 刚刚被别人认领了！',gfCancelled:'已取消认领。',gfErrReserve:'认领失败 — 请重试。',gfErrCancel:'取消失败 — 请重试。',gfMadeWith:'创建于',gfSomeone:'某人',gfDefault:'礼物清单',shTitle:'共享清单',shNew:'新建共享清单',shEmpty1:'还没有共享清单。',shEmpty2:'创建一个，实时一起规划。',shDefault:'共享清单',shOur:'我们的清单',shItems:'个项目',shMembers:'位成员',shYouOwn:'由你创建',shInvite:'邀请',shNamePrompt:'为共享清单命名：',shInviteLink:'邀请链接：',shInviteCopied:'邀请链接已复制 — 分享给任何人！',shConfirmDel:'为所有人删除此清单？无法撤销。',shDeleted:'共享清单已删除。',shNoItems:'暂无项目。',shPasteFirst:'在下方粘贴链接以添加第一个。',shPastePh:'粘贴商品链接…',shAddBtn:'添加',shFetching:'获取中…',shErrCreate:'无法创建清单。',shErrOpen:'无法打开清单。',shErrLoad:'无法加载共享清单。',shNotFound:'未找到清单。',shInvalidLink:'请输入有效链接（https://…）。',shInvalidInvite:'邀请无效或已过期。',shSignIn:'请登录以使用共享清单。',shJoinSignIn:'请登录以加入此共享清单。',shErrJoin:'无法加入清单。',shSyncFail:'同步失败 — 请检查网络。',profCloud:'云备份',profAI:'AI 档案',profManage:'管理订阅',signInReq:'需要登录。',legalPre:'继续即表示你接受',legalTerms:'服务条款',legalAnd:'和',legalPrivacy:'隐私政策',pfSharedD:'实时共同规划 — 家居、旅行、礼物。',pfGiftN:'礼物模式',pfGiftD:'朋友认领礼物，不再重复。',pfExtN:'浏览器扩展',pfExtD:'一键保存任何网站的内容。',pfSaveN:'储蓄目标',pfSaveD:'记录你为每个心愿存下的钱。',pfRemN:'智能提醒',pfRemD:'该买的时候提醒你。',pfCheapD:'即时对比各商店价格。',pfStatsN:'高级统计',pfStatsD:'深入了解你的消费与习惯。',pfTasteN:'AI 品味档案',pfTasteD:'你的个人风格指纹。',pfMoodN:'高级情绪板',pfMoodD:'全屏编辑、标签与说明。',pfPrioN:'新功能优先体验',pfPrioD:'每个新功能你都最先用上。',spAI:'AI 消费分析',spAvg:'平均价格',spTop:'热门分类',spConv:'转化率',spValue:'心愿单总价值',spAdv:'高级分析',spLocked:'Vault Plus 专享',spUpgrade:'升级 →',pnText:'🍪 Vault 仅使用应用运行所需的<b>技术性存储</b>（登录、你的数据、偏好）。无跟踪、无广告、无画像。',pnOk:'好的'},
+ja:{ttCompare:'比較',ttDelete:'削除',ttOpen:'開く',prioBadge:'優先',detInfo:'情報',detRating:'評価',detPhone:'電話',detCuisine:'料理',themeBg:'背景',themeAccent:'アクセント',fbarAnalyzing:'リンクを解析中…',retryFill:'自動入力を再試行',importedN:'件をインポートしました。',nothingShare:'共有できる項目がありません。',nothingImport:'インポートできる項目がありません。',amazonEmpty:'このAmazonリストに商品が見つかりません。非公開の可能性があります。',roBy:'共有されたVault',roReadOnly:'件 · 閲覧のみ',roImportBtn:'自分のvaultにインポート',roAlreadyIn:'すでにvaultにあります',noItemsShort:'項目なし',moodCaptionPh:'キャプションを追加...',colsTt:'列',layoutEdTt:'エディトリアルレイアウト',bgDarkTt:'ダーク背景',bgLightTt:'ライト背景',bgCreamTt:'クリーム背景',noneLbl:'なし',addWishTitle:'ウィッシュリストに追加',svTitle:'貯金目標',svUpsell:'貯めた金額を記録 →',svToGo:'あと',svDoneMsg:'🎉 目標達成 — ご褒美にどうぞ！',svCustom:'+ カスタム',svPromptAmount:'いくら貯めましたか？',svInvalidAmount:'有効な金額を入力してください。',svConfirmReset:'この項目の貯金をリセットしますか？',svToastDone:'🎉 目標達成 — 買えます！',svSavedLbl:'貯金済み',remTitle:'リマインダー',remUpsell:'時が来たら通知を受け取る →',remNone:'未設定',remDueTag:'期限です！',remRemove:'✕ リマインダーを削除',remTomorrow:'明日',remWeek:'1週間後',remMonth:'1ヶ月後',remEom:'月末',remPick:'📅 日付を選択',remPrompt:'リマインド日（YYYY-MM-DD）：',remInvalid:'無効な日付 — YYYY-MM-DD形式で。',remFuture:'未来の日付を選んでください。',remSetFor:'🔔 リマインダー設定：',remBannerTitle:'リマインダー',remMore:'件',chBtn:'🔍 もっと安く探す',chTitle:'🔍 もっと安く見つける',chSavedAt:'保存時の価格：',chBeat:'— この価格に挑戦：',chSearchAll:'他のストアでこの商品を検索：',chPh:'商品名…',chEmptyQ:'商品名を入力してください。',chSubGshop:'数百のショップを比較',chSubTrova:'イタリアの価格比較',chSubIdealo:'価格履歴と比較',chSubAmazon:'マーケットプレイス価格を確認',chSubEbay:'新品・中古のお得情報',gfTitle:'🎁 ギフトリスト',gfNew:'新しいギフトリスト',gfEmptyHtml:'まだギフトリストがありません。<br>誕生日、クリスマス、結婚式に作りましょう…<br>友達がギフトを予約 — 重複購入なし。',gfGiftsLbl:'件のギフト',gfReservedLbl:'予約済み',gfCopyLink:'リンクをコピー',gfChoose:'ギフトを選択',gfNamePh:'リスト名 — 例：誕生日 🎂',gfCreateBtn:'ギフトリストを作成 →',gfSelectOne:'ギフトを1つ以上選択してください。',gfLinkCopied:'🎁 リンクをコピー — 友達や家族に送りましょう！',gfConfirmDel:'このギフトリストを削除しますか？ゲストは見られなくなります。',gfDeleted:'ギフトリストを削除しました。',gfSignIn:'ギフトリストを使うにはサインインしてください。',gfAddFirst:'まずvaultに商品を追加してください。',gfErrCreate:'ギフトリストを作成できませんでした。',gfErrDelete:'削除できませんでした。',gfErrLoad:'ギフトリストを読み込めませんでした。',gfGone:'このギフトリストはもう存在しません。',gfErrOpen:'ギフトリストを開けませんでした。',gfPubSub:'ギフトを選んで予約 — 誰が何を取ったか全員に見えるので、<br>同じものを二度買う心配なし。',gfTake:'🎁 これは私が',gfTakenBy:'🎁 予約者：',gfMineUndo:'あなたが予約済み — タップで取消',gfNamePrompt:'あなたの名前（予約済みと分かるよう表示されます）：',gfReservedOk:'🎁 予約完了！このギフトはあなたから。',gfTooLate:'あっ — 数秒前に予約されました！',gfCancelled:'予約を取り消しました。',gfErrReserve:'予約できませんでした — 再試行してください。',gfErrCancel:'取消できませんでした — 再試行してください。',gfMadeWith:'作成：',gfSomeone:'誰か',gfDefault:'ギフトリスト',shTitle:'共有リスト',shNew:'新しい共有リスト',shEmpty1:'まだ共有リストがありません。',shEmpty2:'作成してリアルタイムで一緒に計画。',shDefault:'共有リスト',shOur:'私たちのリスト',shItems:'件',shMembers:'人のメンバー',shYouOwn:'あなたが作成',shInvite:'招待',shNamePrompt:'共有リストの名前：',shInviteLink:'招待リンク：',shInviteCopied:'招待リンクをコピー — 誰にでも共有できます！',shConfirmDel:'全員のためにこのリストを削除しますか？元に戻せません。',shDeleted:'共有リストを削除しました。',shNoItems:'まだ項目がありません。',shPasteFirst:'下にリンクを貼り付けて最初の項目を追加。',shPastePh:'商品リンクを貼り付け…',shAddBtn:'追加',shFetching:'取得中…',shErrCreate:'リストを作成できませんでした。',shErrOpen:'リストを開けませんでした。',shErrLoad:'共有リストを読み込めませんでした。',shNotFound:'リストが見つかりません。',shInvalidLink:'有効なリンクを入力してください（https://…）。',shInvalidInvite:'招待が無効か期限切れです。',shSignIn:'共有リストを使うにはサインインしてください。',shJoinSignIn:'このリストに参加するにはサインインしてください。',shErrJoin:'リストに参加できませんでした。',shSyncFail:'同期失敗 — 接続を確認してください。',profCloud:'クラウドバックアップ',profAI:'AIプロフィール',profManage:'サブスクリプション管理',signInReq:'サインインが必要です。',legalPre:'続行すると次に同意したことになります：',legalTerms:'利用規約',legalAnd:'および',legalPrivacy:'プライバシーポリシー',pfSharedD:'リアルタイムで一緒に計画 — 家、旅行、ギフト。',pfGiftN:'ギフトモード',pfGiftD:'友達がギフトを予約。重複なし。',pfExtN:'ブラウザ拡張機能',pfExtD:'どのサイトからもワンクリックで保存。',pfSaveN:'貯金目標',pfSaveD:'願い事ごとの貯金を記録。',pfRemN:'スマートリマインダー',pfRemD:'買い時に通知。',pfCheapD:'ストア間の価格を即座に比較。',pfStatsN:'高度な統計',pfStatsD:'支出と習慣を深く分析。',pfTasteN:'AI好みプロフィール',pfTasteD:'あなたのスタイルの指紋。',pfMoodN:'高度なムードボード',pfMoodD:'フルスクリーン編集、ラベル、キャプション。',pfPrioN:'新機能の優先アクセス',pfPrioD:'すべての新機能を最初に。',spAI:'AI支出分析',spAvg:'平均価格',spTop:'トップカテゴリ',spConv:'購入率',spValue:'ウィッシュリスト総額',spAdv:'高度な分析',spLocked:'Vault Plusで利用可能',spUpgrade:'アップグレード →',pnText:'🍪 Vaultはアプリの動作に必要な<b>技術的ストレージのみ</b>を使用します（サインイン、データ、設定）。トラッキング、広告、プロファイリングは一切なし。',pnOk:'OK'},
+ru:{ttCompare:'Сравнить',ttDelete:'Удалить',ttOpen:'Открыть',prioBadge:'Приоритет',detInfo:'Информация',detRating:'Оценка',detPhone:'Телефон',detCuisine:'Кухня',themeBg:'Фон',themeAccent:'Акцент',fbarAnalyzing:'Анализ ссылки…',retryFill:'Повторить автозаполнение',importedN:'элементов импортировано.',nothingShare:'Нечего делиться.',nothingImport:'Нечего импортировать.',amazonEmpty:'В этом списке Amazon не найдено товаров. Возможно, он приватный.',roBy:'Общий Vault',roReadOnly:'элементов · только чтение',roImportBtn:'Импортировать в мой vault',roAlreadyIn:'уже в vault',noItemsShort:'Нет элементов',moodCaptionPh:'Добавить подпись...',colsTt:'колонки',layoutEdTt:'Журнальная вёрстка',bgDarkTt:'Тёмный фон',bgLightTt:'Светлый фон',bgCreamTt:'Кремовый фон',noneLbl:'Нет',addWishTitle:'Добавить в вишлист',svTitle:'Цель накопления',svUpsell:'Отслеживайте, сколько вы отложили →',svToGo:'осталось',svDoneMsg:'🎉 Цель достигнута — побалуйте себя!',svCustom:'+ сумма',svPromptAmount:'Сколько вы отложили?',svInvalidAmount:'Введите корректную сумму.',svConfirmReset:'Сбросить накопления для этого элемента?',svToastDone:'🎉 Цель достигнута — можно покупать!',svSavedLbl:'отложено',remTitle:'Напоминание',remUpsell:'Получите сигнал, когда придёт время →',remNone:'Не задано',remDueTag:'пора!',remRemove:'✕ Удалить напоминание',remTomorrow:'Завтра',remWeek:'Через 1 неделю',remMonth:'Через 1 месяц',remEom:'Конец месяца',remPick:'📅 Выбрать дату',remPrompt:'Напомнить (ГГГГ-ММ-ДД):',remInvalid:'Неверная дата — формат ГГГГ-ММ-ДД.',remFuture:'Выберите будущую дату.',remSetFor:'🔔 Напоминание на',remBannerTitle:'Напоминания',remMore:'ещё',chBtn:'🔍 Найти дешевле',chTitle:'🔍 Найдите дешевле',chSavedAt:'Вы сохранили по цене',chBeat:'— найдите ниже:',chSearchAll:'Искать этот товар в магазинах:',chPh:'Название товара…',chEmptyQ:'Введите название товара.',chSubGshop:'Сравните сотни магазинов',chSubTrova:'Итальянский агрегатор цен',chSubIdealo:'История и сравнение цен',chSubAmazon:'Проверьте цену на маркетплейсе',chSubEbay:'Новое и б/у',gfTitle:'🎁 Списки подарков',gfNew:'Новый список подарков',gfEmptyHtml:'Пока нет списков подарков.<br>Создайте для дня рождения, Нового года, свадьбы…<br>Друзья бронируют подарки — никто не купит одно и то же.',gfGiftsLbl:'подарков',gfReservedLbl:'забронировано',gfCopyLink:'Копировать ссылку',gfChoose:'Выберите подарки',gfNamePh:'Название — напр. День рождения 🎂',gfCreateBtn:'Создать список →',gfSelectOne:'Выберите хотя бы один подарок.',gfLinkCopied:'🎁 Ссылка скопирована — отправьте близким!',gfConfirmDel:'Удалить этот список? Гости больше его не увидят.',gfDeleted:'Список подарков удалён.',gfSignIn:'Войдите, чтобы использовать списки подарков.',gfAddFirst:'Сначала добавьте товары в свой vault.',gfErrCreate:'Не удалось создать список.',gfErrDelete:'Не удалось удалить.',gfErrLoad:'Не удалось загрузить списки.',gfGone:'Этот список подарков больше не существует.',gfErrOpen:'Не удалось открыть список.',gfPubSub:'Выберите подарок и забронируйте — все видят, что уже занято,<br>и никто не купит одно и то же дважды.',gfTake:'🎁 Беру этот',gfTakenBy:'🎁 Занято:',gfMineUndo:'Забронировано вами — нажмите для отмены',gfNamePrompt:'Ваше имя (видно другим, чтобы знали, что занято):',gfReservedOk:'🎁 Забронировано! Этот подарок за вами.',gfTooLate:'Упс — кто-то забронировал секунду назад!',gfCancelled:'Бронь отменена.',gfErrReserve:'Не удалось забронировать — попробуйте ещё раз.',gfErrCancel:'Не удалось отменить — попробуйте ещё раз.',gfMadeWith:'Создано в',gfSomeone:'кто-то',gfDefault:'Список подарков',shTitle:'Общие списки',shNew:'Новый общий список',shEmpty1:'Пока нет общих списков.',shEmpty2:'Создайте, чтобы планировать вместе в реальном времени.',shDefault:'Общий список',shOur:'Наш список',shItems:'элементов',shMembers:'участников',shYouOwn:'ваш список',shInvite:'Пригласить',shNamePrompt:'Назовите общий список:',shInviteLink:'Ссылка-приглашение:',shInviteCopied:'Ссылка скопирована — поделитесь с кем угодно!',shConfirmDel:'Удалить список для всех? Это нельзя отменить.',shDeleted:'Общий список удалён.',shNoItems:'Пока нет элементов.',shPasteFirst:'Вставьте ссылку ниже, чтобы добавить первый.',shPastePh:'Вставьте ссылку на товар…',shAddBtn:'Добавить',shFetching:'Загрузка…',shErrCreate:'Не удалось создать список.',shErrOpen:'Не удалось открыть список.',shErrLoad:'Не удалось загрузить списки.',shNotFound:'Список не найден.',shInvalidLink:'Введите корректную ссылку (https://…).',shInvalidInvite:'Приглашение недействительно или истекло.',shSignIn:'Войдите, чтобы использовать общие списки.',shJoinSignIn:'Войдите, чтобы присоединиться к списку.',shErrJoin:'Не удалось присоединиться.',shSyncFail:'Ошибка синхронизации — проверьте соединение.',profCloud:'Облачная копия',profAI:'AI-профиль',profManage:'Управление подпиской',signInReq:'Требуется вход.',legalPre:'Продолжая, вы принимаете',legalTerms:'Условия использования',legalAnd:'и',legalPrivacy:'Политику конфиденциальности',pfSharedD:'Планируйте вместе в реальном времени — дом, поездки, подарки.',pfGiftN:'Режим подарков',pfGiftD:'Друзья бронируют подарки. Без дублей.',pfExtN:'Расширение браузера',pfExtD:'Сохраняйте с любого сайта в один клик.',pfSaveN:'Цели накоплений',pfSaveD:'Отслеживайте, сколько отложено на каждое желание.',pfRemN:'Умные напоминания',pfRemD:'Сигнал, когда пора покупать.',pfCheapD:'Мгновенное сравнение цен по магазинам.',pfStatsN:'Расширенная статистика',pfStatsD:'Глубокий анализ трат и привычек.',pfTasteN:'AI-профиль вкуса',pfTasteD:'Отпечаток вашего стиля.',pfMoodN:'Продвинутые мудборды',pfMoodD:'Полный экран, метки и подписи.',pfPrioN:'Приоритет новых функций',pfPrioD:'Все новинки — сначала вам.',spAI:'AI-анализ расходов',spAvg:'Средняя цена',spTop:'Топ-категория',spConv:'Конверсия',spValue:'Стоимость вишлиста',spAdv:'Расширенная аналитика',spLocked:'Доступно с Vault Plus',spUpgrade:'Улучшить →',pnText:'🍪 Vault использует <b>только техническое хранилище</b>, необходимое для работы (вход, ваши данные, настройки). Без трекинга, рекламы и профилирования.',pnOk:'OK'},
+pl:{ttCompare:'Porównaj',ttDelete:'Usuń',ttOpen:'Otwórz',prioBadge:'Priorytet',detInfo:'Informacje',detRating:'Ocena',detPhone:'Telefon',detCuisine:'Kuchnia',themeBg:'Tło',themeAccent:'Akcent',fbarAnalyzing:'Analizowanie linku…',retryFill:'Ponów autouzupełnianie',importedN:'elementów zaimportowano.',nothingShare:'Brak elementów do udostępnienia.',nothingImport:'Brak elementów do importu.',amazonEmpty:'Nie znaleziono produktów na tej liście Amazon. Może być prywatna.',roBy:'Udostępniony Vault',roReadOnly:'elementów · tylko odczyt',roImportBtn:'Importuj do mojego vault',roAlreadyIn:'już w vault',noItemsShort:'Brak elementów',moodCaptionPh:'Dodaj podpis...',colsTt:'kolumny',layoutEdTt:'Układ edytorski',bgDarkTt:'Ciemne tło',bgLightTt:'Jasne tło',bgCreamTt:'Kremowe tło',noneLbl:'Brak',addWishTitle:'Dodaj do listy życzeń',svTitle:'Cel oszczędzania',svUpsell:'Śledź, ile odłożyłeś →',svToGo:'brakuje',svDoneMsg:'🎉 Cel osiągnięty — spraw sobie prezent!',svCustom:'+ kwota',svPromptAmount:'Ile odłożyłeś?',svInvalidAmount:'Podaj prawidłową kwotę.',svConfirmReset:'Zresetować oszczędności dla tego elementu?',svToastDone:'🎉 Cel osiągnięty — możesz kupić!',svSavedLbl:'odłożone',remTitle:'Przypomnienie',remUpsell:'Otrzymaj powiadomienie we właściwym momencie →',remNone:'Brak',remDueTag:'czas minął!',remRemove:'✕ Usuń przypomnienie',remTomorrow:'Jutro',remWeek:'Za 1 tydzień',remMonth:'Za 1 miesiąc',remEom:'Koniec miesiąca',remPick:'📅 Wybierz datę',remPrompt:'Przypomnij mi (RRRR-MM-DD):',remInvalid:'Nieprawidłowa data — użyj RRRR-MM-DD.',remFuture:'Wybierz przyszłą datę.',remSetFor:'🔔 Przypomnienie ustawione na',remBannerTitle:'Przypomnienia',remMore:'więcej',chBtn:'🔍 Znajdź taniej',chTitle:'🔍 Znajdź to taniej',chSavedAt:'Zapisano w cenie',chBeat:'— pobij tę cenę:',chSearchAll:'Szukaj tego produktu w sklepach:',chPh:'Nazwa produktu…',chEmptyQ:'Wpisz nazwę produktu.',chSubGshop:'Porównaj setki sklepów',chSubTrova:'Włoska porównywarka cen',chSubIdealo:'Historia i porównanie cen',chSubAmazon:'Sprawdź cenę na marketplace',chSubEbay:'Nowe i używane okazje',gfTitle:'🎁 Listy prezentów',gfNew:'Nowa lista prezentów',gfEmptyHtml:'Brak list prezentów.<br>Stwórz na urodziny, święta lub ślub…<br>Znajomi rezerwują prezenty — nikt nie kupi tego samego.',gfGiftsLbl:'prezentów',gfReservedLbl:'zarezerwowane',gfCopyLink:'Kopiuj link',gfChoose:'Wybierz prezenty',gfNamePh:'Nazwa — np. Urodziny 🎂',gfCreateBtn:'Utwórz listę prezentów →',gfSelectOne:'Wybierz przynajmniej jeden prezent.',gfLinkCopied:'🎁 Link skopiowany — wyślij bliskim!',gfConfirmDel:'Usunąć tę listę? Goście już jej nie zobaczą.',gfDeleted:'Lista prezentów usunięta.',gfSignIn:'Zaloguj się, aby używać list prezentów.',gfAddFirst:'Najpierw dodaj produkty do swojego vault.',gfErrCreate:'Nie udało się utworzyć listy.',gfErrDelete:'Nie udało się usunąć.',gfErrLoad:'Nie udało się wczytać list.',gfGone:'Ta lista prezentów już nie istnieje.',gfErrOpen:'Nie udało się otworzyć listy.',gfPubSub:'Wybierz prezent i zarezerwuj — wszyscy widzą, co zajęte,<br>nikt nie kupi tego samego dwa razy.',gfTake:'🎁 Biorę ten',gfTakenBy:'🎁 Zajęte przez',gfMineUndo:'Zarezerwowane przez Ciebie — dotknij, by cofnąć',gfNamePrompt:'Twoje imię (widoczne dla innych):',gfReservedOk:'🎁 Zarezerwowane! Ten prezent jest Twój.',gfTooLate:'Ups — ktoś właśnie zarezerwował!',gfCancelled:'Rezerwacja anulowana.',gfErrReserve:'Nie udało się zarezerwować — spróbuj ponownie.',gfErrCancel:'Nie udało się anulować — spróbuj ponownie.',gfMadeWith:'Stworzone w',gfSomeone:'ktoś',gfDefault:'Lista prezentów',shTitle:'Wspólne listy',shNew:'Nowa wspólna lista',shEmpty1:'Brak wspólnych list.',shEmpty2:'Stwórz jedną, by planować razem w czasie rzeczywistym.',shDefault:'Wspólna lista',shOur:'Nasza lista',shItems:'elementów',shMembers:'członków',shYouOwn:'Twoja lista',shInvite:'Zaproś',shNamePrompt:'Nazwij wspólną listę:',shInviteLink:'Link z zaproszeniem:',shInviteCopied:'Link skopiowany — podziel się z kimkolwiek!',shConfirmDel:'Usunąć tę listę dla wszystkich? Nie można cofnąć.',shDeleted:'Wspólna lista usunięta.',shNoItems:'Brak elementów.',shPasteFirst:'Wklej link poniżej, aby dodać pierwszy.',shPastePh:'Wklej link do produktu…',shAddBtn:'Dodaj',shFetching:'Pobieranie…',shErrCreate:'Nie udało się utworzyć listy.',shErrOpen:'Nie udało się otworzyć listy.',shErrLoad:'Nie udało się wczytać list.',shNotFound:'Nie znaleziono listy.',shInvalidLink:'Podaj prawidłowy link (https://…).',shInvalidInvite:'Zaproszenie nieważne lub wygasło.',shSignIn:'Zaloguj się, aby używać wspólnych list.',shJoinSignIn:'Zaloguj się, aby dołączyć do listy.',shErrJoin:'Nie udało się dołączyć.',shSyncFail:'Błąd synchronizacji — sprawdź połączenie.',profCloud:'Kopia w chmurze',profAI:'Profil AI',profManage:'Zarządzaj subskrypcją',signInReq:'Wymagane logowanie.',legalPre:'Kontynuując akceptujesz',legalTerms:'Regulamin',legalAnd:'oraz',legalPrivacy:'Politykę prywatności',pfSharedD:'Planujcie razem w czasie rzeczywistym — dom, podróże, prezenty.',pfGiftN:'Tryb prezentów',pfGiftD:'Znajomi rezerwują prezenty. Koniec z dublami.',pfExtN:'Rozszerzenie przeglądarki',pfExtD:'Zapisuj z każdej strony jednym kliknięciem.',pfSaveN:'Cele oszczędzania',pfSaveD:'Śledź, ile odkładasz na każde marzenie.',pfRemN:'Inteligentne przypomnienia',pfRemD:'Powiadomienie, gdy czas kupić.',pfCheapD:'Błyskawiczne porównanie cen w sklepach.',pfStatsN:'Zaawansowane statystyki',pfStatsD:'Dogłębna analiza wydatków i nawyków.',pfTasteN:'Profil gustu AI',pfTasteD:'Odcisk Twojego stylu.',pfMoodN:'Zaawansowane moodboardy',pfMoodD:'Pełny ekran, etykiety i podpisy.',pfPrioN:'Priorytet nowości',pfPrioD:'Każda nowa funkcja najpierw u Ciebie.',spAI:'Analiza wydatków AI',spAvg:'Średnia cena',spTop:'Top kategoria',spConv:'Współczynnik konwersji',spValue:'Wartość listy życzeń',spAdv:'Zaawansowana analityka',spLocked:'Dostępne z Vault Plus',spUpgrade:'Ulepsz →',pnText:'🍪 Vault używa <b>wyłącznie technicznego przechowywania</b> niezbędnego do działania (logowanie, Twoje dane, preferencje). Bez śledzenia, reklam i profilowania.',pnOk:'OK'},
+de:{ttCompare:'Vergleichen',ttDelete:'Löschen',ttOpen:'Öffnen',prioBadge:'Priorität',detInfo:'Informationen',detRating:'Bewertung',detPhone:'Telefon',detCuisine:'Küche',themeBg:'Hintergrund',themeAccent:'Akzent',fbarAnalyzing:'Link wird analysiert…',retryFill:'Auto-Ausfüllen wiederholen',importedN:'Elemente importiert.',nothingShare:'Nichts zum Teilen.',nothingImport:'Nichts zum Importieren.',amazonEmpty:'Keine Produkte in dieser Amazon-Liste gefunden. Sie ist evtl. privat.',roBy:'Geteilter Vault',roReadOnly:'Elemente · nur Lesen',roImportBtn:'In meinen Vault importieren',roAlreadyIn:'bereits im Vault',noItemsShort:'Keine Elemente',moodCaptionPh:'Bildunterschrift hinzufügen...',colsTt:'Spalten',layoutEdTt:'Editorial-Layout',bgDarkTt:'Dunkler Hintergrund',bgLightTt:'Heller Hintergrund',bgCreamTt:'Cremefarbener Hintergrund',noneLbl:'Keine',addWishTitle:'Zur Wunschliste hinzufügen',svTitle:'Sparziel',svUpsell:'Verfolge, wie viel du beiseitegelegt hast →',svToGo:'fehlen noch',svDoneMsg:'🎉 Ziel erreicht — gönn es dir!',svCustom:'+ Betrag',svPromptAmount:'Wie viel hast du beiseitegelegt?',svInvalidAmount:'Gib einen gültigen Betrag ein.',svConfirmReset:'Ersparnisse für dieses Element zurücksetzen?',svToastDone:'🎉 Ziel erreicht — du kannst es kaufen!',svSavedLbl:'gespart',remTitle:'Erinnerung',remUpsell:'Werde benachrichtigt, wenn es Zeit ist →',remNone:'Keine',remDueTag:'fällig!',remRemove:'✕ Erinnerung entfernen',remTomorrow:'Morgen',remWeek:'In 1 Woche',remMonth:'In 1 Monat',remEom:'Monatsende',remPick:'📅 Datum wählen',remPrompt:'Erinnere mich am (JJJJ-MM-TT):',remInvalid:'Ungültiges Datum — nutze JJJJ-MM-TT.',remFuture:'Wähle ein zukünftiges Datum.',remSetFor:'🔔 Erinnerung gesetzt für',remBannerTitle:'Erinnerungen',remMore:'weitere',chBtn:'🔍 Günstiger finden',chTitle:'🔍 Finde es günstiger',chSavedAt:'Gespeichert für',chBeat:'— unterbiete diesen Preis:',chSearchAll:'Suche dieses Produkt in anderen Shops:',chPh:'Produktname…',chEmptyQ:'Gib einen Produktnamen ein.',chSubGshop:'Vergleiche hunderte Shops',chSubTrova:'Italienischer Preisvergleich',chSubIdealo:'Preisverlauf & Vergleich',chSubAmazon:'Marketplace-Preis prüfen',chSubEbay:'Neu- & Gebraucht-Angebote',gfTitle:'🎁 Geschenklisten',gfNew:'Neue Geschenkliste',gfEmptyHtml:'Noch keine Geschenklisten.<br>Erstelle eine für Geburtstag, Weihnachten, Hochzeit…<br>Freunde reservieren Geschenke — niemand kauft doppelt.',gfGiftsLbl:'Geschenke',gfReservedLbl:'reserviert',gfCopyLink:'Link kopieren',gfChoose:'Geschenke auswählen',gfNamePh:'Name — z.B. Geburtstag 🎂',gfCreateBtn:'Geschenkliste erstellen →',gfSelectOne:'Wähle mindestens ein Geschenk.',gfLinkCopied:'🎁 Link kopiert — schick ihn Freunden & Familie!',gfConfirmDel:'Diese Geschenkliste löschen? Gäste sehen sie nicht mehr.',gfDeleted:'Geschenkliste gelöscht.',gfSignIn:'Melde dich an, um Geschenklisten zu nutzen.',gfAddFirst:'Füge zuerst Produkte zu deinem Vault hinzu.',gfErrCreate:'Liste konnte nicht erstellt werden.',gfErrDelete:'Löschen fehlgeschlagen.',gfErrLoad:'Listen konnten nicht geladen werden.',gfGone:'Diese Geschenkliste existiert nicht mehr.',gfErrOpen:'Liste konnte nicht geöffnet werden.',gfPubSub:'Wähle ein Geschenk und reserviere es — alle sehen, was vergeben ist,<br>niemand kauft dasselbe doppelt.',gfTake:'🎁 Das übernehme ich',gfTakenBy:'🎁 Vergeben an',gfMineUndo:'Von dir reserviert — tippen zum Rückgängigmachen',gfNamePrompt:'Dein Name (für andere sichtbar):',gfReservedOk:'🎁 Reserviert! Dieses Geschenk kommt von dir.',gfTooLate:'Ups — gerade eben reserviert worden!',gfCancelled:'Reservierung storniert.',gfErrReserve:'Reservierung fehlgeschlagen — versuch es erneut.',gfErrCancel:'Stornierung fehlgeschlagen — versuch es erneut.',gfMadeWith:'Erstellt mit',gfSomeone:'jemand',gfDefault:'Geschenkliste',shTitle:'Geteilte Listen',shNew:'Neue geteilte Liste',shEmpty1:'Noch keine geteilten Listen.',shEmpty2:'Erstelle eine, um gemeinsam in Echtzeit zu planen.',shDefault:'Geteilte Liste',shOur:'Unsere Liste',shItems:'Elemente',shMembers:'Mitglieder',shYouOwn:'deine Liste',shInvite:'Einladen',shNamePrompt:'Benenne deine geteilte Liste:',shInviteLink:'Einladungslink:',shInviteCopied:'Einladungslink kopiert — teile ihn mit wem du willst!',shConfirmDel:'Diese Liste für alle löschen? Nicht rückgängig machbar.',shDeleted:'Geteilte Liste gelöscht.',shNoItems:'Noch keine Elemente.',shPasteFirst:'Füge unten einen Link ein, um das erste hinzuzufügen.',shPastePh:'Produktlink einfügen…',shAddBtn:'Hinzufügen',shFetching:'Lade…',shErrCreate:'Liste konnte nicht erstellt werden.',shErrOpen:'Liste konnte nicht geöffnet werden.',shErrLoad:'Listen konnten nicht geladen werden.',shNotFound:'Liste nicht gefunden.',shInvalidLink:'Gib einen gültigen Link ein (https://…).',shInvalidInvite:'Einladung ungültig oder abgelaufen.',shSignIn:'Melde dich an, um geteilte Listen zu nutzen.',shJoinSignIn:'Melde dich an, um dieser Liste beizutreten.',shErrJoin:'Beitritt fehlgeschlagen.',shSyncFail:'Sync fehlgeschlagen — prüfe deine Verbindung.',profCloud:'Cloud-Backup',profAI:'KI-Profil',profManage:'Abo verwalten',signInReq:'Anmeldung erforderlich.',legalPre:'Mit dem Fortfahren akzeptierst du die',legalTerms:'Nutzungsbedingungen',legalAnd:'und die',legalPrivacy:'Datenschutzerklärung',pfSharedD:'Plant gemeinsam in Echtzeit — Zuhause, Reisen, Geschenke.',pfGiftN:'Geschenkmodus',pfGiftD:'Freunde reservieren Geschenke. Keine Duplikate.',pfExtN:'Browser-Erweiterung',pfExtD:'Speichere von jeder Website mit einem Klick.',pfSaveN:'Sparziele',pfSaveD:'Verfolge, was du für jeden Wunsch zurücklegst.',pfRemN:'Smarte Erinnerungen',pfRemD:'Benachrichtigung, wenn es Zeit zum Kaufen ist.',pfCheapD:'Preise sofort über Shops hinweg vergleichen.',pfStatsN:'Erweiterte Statistiken',pfStatsD:'Tiefe Einblicke in Ausgaben und Gewohnheiten.',pfTasteN:'KI-Geschmacksprofil',pfTasteD:'Der Fingerabdruck deines Stils.',pfMoodN:'Erweiterte Mood Boards',pfMoodD:'Vollbild, Labels und Bildunterschriften.',pfPrioN:'Neue Funktionen zuerst',pfPrioD:'Jede neue Funktion bekommst du zuerst.',spAI:'KI-Ausgabenanalyse',spAvg:'Ø Preis',spTop:'Top-Kategorie',spConv:'Kaufquote',spValue:'Wunschlisten-Wert',spAdv:'Erweiterte Analysen',spLocked:'Verfügbar mit Vault Plus',spUpgrade:'Upgraden →',pnText:'🍪 Vault nutzt <b>nur technische Speicherung</b>, die für die App nötig ist (Anmeldung, deine Daten, Einstellungen). Kein Tracking, keine Werbung, kein Profiling.',pnOk:'OK'}
+};
+Object.keys(TRANS_EXT).forEach(l=>{if(TRANS[l])Object.assign(TRANS[l],TRANS_EXT[l]);});
 function t(k){const l=TRANS[S.lang||'en']||TRANS.en;return l[k]??TRANS.en[k]??k;}
 function ico(name,sz=14){return `<svg class="ico" width="${sz}" height="${sz}" viewBox="0 0 16 16"><use href="#ic-${name}"/></svg>`;}
 const _SECT_ICONS={'ds-moda':'shirt','ds-tech':'laptop','ds-casa':'home','ds-sport':'dumbbell','ds-varie':'tag','ds-rist':'utensils','ds-negozi':'cart','ds-posti':'compass','ds-viaggi':'plane'};
@@ -2455,7 +2471,7 @@ function cardHTML(item){
   const giftBadge=item.giftFor?`<div class="c-gift">${ico('gift',10)} ${esc(item.giftFor)}</div>`:'';
   const qty=item.qty>1?`<span class="c-qty">×${item.qty}</span>`:'';
   const voiceIco=item.voiceMemo?`<span title="${t('lbl_voice')}" style="color:var(--t3);display:inline-flex;align-items:center">${ico('mic',11)}</span>`:'';
-  const cmpChk=`<input type="checkbox" class="cmp-chk" ${cmpSelected.has(item.id)?'checked':''} onclick="event.stopPropagation();toggleCmpItem('${item.id}')" title="Confronta">`;
+  const cmpChk=`<input type="checkbox" class="cmp-chk" ${cmpSelected.has(item.id)?'checked':''} onclick="event.stopPropagation();toggleCmpItem('${item.id}')" title="${t('ttCompare')}">`;
   let priceLine='<div></div>';
   if(item.price>0){
     const total=item.qty>1?item.price*item.qty:item.price;
@@ -2482,8 +2498,8 @@ function cardHTML(item){
       <button class="c-star ${item.star?'on':''}" onclick="event.stopPropagation();star('${item.id}')">${item.star?ico('star-filled',13):ico('star',13)}</button>
     </div>
     <div class="c-acts">
-      <button class="ca del" onclick="event.stopPropagation();del('${item.id}')" title="Elimina">✕</button>
-      <a class="ca" href="${safeUrl(item.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Apri">↗</a>
+      <button class="ca del" onclick="event.stopPropagation();del('${item.id}')" title="${t('ttDelete')}">✕</button>
+      <a class="ca" href="${safeUrl(item.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="${t('ttOpen')}">↗</a>
     </div>
     <div class="c-body">
       ${sec?`<div class="c-tag">${secIcon(sec,11)} ${esc(sec.name)}</div>`:''}
@@ -2503,7 +2519,7 @@ function cardHTML(item){
       ${giftBadge}
       ${voiceIco}
       ${item.remindAt?`<div class="c-rem${item.remindAt<=Date.now()?' due':''}">${ico('bell-ring',9)} ${_remFmtDate(item.remindAt)}</div>`:''}
-      ${(item.saved>0&&item.price>0&&item.status!=='comprato')?(()=>{const g=item.price*(item.qty||1);const s=Math.min(item.saved,g);const p=Math.min(100,Math.round(s/g*100));return `<div class="c-sv"><div class="sv-bar"><div class="sv-bar-fill${s>=g?' done':''}" style="width:${p}%"></div></div><div class="c-sv-lbl"><span>${ico('wallet',9)} saved</span><b>${p}%</b></div></div>`;})():''}
+      ${(item.saved>0&&item.price>0&&item.status!=='comprato')?(()=>{const g=item.price*(item.qty||1);const s=Math.min(item.saved,g);const p=Math.min(100,Math.round(s/g*100));return `<div class="c-sv"><div class="sv-bar"><div class="sv-bar-fill${s>=g?' done':''}" style="width:${p}%"></div></div><div class="c-sv-lbl"><span>${ico('wallet',9)} ${t('svSavedLbl')}</span><b>${p}%</b></div></div>`;})():''}
     </div>
     <span class="drag-handle" onclick="event.stopPropagation()">⠿</span>
   </div>`;
@@ -2556,10 +2572,10 @@ function openDetMo(id){
     ${sec?`· <span style="color:var(--accent)">${secIcon(sec,12)} ${esc(sec.name)}</span>`:''}
   </div>
   <div class="det-title">${esc(item.title||domain)}</div>`;
-  if(item.price>0) h+=`<div class="det-price">${cur()}${fmt(item.price)}${(!item.isPlace&&item.type!=='luogo')?`<button class="cheap-btn" onclick="openCheaper('${item.id}')">🔍 Find cheaper${isPlus()?'':' '+ico('crown',9)}</button>`:''}</div>`;
+  if(item.price>0) h+=`<div class="det-price">${cur()}${fmt(item.price)}${(!item.isPlace&&item.type!=='luogo')?`<button class="cheap-btn" onclick="openCheaper('${item.id}')">${t('chBtn')}${isPlus()?'':' '+ico('crown',9)}</button>`:''}</div>`;
   h+=`<div class="det-badges">
     <span class="det-badge ${st.cls}" style="background:${st.cls==='st-voglio'?'var(--ax)':st.cls==='st-ordinato'?'var(--yx)':st.cls==='st-comprato'?'var(--gx)':'var(--bx)'};color:${st.color}">${st.label}</span>
-    ${item.star?`<span class="det-badge" style="background:var(--yx);color:var(--yellow);display:inline-flex;align-items:center;gap:4px">${ico('star-filled',10)} Priorità</span>`:''}
+    ${item.star?`<span class="det-badge" style="background:var(--yx);color:var(--yellow);display:inline-flex;align-items:center;gap:4px">${ico('star-filled',10)} ${t('prioBadge')}</span>`:''}
     ${item.priceRange?`<span class="det-badge" style="background:var(--gx);color:var(--green)">${esc(item.priceRange)}</span>`:''}
   </div>`;
   if(item.note) h+=`<div class="det-note" style="display:flex;align-items:flex-start;gap:6px">${ico('note',12)} <span>${esc(item.note)}</span></div>`;
@@ -2588,12 +2604,12 @@ function openDetMo(id){
   if(!item.archived) h+=remSectionHTML(item);
   if(item.type==='luogo'){
     const cells=[];
-    if(item.rating) cells.push({k:'Valutazione',v:`<span style="color:var(--yellow)">${stars(item.rating)}</span> ${item.rating}/5${item.reviewCount?` (${item.reviewCount} rec.)`:''}`});
+    if(item.rating) cells.push({k:t('detRating'),v:`<span style="color:var(--yellow)">${stars(item.rating)}</span> ${item.rating}/5${item.reviewCount?` (${item.reviewCount})`:''}`});
     if(item.address) cells.push({k:t('detAddress'),v:esc(item.address)});
-    if(item.phone) cells.push({k:'Telefono',v:esc(item.phone)});
-    if(item.cuisine) cells.push({k:'Cucina',v:esc(item.cuisine)});
+    if(item.phone) cells.push({k:t('detPhone'),v:esc(item.phone)});
+    if(item.cuisine) cells.push({k:t('detCuisine'),v:esc(item.cuisine)});
     if(item.hours) cells.push({k:t('detHours'),v:esc(item.hours)});
-    if(cells.length) h+=`<div class="sh">Informazioni</div><div class="info-grid">${cells.map(c=>`<div class="ic"><div class="ik">${c.k}</div><div class="iv">${c.v}</div></div>`).join('')}</div>`;
+    if(cells.length) h+=`<div class="sh">${t('detInfo')}</div><div class="info-grid">${cells.map(c=>`<div class="ic"><div class="ik">${c.k}</div><div class="iv">${c.v}</div></div>`).join('')}</div>`;
     if(item.menu?.length) h+=`<div class="sh">Menu</div>${item.menu.map(m=>`<div class="menu-row"><span>${esc(m.name)}</span>${m.price?`<span class="menu-price">${cur()}${esc(m.price)}</span>`:''}</div>`).join('')}`;
     if(item.reviews?.length) h+=`<div class="sh">${t('detReviews')}</div>${item.reviews.map(r=>`<div class="rev-card"><div class="rev-hd"><div class="rev-av">${esc((r.author||'?')[0].toUpperCase())}</div><div class="rev-nm">${esc(r.author||'Utente')}</div>${r.rating?`<div class="rev-st">${'★'.repeat(Math.round(r.rating))}</div>`:''}</div><div class="rev-tx">${esc(r.text)}</div></div>`).join('')}`;
   }
@@ -3457,15 +3473,15 @@ function _renderThemePanel(){
       <div class="tp-name">${p.name}</div></div>`).join('')}</div>
     <div class="tp-divider" style="margin-top:4px">Custom</div>
     <div class="tp-custom-row">
-      <label>Sfondo</label>
+      <label>${t('themeBg')}</label>
       <input class="tp-color-inp" type="color" value="${cc.bg||'#050505'}" oninput="setCustomColor('bg',this.value)">
     </div>
     <div class="tp-custom-row">
-      <label>Accento</label>
+      <label>${t('themeAccent')}</label>
       <input class="tp-color-inp" type="color" value="${cc.accent||'#b8b8b8'}" oninput="setCustomColor('accent',this.value)">
     </div>
     <div style="padding:4px 12px 10px">
-      <button class="btn-s" style="width:100%;font-size:11px;padding:6px" onclick="resetTheme()">Ripristina default</button>
+      <button class="btn-s" style="width:100%;font-size:11px;padding:6px" onclick="resetTheme()">${t('reset')}</button>
     </div>`;
   requestAnimationFrame(()=>{
     if(_settingsBtn){const r=_settingsBtn.getBoundingClientRect();popup.style.top=Math.max(8,r.top-popup.offsetHeight-8)+'px';}
@@ -3572,7 +3588,7 @@ function importCSV(e){
       });count++;
     });
     save();render();renderSidebar();
-    alert(`${count} elementi importati.`);
+    alert(`${count} ${t('importedN')}`);
     e.target.value='';
   };
   reader.readAsText(file);
@@ -3663,7 +3679,7 @@ function openShareMo(){
 function closeShareMo(){document.getElementById('shareOv').classList.remove('open');}
 async function generateShareLink(sid){
   const items=S.items.filter(i=>!i.archived&&(sid===null?true:i.sid===sid));
-  if(!items.length){alert('Nessun elemento da condividere.');return;}
+  if(!items.length){alert(t('nothingShare'));return;}
   const payload={items,exportedAt:Date.now(),by:S.profile?.name||'Vault'};
   let b64;
   try{b64=await _compress(payload);}
@@ -3687,7 +3703,7 @@ function copyShareLink(){
 // ── READ-ONLY VAULT VIEW (Feature 9) ──
 function showReadOnlyVault(data){
   const items=data.items||[];
-  const by=data.by||'Vault condiviso';
+  const by=data.by||t('roBy');
   const ro=document.getElementById('roOv');
   if(!ro)return;
   const cards=items.map(item=>{
@@ -3703,11 +3719,11 @@ function showReadOnlyVault(data){
       <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 0 6px;border-bottom:1px solid var(--bd);margin-bottom:4px;gap:12px;flex-wrap:wrap">
         <div>
           <div style="font-size:18px;font-weight:800;color:var(--t1)">${esc(by)} — wishlist</div>
-          <div style="font-size:11px;color:var(--t3);margin-top:3px">${items.length} elementi · sola lettura</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:3px">${items.length} ${t('roReadOnly')}</div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn-p" onclick="openImportFromRO(_roData)" style="gap:6px">${ico('import',13)} Importa nel mio vault</button>
-          <button class="btn-s" onclick="document.getElementById('roOv').style.display='none';history.replaceState(null,'',location.pathname)">✕ Chiudi</button>
+          <button class="btn-p" onclick="openImportFromRO(_roData)" style="gap:6px">${ico('import',13)} ${t('roImportBtn')}</button>
+          <button class="btn-s" onclick="document.getElementById('roOv').style.display='none';history.replaceState(null,'',location.pathname)">✕ ${t('close')}</button>
         </div>
       </div>
       <div class="ro-grid">${cards}</div>
@@ -3720,21 +3736,21 @@ function showReadOnlyVault(data){
 let _pendingImport=[];
 function openImportFromRO(data){
   const items=data&&data.items?data.items:[];
-  if(!items.length){alert('Nessun elemento da importare.');return;}
+  if(!items.length){alert(t('nothingImport'));return;}
   const normUrl=u=>(u||'').replace(/\/+$/,'').replace('://www.','://').toLowerCase();
   const existing=new Set(S.items.map(i=>normUrl(i.url)));
   _pendingImport=items.map(item=>({...item,_isDup:existing.has(normUrl(item.url))}));
   const list=_pendingImport.map((item,idx)=>{
     const thumb=item.images&&item.images[0]?`<img src="${esc(item.images[0])}" alt="" style="width:34px;height:34px;border-radius:6px;object-fit:cover;background:var(--s3)" onerror="this.style.display='none'">`:`<div class="imp-row-ph">${ico('bag',16)}</div>`;
     const sub=item.price>0?`${cur()}${fmt(item.price)}`:(getDomain(item.url)||'');
-    const dupTag=item._isDup?` <span style="font-size:9px;background:var(--s3);border-radius:4px;padding:1px 5px;color:var(--t3)">già nel vault</span>`:'';
+    const dupTag=item._isDup?` <span style="font-size:9px;background:var(--s3);border-radius:4px;padding:1px 5px;color:var(--t3)">${t('roAlreadyIn')}</span>`:'';
     return `<div class="imp-row${item._isDup?' imp-dup':''}" data-idx="${idx}">
       <input type="checkbox" style="flex-shrink:0" ${item._isDup?'':'checked'} onchange="_pendingImport[${idx}]._sel=this.checked">
       ${thumb}
       <div class="imp-row-info"><div class="imp-row-title">${esc(item.title||getDomain(item.url))}${dupTag}</div><div class="imp-row-sub">${esc(sub)}</div></div>
     </div>`;
   }).join('');
-  document.getElementById('impList').innerHTML=list||'<div style="padding:10px;color:var(--t3);font-size:12px">Nessun elemento</div>';
+  document.getElementById('impList').innerHTML=list||`<div style="padding:10px;color:var(--t3);font-size:12px">${t('noItemsShort')}</div>`;
   // pre-set _sel
   _pendingImport.forEach(it=>{it._sel=!it._isDup;});
   document.getElementById('importOv').classList.add('open');
@@ -3806,7 +3822,7 @@ async function importAmazonWishlist(url){
       });
     }
     document.body.removeChild(toast);
-    if(!items.length){alert('Nessun prodotto trovato nella lista Amazon. La lista potrebbe essere privata.');return;}
+    if(!items.length){alert(t('amazonEmpty'));return;}
     openImportFromRO({items,by:'Amazon Wishlist',exportedAt:Date.now()});
   }catch(err){
     document.body.removeChild(toast);
@@ -3922,7 +3938,7 @@ function moodCardHTML(item){
       <div class="mood-title-ov">${esc(item.title||'')}</div>
     </div>
     <div class="mood-caption-wrap" onclick="event.stopPropagation()">
-      <textarea class="mood-caption" rows="1" placeholder="Aggiungi didascalia..." data-id="${item.id}" onblur="saveMoodCaption('${item.id}',this.value)" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'">${esc(caption)}</textarea>
+      <textarea class="mood-caption" rows="1" placeholder="${t('moodCaptionPh')}" data-id="${item.id}" onblur="saveMoodCaption('${item.id}',this.value)" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'">${esc(caption)}</textarea>
     </div>
   </div>`;
 }
@@ -4337,7 +4353,7 @@ function _sanitizeImportedItem(raw){
 function _sanitizeImportedVault(data){
   const items=(data&&Array.isArray(data.items)?data.items:[]).slice(0,IMPORT_MAX_ITEMS)
     .map(_sanitizeImportedItem).filter(Boolean);
-  return {items, by:_clampStr(data&&data.by,120)||'Vault condiviso'};
+  return {items, by:_clampStr(data&&data.by,120)||t('roBy')};
 }
 function safeUrl(u){
   if(u==null) return '';
@@ -4451,6 +4467,26 @@ function applyLang(){
   s('imgUploadLbl',t('uploadDevice'));
   {const e=g('profileMoHd');if(e)e.innerHTML=`<svg class="ico" width="16" height="16" viewBox="0 0 16 16" style="margin-right:6px"><use href="#ic-user"/></svg>${t('profileTitle')}`;}
   s('checkoutBackBtn',t('back'));
+  // static elements added later (stats, paste bar, detail link, mood toolbar, privacy notice, legal footer)
+  {const e=g('statsBtn');if(e)e.innerHTML=`<svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-line-chart"/></svg> ${t('statsTitle')}`;}
+  {const e=g('statsMoHd');if(e)e.innerHTML=`<svg class="ico" width="16" height="16" viewBox="0 0 16 16" style="margin-right:6px"><use href="#ic-chart"/></svg>${t('statsTitle')}`;}
+  {const e=g('qaMoHd');if(e)e.innerHTML=`<svg class="ico" width="14" height="14" viewBox="0 0 16 16" style="margin-right:5px"><use href="#ic-plus"/></svg>${t('addWishTitle')}`;}
+  s('pasteGoBtn',t('quickAdd'));
+  {const e=g('detLink');if(e)e.textContent=t('visitSite')+' ↗';}
+  {const e=g('fbarLbl');if(e)e.textContent=t('fbarAnalyzing');}
+  {const e=g('fetchRetryBtn');if(e)e.innerHTML=`<svg width="11" height="11" viewBox="0 0 16 16" style="vertical-align:middle"><use href="#ic-refresh"/></svg> ${t('retryFill')}`;}
+  {const e=g('moodL2');if(e)e.title='2 '+t('colsTt');}
+  {const e=g('moodL3');if(e)e.title='3 '+t('colsTt');}
+  {const e=g('moodL4');if(e)e.title='4 '+t('colsTt');}
+  {const e=g('moodLe');if(e)e.title=t('layoutEdTt');}
+  {const e=g('moodTdark');if(e)e.title=t('bgDarkTt');}
+  {const e=g('moodTlight');if(e)e.title=t('bgLightTt');}
+  {const e=g('moodTcream');if(e)e.title=t('bgCreamTt');}
+  {const e=g('moodFsCloseBtn');if(e)e.innerHTML=`<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 2l12 12M14 2L2 14"/></svg> ${t('close')}`;}
+  {const e=document.querySelector('.none-sw');if(e)e.title=t('noneLbl');}
+  {const e=g('pnTextEl');if(e)e.innerHTML=`${t('pnText')} <a href="privacy.html" target="_blank" rel="noopener" style="color:var(--accent,#c9a227);font-weight:700">${t('legalPrivacy')}</a>`;}
+  s('pnOkBtn',t('pnOk'));
+  {const e=g('authLegal');if(e)e.innerHTML=`${t('legalPre')} <a href="terms.html" target="_blank" rel="noopener" style="color:var(--t2);font-weight:600">${t('legalTerms')}</a> ${t('legalAnd')} <a href="privacy.html" target="_blank" rel="noopener" style="color:var(--t2);font-weight:600">${t('legalPrivacy')}</a>`;}
   // sort options
   const sortSel=g('sortSel');
   if(sortSel){
@@ -4681,27 +4717,27 @@ function _renderStatsPlus(){
     const cats={};S.items.filter(i=>!i.archived&&i.sid).forEach(i=>{cats[i.sid]=(cats[i.sid]||0)+1;});
     const topCat=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
     const topSec=topCat?S.sections.find(s=>s.id===topCat[0]):null;
-    return `<div class="sh" style="margin-top:18px">${ico('sparkle',12)} AI spending analysis <span class="plus-badge" style="margin-left:4px">${ico('crown',9)} Plus</span></div>
+    return `<div class="sh" style="margin-top:18px">${ico('sparkle',12)} ${t('spAI')} <span class="plus-badge" style="margin-left:4px">${ico('crown',9)} Plus</span></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
-      <div class="stat-card"><div class="stat-card-title">Avg item price</div><div class="stat-num" style="font-size:22px">${cur()}${avgP}</div></div>
-      <div class="stat-card"><div class="stat-card-title">Top category</div><div class="stat-num" style="font-size:16px;letter-spacing:0">${topSec?esc(topSec.name):'—'}</div></div>
-      <div class="stat-card"><div class="stat-card-title">Conversion rate</div><div class="stat-num" style="font-size:22px">${convRate}%</div></div>
-      <div class="stat-card"><div class="stat-card-title">Total wishlist value</div><div class="stat-num" style="font-size:18px">${cur()}${fmt(spent)}</div></div>
+      <div class="stat-card"><div class="stat-card-title">${t('spAvg')}</div><div class="stat-num" style="font-size:22px">${cur()}${avgP}</div></div>
+      <div class="stat-card"><div class="stat-card-title">${t('spTop')}</div><div class="stat-num" style="font-size:16px;letter-spacing:0">${topSec?esc(topSec.name):'—'}</div></div>
+      <div class="stat-card"><div class="stat-card-title">${t('spConv')}</div><div class="stat-num" style="font-size:22px">${convRate}%</div></div>
+      <div class="stat-card"><div class="stat-card-title">${t('spValue')}</div><div class="stat-num" style="font-size:18px">${cur()}${fmt(spent)}</div></div>
     </div>`;
   }
-  return `<div class="sh" style="margin-top:18px">${ico('sparkle',12)} Advanced analytics <span class="plus-badge" style="margin-left:4px">${ico('crown',9)} Plus</span></div>
+  return `<div class="sh" style="margin-top:18px">${ico('sparkle',12)} ${t('spAdv')} <span class="plus-badge" style="margin-left:4px">${ico('crown',9)} Plus</span></div>
   <div class="plus-locked-section">
     <div class="plus-locked-blur">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
         <div class="stat-card"><div class="stat-card-title">Avg price</div><div class="stat-num" style="font-size:22px">€94</div></div>
-        <div class="stat-card"><div class="stat-card-title">Top category</div><div class="stat-num" style="font-size:16px;letter-spacing:0">Fashion</div></div>
-        <div class="stat-card"><div class="stat-card-title">Conversion rate</div><div class="stat-num" style="font-size:22px">38%</div></div>
+        <div class="stat-card"><div class="stat-card-title">${t('spTop')}</div><div class="stat-num" style="font-size:16px;letter-spacing:0">Fashion</div></div>
+        <div class="stat-card"><div class="stat-card-title">${t('spConv')}</div><div class="stat-num" style="font-size:22px">38%</div></div>
         <div class="stat-card"><div class="stat-card-title">Wishlist value</div><div class="stat-num" style="font-size:18px">€1,240</div></div>
       </div>
     </div>
     <div class="plus-locked-gate">
-      <span style="font-size:11px;font-weight:700;color:var(--t2)">${ico('lock',12)} Available with Vault Plus</span>
-      <button class="plus-unlock-btn" onclick="document.getElementById('statsOv').classList.remove('open');showPlusModal('advancedStats')">Upgrade →</button>
+      <span style="font-size:11px;font-weight:700;color:var(--t2)">${ico('lock',12)} ${t('spLocked')}</span>
+      <button class="plus-unlock-btn" onclick="document.getElementById('statsOv').classList.remove('open');showPlusModal('advancedStats')">${t('spUpgrade')}</button>
     </div>
   </div>`;
 }
@@ -5040,6 +5076,11 @@ function setAuthMode(mode){
   document.getElementById('authErr').textContent='';
   document.getElementById('forgotBtn').style.display=isReg?'none':'';
   ['authEmail','authPass','authPass2'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('err');});
+  // legal footer + privacy notice follow the auth-screen language too
+  const _tl=k=>(TRANS[_authLang]&&TRANS[_authLang][k])||TRANS.en[k]||k;
+  {const e=document.getElementById('authLegal');if(e)e.innerHTML=`${_tl('legalPre')} <a href="terms.html" target="_blank" rel="noopener" style="color:var(--t2);font-weight:600">${_tl('legalTerms')}</a> ${_tl('legalAnd')} <a href="privacy.html" target="_blank" rel="noopener" style="color:var(--t2);font-weight:600">${_tl('legalPrivacy')}</a>`;}
+  {const e=document.getElementById('pnTextEl');if(e)e.innerHTML=`${_tl('pnText')} <a href="privacy.html" target="_blank" rel="noopener" style="color:var(--accent,#c9a227);font-weight:700">${_tl('legalPrivacy')}</a>`;}
+  {const e=document.getElementById('pnOkBtn');if(e)e.textContent=_tl('pnOk');}
 }
 async function doForgotPass(){
   const email=(document.getElementById('authEmail').value||'').trim().toLowerCase();
@@ -5204,16 +5245,16 @@ function showPlusModal(featureName){
 function closePlusModal(){document.getElementById('plusOv').classList.remove('open');_plusTriggeredFeature=null;}
 function renderPlusModal(){
   const feats=[
-    {icon:'share',      name:'Shared lists',                  desc:'Plan together in real time — home, trips, gifts.'},
-    {icon:'gift',       name:'Gift mode',                     desc:'Friends reserve gifts. No more duplicates.'},
-    {icon:'external',   name:'Browser extension',             desc:'Save from any site in one click.'},
-    {icon:'wallet',     name:'Savings goals',                 desc:'Track what you set aside for each wish.'},
-    {icon:'bell-ring',  name:'Smart reminders',               desc:'Get pinged when it\'s time to buy.'},
-    {icon:'trend-up',   name:'Find it cheaper',               desc:'Compare prices across stores instantly.'},
-    {icon:'sparkle',    name:'Advanced statistics',           desc:'Deep insights into your spending and habits.'},
-    {icon:'sparkle',    name:'AI Taste Profile',              desc:'Your personal style fingerprint.'},
-    {icon:'layers',     name:'Advanced mood boards',          desc:'Fullscreen editing, labels and captions.'},
-    {icon:'star',       name:'Priority future features',      desc:'You get every new feature first.'},
+    {icon:'share',      name:t('shTitle'),      desc:t('pfSharedD')},
+    {icon:'gift',       name:t('pfGiftN'),      desc:t('pfGiftD')},
+    {icon:'external',   name:t('pfExtN'),       desc:t('pfExtD')},
+    {icon:'wallet',     name:t('pfSaveN'),      desc:t('pfSaveD')},
+    {icon:'bell-ring',  name:t('pfRemN'),       desc:t('pfRemD')},
+    {icon:'trend-up',   name:t('chTitle').replace('🔍 ',''), desc:t('pfCheapD')},
+    {icon:'sparkle',    name:t('pfStatsN'),     desc:t('pfStatsD')},
+    {icon:'sparkle',    name:t('pfTasteN'),     desc:t('pfTasteD')},
+    {icon:'layers',     name:t('pfMoodN'),      desc:t('pfMoodD')},
+    {icon:'star',       name:t('pfPrioN'),      desc:t('pfPrioD')},
   ];
   const fHTML=feats.map(f=>`<div class="plus-feature-item">
     <div class="plus-feature-check"><svg width="10" height="10" viewBox="0 0 16 16" fill="none"><polyline points="3,8.5 6.5,12 13,5" stroke="#1a1000" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
@@ -5309,23 +5350,23 @@ function _getPlanSectionHTML(){
     </div>
     ${plus
       ?`<span class="plan-badge-plus">${ico('crown',11)} ${t('plusActive')}</span>`
-      :`<button class="plus-unlock-btn" onclick="closeProfileMo();showPlusModal('profile')">Upgrade →</button>`}
+      :`<button class="plus-unlock-btn" onclick="closeProfileMo();showPlusModal('profile')">${t('spUpgrade')}</button>`}
   </div>
   ${plus?`<div class="prof-btn-row" style="margin-bottom:10px">
-    <button class="prof-btn" onclick="openAIProfile();closeProfileMo()">${ico('sparkle',13)} AI Profile</button>
-    <button class="prof-btn" onclick="openCloudBackup();closeProfileMo()">${ico('upload',13)} Cloud backup</button>
+    <button class="prof-btn" onclick="openAIProfile();closeProfileMo()">${ico('sparkle',13)} ${t('profAI')}</button>
+    <button class="prof-btn" onclick="openCloudBackup();closeProfileMo()">${ico('upload',13)} ${t('profCloud')}</button>
   </div>
   <div class="prof-btn-row" style="margin-bottom:10px">
-    <button class="prof-btn" onclick="openSharedLists();closeProfileMo()">${ico('share',13)} Shared lists</button>
-    <button class="prof-btn" onclick="openGiftMode();closeProfileMo()">🎁 Gift lists</button>
+    <button class="prof-btn" onclick="openSharedLists();closeProfileMo()">${ico('share',13)} ${t('shTitle')}</button>
+    <button class="prof-btn" onclick="openGiftMode();closeProfileMo()">${t('gfTitle')}</button>
   </div>
   <button class="prof-btn" style="width:100%;margin-bottom:8px;background:linear-gradient(135deg,rgba(201,162,39,.1),rgba(232,200,74,.05));border-color:rgba(201,162,39,.25);color:#c9a227" onclick="closeProfileMo();openPlusTutorial()">${ico('crown',13)} ${t('plusGuide')}</button>
-  <button class="prof-btn" style="width:100%;margin-bottom:14px;border-color:rgba(220,60,60,.25);color:#cc4444" onclick="openStripePortal()">${ico('gear',13)} Manage subscription</button>`:''}
-  <div style="text-align:center;margin-top:4px;font-size:10px;color:var(--t3)"><a href="privacy.html" target="_blank" rel="noopener" style="color:var(--t3)">Privacy Policy</a> · <a href="terms.html" target="_blank" rel="noopener" style="color:var(--t3)">Terms of Service</a></div>`;
+  <button class="prof-btn" style="width:100%;margin-bottom:14px;border-color:rgba(220,60,60,.25);color:#cc4444" onclick="openStripePortal()">${ico('gear',13)} ${t('profManage')}</button>`:''}
+  <div style="text-align:center;margin-top:4px;font-size:10px;color:var(--t3)"><a href="privacy.html" target="_blank" rel="noopener" style="color:var(--t3)">${t('legalPrivacy')}</a> · <a href="terms.html" target="_blank" rel="noopener" style="color:var(--t3)">${t('legalTerms')}</a></div>`;
 }
 
 async function openStripePortal(){
-  if(!_sb||!_sbUser){showToast('Sign in required.');return;}
+  if(!_sb||!_sbUser){showToast(t('signInReq'));return;}
   showToast('Opening billing portal...');
   try{
     const {data:{session}}=await _sb.auth.getSession();
@@ -5440,8 +5481,9 @@ async function _scrapeUrl(url){
 
 function openSharedLists(){
   // Viewing is open to any signed-in user (invited guests). Creating is Plus-gated.
-  if(!_sb||!_sbUser){showToast('Sign in to use shared lists.');return;}
+  if(!_sb||!_sbUser){showToast(t('shSignIn'));return;}
   _activeShared=null;
+  document.getElementById('shMoHd').textContent='👥 '+t('shTitle');
   document.getElementById('sharedOv').classList.add('open');
   document.getElementById('sharedIn').innerHTML='<div style="text-align:center;padding:30px;color:var(--t3);font-size:13px">Loading…</div>';
   _loadSharedLists().then(renderSharedView);
@@ -5456,7 +5498,7 @@ async function _loadSharedLists(){
     const {data,error}=await _sb.from('shared_lists').select('id,name,emoji,owner,members,data,updated_at').order('updated_at',{ascending:false});
     if(error) throw error;
     _sharedLists=data||[];
-  }catch(e){ _sharedLists=[]; showToast('Could not load shared lists.'); }
+  }catch(e){ _sharedLists=[]; showToast(t('shErrLoad')); }
 }
 function renderSharedView(){
   const el=document.getElementById('sharedIn');
@@ -5469,38 +5511,38 @@ function renderSharedView(){
     return `<div class="shared-row" onclick="openSharedList('${esc(l.id)}')">
       <div class="shared-row-emoji">${esc(l.emoji||'👥')}</div>
       <div style="flex:1;min-width:0">
-        <div class="shared-row-name">${esc(l.name||'Shared list')}</div>
-        <div class="shared-row-sub">${count} item${count===1?'':'s'} · ${memCount} member${memCount===1?'':'s'}${isOwner?' · you own this':''}</div>
+        <div class="shared-row-name">${esc(l.name||t('shDefault'))}</div>
+        <div class="shared-row-sub">${count} ${t('shItems')} · ${memCount} ${t('shMembers')}${isOwner?' · '+t('shYouOwn'):''}</div>
       </div>
       <span class="shared-row-arrow">›</span>
     </div>`;
-  }).join('')||'<div style="text-align:center;padding:24px;color:var(--t3);font-size:13px;line-height:1.6">No shared lists yet.<br>Create one to plan together in real time.</div>';
+  }).join('')||`<div style="text-align:center;padding:24px;color:var(--t3);font-size:13px;line-height:1.6">${t('shEmpty1')}<br>${t('shEmpty2')}</div>`;
   el.innerHTML=`
-    <button class="btn-plus" style="width:100%;margin-bottom:14px" onclick="createSharedList()">${ico('plus',14)} New shared list</button>
+    <button class="btn-plus" style="width:100%;margin-bottom:14px" onclick="createSharedList()">${ico('plus',14)} ${t('shNew')}</button>
     <div class="shared-list">${rows}</div>`;
 }
 function createSharedList(){
   requirePlus('sharedLists',async()=>{
-    const name=prompt('Name your shared list:','Our list');
+    const name=prompt(t('shNamePrompt'),t('shOur'));
     if(name===null) return;
     try{
-      const {data,error}=await _sb.from('shared_lists').insert({owner:_sbUser.id,name:(name||'Shared list').trim().slice(0,60)||'Shared list',data:{items:[]}}).select().single();
+      const {data,error}=await _sb.from('shared_lists').insert({owner:_sbUser.id,name:(name||t('shDefault')).trim().slice(0,60)||t('shDefault'),data:{items:[]}}).select().single();
       if(error) throw error;
       await _loadSharedLists();
       openSharedList(data.id);
-    }catch(e){ showToast('Could not create list.'); }
+    }catch(e){ showToast(t('shErrCreate')); }
   });
 }
 async function openSharedList(id){
   try{
     const {data,error}=await _sb.from('shared_lists').select('*').eq('id',id).single();
-    if(error||!data){ showToast('List not found.'); return; }
+    if(error||!data){ showToast(t('shNotFound')); return; }
     _activeShared=data;
     if(!_activeShared.data||typeof _activeShared.data!=='object') _activeShared.data={items:[]};
     if(!Array.isArray(_activeShared.data.items)) _activeShared.data.items=[];
     _sharedSubscribe(id);
     renderSharedView();
-  }catch(e){ showToast('Could not open list.'); }
+  }catch(e){ showToast(t('shErrOpen')); }
 }
 function _sharedBack(){ _sharedUnsubscribe(); _activeShared=null; renderSharedView(); }
 function _sharedDetailHTML(){
@@ -5516,19 +5558,19 @@ function _sharedDetailHTML(){
       <div class="shared-card-body">
         <div class="shared-card-title">${esc(it.title||dom||'Item')}</div>
         ${price}
-        <div class="shared-card-foot">${link}<button class="shared-card-x" onclick="sharedRemoveItem('${esc(it.id)}')" title="Remove">✕</button></div>
+        <div class="shared-card-foot">${link}<button class="shared-card-x" onclick="sharedRemoveItem('${esc(it.id)}')" title="${t('ttDelete')}">✕</button></div>
       </div></div>`;
-  }).join('')||'<div style="grid-column:1/-1;text-align:center;padding:28px;color:var(--t3);font-size:13px">No items yet.<br>Paste a link below to add the first one.</div>';
+  }).join('')||`<div style="grid-column:1/-1;text-align:center;padding:28px;color:var(--t3);font-size:13px">${t('shNoItems')}<br>${t('shPasteFirst')}</div>`;
   return `
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
       <button class="btn-s" style="padding:6px 9px" onclick="_sharedBack()">←</button>
-      <div style="flex:1;font-size:15px;font-weight:800;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.emoji||'👥')} ${esc(l.name||'Shared list')}</div>
-      <button class="btn-s" style="padding:6px 10px;display:flex;align-items:center;gap:5px" onclick="copySharedInvite('${esc(l.id)}')">${ico('link',12)} Invite</button>
-      ${isOwner?`<button class="btn-s" style="padding:6px 9px;color:#cc4444" onclick="deleteSharedList('${esc(l.id)}')" title="Delete list">${ico('trash',12)}</button>`:''}
+      <div style="flex:1;font-size:15px;font-weight:800;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.emoji||'👥')} ${esc(l.name||t('shDefault'))}</div>
+      <button class="btn-s" style="padding:6px 10px;display:flex;align-items:center;gap:5px" onclick="copySharedInvite('${esc(l.id)}')">${ico('link',12)} ${t('shInvite')}</button>
+      ${isOwner?`<button class="btn-s" style="padding:6px 9px;color:#cc4444" onclick="deleteSharedList('${esc(l.id)}')" title="${t('ttDelete')}">${ico('trash',12)}</button>`:''}
     </div>
     <div style="display:flex;gap:6px;margin-bottom:12px">
-      <input id="sharedAddInp" class="inp" placeholder="Paste a product link…" style="flex:1" onkeydown="if(event.key==='Enter')sharedAddByUrl()">
-      <button class="btn-plus" style="padding:0 15px" onclick="sharedAddByUrl()">Add</button>
+      <input id="sharedAddInp" class="inp" placeholder="${t('shPastePh')}" style="flex:1" onkeydown="if(event.key==='Enter')sharedAddByUrl()">
+      <button class="btn-plus" style="padding:0 15px" onclick="sharedAddByUrl()">${t('shAddBtn')}</button>
     </div>
     <div class="shared-grid">${cards}</div>`;
 }
@@ -5536,8 +5578,8 @@ async function sharedAddByUrl(){
   if(!_activeShared) return;
   const inp=document.getElementById('sharedAddInp');
   const url=(inp?inp.value:'').trim();
-  if(!/^https?:\/\//i.test(url)){ showToast('Enter a valid link (https://…).'); return; }
-  if(inp){ inp.disabled=true; inp.value='Fetching…'; }
+  if(!/^https?:\/\//i.test(url)){ showToast(t('shInvalidLink')); return; }
+  if(inp){ inp.disabled=true; inp.value=t('shFetching'); }
   const d=await _scrapeUrl(url);
   const item={id:uid(),title:(d.title||getDomain(url)).slice(0,300),url:url.slice(0,2048),image:(d.img||'').slice(0,2048),price:d.price||null,addedBy:_sbUser.id,ts:Date.now()};
   if(!_activeShared.data) _activeShared.data={items:[]};
@@ -5558,7 +5600,7 @@ async function _sharedPush(){
     const {error}=await _sb.from('shared_lists').update({data:_activeShared.data,updated_at:new Date().toISOString()}).eq('id',_activeShared.id);
     if(error) throw error;
     _showSyncDot('ok');
-  }catch(e){ _showSyncDot('err'); showToast('Sync failed — check your connection.'); }
+  }catch(e){ _showSyncDot('err'); showToast(t('shSyncFail')); }
 }
 function _sharedSubscribe(id){
   _sharedUnsubscribe();
@@ -5581,16 +5623,16 @@ function _sharedUnsubscribe(){
 function copySharedInvite(id){
   const link=location.origin+location.pathname+'#join='+id;
   if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(link).then(()=>showToast('Invite link copied — share it with anyone!')).catch(()=>prompt('Invite link:',link));
-  }else{ prompt('Invite link:',link); }
+    navigator.clipboard.writeText(link).then(()=>showToast(t('shInviteCopied'))).catch(()=>prompt(t('shInviteLink'),link));
+  }else{ prompt(t('shInviteLink'),link); }
 }
 function deleteSharedList(id){
-  if(!confirm('Delete this shared list for everyone? This cannot be undone.')) return;
+  if(!confirm(t('shConfirmDel'))) return;
   _sb.from('shared_lists').delete().eq('id',id).then(({error})=>{
-    if(error){ showToast('Could not delete.'); return; }
+    if(error){ showToast(t('gfErrDelete')); return; }
     _sharedUnsubscribe(); _activeShared=null;
     _loadSharedLists().then(renderSharedView);
-    showToast('Shared list deleted.');
+    showToast(t('shDeleted'));
   });
 }
 // ══ SAVINGS GOAL (budget per item) ══
@@ -5603,24 +5645,24 @@ function svSectionHTML(item){
   if(!isPlus()&&!(item.saved>0)){
     // Free: single discreet upsell row
     return `<div class="sv-wrap" style="cursor:pointer" onclick="showPlusModal('savingsGoal')">
-      <div class="sv-hd"><div class="sv-title">${ico('wallet',13)} Savings goal <span class="plus-badge" style="margin-left:2px">${ico('crown',9)} Plus</span></div>
-      <span style="font-size:11px;color:var(--t3)">Track how much you've set aside →</span></div>
+      <div class="sv-hd"><div class="sv-title">${ico('wallet',13)} ${t('svTitle')} <span class="plus-badge" style="margin-left:2px">${ico('crown',9)} Plus</span></div>
+      <span style="font-size:11px;color:var(--t3)">${t('svUpsell')}</span></div>
     </div>`;
   }
   const bar=`<div class="sv-bar"><div class="sv-bar-fill${done?' done':''}" style="width:${pct}%"></div></div>`;
   const acts=done
-    ?`<div class="sv-done-msg">🎉 Goal reached — treat yourself!</div>
+    ?`<div class="sv-done-msg">${t('svDoneMsg')}</div>
       <div class="sv-acts"><button class="sv-btn reset" onclick="svReset('${item.id}')">↺ Reset</button></div>`
     :`<div class="sv-acts">
         <button class="sv-btn" onclick="svAdd('${item.id}',10)">+${cur()}10</button>
         <button class="sv-btn" onclick="svAdd('${item.id}',50)">+${cur()}50</button>
-        <button class="sv-btn" onclick="svAddCustom('${item.id}')">+ custom</button>
+        <button class="sv-btn" onclick="svAddCustom('${item.id}')">${t('svCustom')}</button>
         ${saved>0?`<button class="sv-btn reset" onclick="svReset('${item.id}')">↺</button>`:''}
       </div>`;
   return `<div class="sv-wrap">
     <div class="sv-hd">
-      <div class="sv-title">${ico('wallet',13)} Savings goal</div>
-      <div class="sv-amts"><b>${cur()}${fmt(saved)}</b> / ${cur()}${fmt(goal)}${done?'':` · ${cur()}${fmt(left)} to go`}</div>
+      <div class="sv-title">${ico('wallet',13)} ${t('svTitle')}</div>
+      <div class="sv-amts"><b>${cur()}${fmt(saved)}</b> / ${cur()}${fmt(goal)}${done?'':` · ${cur()}${fmt(left)} ${t('svToGo')}`}</div>
     </div>
     ${bar}${acts}
   </div>`;
@@ -5631,21 +5673,21 @@ function svAdd(id,amt){
     const goal=item.price*(item.qty||1);
     item.saved=Math.min(goal,Math.max(0,(item.saved||0)+amt));
     save();render();openDetMo(id);
-    if(item.saved>=goal) showToast('🎉 Goal reached — you can buy it!');
+    if(item.saved>=goal) showToast(t('svToastDone'));
   });
 }
 function svAddCustom(id){
   requirePlus('savingsGoal',()=>{
-    const v=prompt('How much did you set aside?','20');
+    const v=prompt(t('svPromptAmount'),'20');
     if(v===null) return;
     const n=parseFloat(String(v).replace(',','.'));
-    if(isNaN(n)||n<=0){showToast('Enter a valid amount.');return;}
+    if(isNaN(n)||n<=0){showToast(t('svInvalidAmount'));return;}
     svAdd(id,Math.round(n*100)/100);
   });
 }
 function svReset(id){
   const item=S.items.find(i=>i.id===id); if(!item) return;
-  if(!confirm('Reset savings for this item?')) return;
+  if(!confirm(t('svConfirmReset'))) return;
   item.saved=0;
   save();render();openDetMo(id);
 }
@@ -5658,24 +5700,24 @@ function _remFmtDate(ts){
 function remSectionHTML(item){
   if(!isPlus()&&!item.remindAt){
     return `<div class="rem-wrap" style="cursor:pointer" onclick="showPlusModal('smartReminders')">
-      <div class="rem-hd"><div class="rem-title">${ico('bell-ring',13)} Reminder <span class="plus-badge" style="margin-left:2px">${ico('crown',9)} Plus</span></div>
-      <span style="font-size:11px;color:var(--t3)">Get pinged when it's time →</span></div>
+      <div class="rem-hd"><div class="rem-title">${ico('bell-ring',13)} ${t('remTitle')} <span class="plus-badge" style="margin-left:2px">${ico('crown',9)} Plus</span></div>
+      <span style="font-size:11px;color:var(--t3)">${t('remUpsell')}</span></div>
     </div>`;
   }
   const set=item.remindAt
-    ?`<span class="rem-set">${ico('bell-ring',11)} ${_remFmtDate(item.remindAt)}${item.remindAt<=Date.now()?' — due!':''}</span>`
-    :`<span style="font-size:11px;color:var(--t3)">None set</span>`;
+    ?`<span class="rem-set">${ico('bell-ring',11)} ${_remFmtDate(item.remindAt)}${item.remindAt<=Date.now()?' — '+t('remDueTag'):''}</span>`
+    :`<span style="font-size:11px;color:var(--t3)">${t('remNone')}</span>`;
   const acts=item.remindAt
-    ?`<div class="rem-acts"><button class="sv-btn reset" onclick="remClear('${item.id}')">✕ Remove reminder</button></div>`
+    ?`<div class="rem-acts"><button class="sv-btn reset" onclick="remClear('${item.id}')">${t('remRemove')}</button></div>`
     :`<div class="rem-acts">
-        <button class="sv-btn" onclick="remSet('${item.id}','tomorrow')">Tomorrow</button>
-        <button class="sv-btn" onclick="remSet('${item.id}','week')">In 1 week</button>
-        <button class="sv-btn" onclick="remSet('${item.id}','month')">In 1 month</button>
-        <button class="sv-btn" onclick="remSet('${item.id}','eom')">End of month</button>
-        <button class="sv-btn" onclick="remSet('${item.id}','custom')">📅 Pick date</button>
+        <button class="sv-btn" onclick="remSet('${item.id}','tomorrow')">${t('remTomorrow')}</button>
+        <button class="sv-btn" onclick="remSet('${item.id}','week')">${t('remWeek')}</button>
+        <button class="sv-btn" onclick="remSet('${item.id}','month')">${t('remMonth')}</button>
+        <button class="sv-btn" onclick="remSet('${item.id}','eom')">${t('remEom')}</button>
+        <button class="sv-btn" onclick="remSet('${item.id}','custom')">${t('remPick')}</button>
       </div>`;
   return `<div class="rem-wrap">
-    <div class="rem-hd"><div class="rem-title">${ico('bell-ring',13)} Reminder</div>${set}</div>
+    <div class="rem-hd"><div class="rem-title">${ico('bell-ring',13)} ${t('remTitle')}</div>${set}</div>
     ${acts}
   </div>`;
 }
@@ -5688,16 +5730,16 @@ function remSet(id,kind){
     else if(kind==='month'){ d=new Date(now); d.setMonth(d.getMonth()+1); }
     else if(kind==='eom'){ d=new Date(now.getFullYear(),now.getMonth()+1,0); }
     else{
-      const v=prompt('Remind me on (YYYY-MM-DD):',new Date(now.getTime()+7*864e5).toISOString().slice(0,10));
+      const v=prompt(t('remPrompt'),new Date(now.getTime()+7*864e5).toISOString().slice(0,10));
       if(v===null) return;
       d=new Date(v+'T09:00:00');
-      if(isNaN(d.getTime())){showToast('Invalid date — use YYYY-MM-DD.');return;}
-      if(d.getTime()<=Date.now()){showToast('Pick a future date.');return;}
+      if(isNaN(d.getTime())){showToast(t('remInvalid'));return;}
+      if(d.getTime()<=Date.now()){showToast(t('remFuture'));return;}
     }
     d.setHours(9,0,0,0);
     item.remindAt=d.getTime();
     save();render();openDetMo(id);
-    showToast('🔔 Reminder set for '+_remFmtDate(item.remindAt));
+    showToast(t('remSetFor')+' '+_remFmtDate(item.remindAt));
   });
 }
 function remClear(id){
@@ -5723,11 +5765,11 @@ function renderRemBanner(){
     else return;
   }
   el.innerHTML=`
-    <div class="rem-banner-title">${ico('bell-ring',13)} Reminders</div>
+    <div class="rem-banner-title">${ico('bell-ring',13)} ${t('remBannerTitle')}</div>
     <div class="rem-banner-items">${due.slice(0,6).map(i=>
       `<span class="rem-pill" onclick="openDetMo('${i.id}')">${esc((i.title||'Item').slice(0,34))}
         <span class="rem-pill-x" onclick="event.stopPropagation();remClear('${i.id}')" title="Dismiss">✕</span></span>`).join('')}
-      ${due.length>6?`<span style="font-size:11px;color:var(--t3);align-self:center">+${due.length-6} more</span>`:''}
+      ${due.length>6?`<span style="font-size:11px;color:var(--t3);align-self:center">+${due.length-6} ${t('remMore')}</span>`:''}
     </div>
     <button class="rem-banner-close" onclick="_remBannerHidden=true;this.parentElement.remove()" title="Hide until next reload">✕</button>`;
 }
@@ -5735,11 +5777,11 @@ setInterval(renderRemBanner,60000);
 
 // ══ FIND CHEAPER (price comparison deep links) ══
 const CHEAP_STORES=[
-  {key:'gshop', name:'Google Shopping', ico:'🛍️', sub:'Compare across hundreds of shops', url:q=>'https://www.google.com/search?tbm=shop&q='+q},
-  {key:'trova', name:'Trovaprezzi',     ico:'🇮🇹', sub:'Italian price comparison',        url:q=>'https://www.trovaprezzi.it/categoria.aspx?id=-1&libera='+q},
-  {key:'idealo',name:'Idealo',          ico:'📊', sub:'Price history & comparison',       url:q=>'https://www.idealo.it/mag/risultati.html?q='+q},
-  {key:'amazon',name:'Amazon',          ico:'📦', sub:'Check the marketplace price',      url:q=>'https://www.amazon.it/s?k='+q},
-  {key:'ebay',  name:'eBay',            ico:'🏷️', sub:'New & used deals',                 url:q=>'https://www.ebay.it/sch/i.html?_nkw='+q},
+  {key:'gshop', name:'Google Shopping', ico:'🛍️', subK:'chSubGshop', url:q=>'https://www.google.com/search?tbm=shop&q='+q},
+  {key:'trova', name:'Trovaprezzi',     ico:'🇮🇹', subK:'chSubTrova',        url:q=>'https://www.trovaprezzi.it/categoria.aspx?id=-1&libera='+q},
+  {key:'idealo',name:'Idealo',          ico:'📊', subK:'chSubIdealo',       url:q=>'https://www.idealo.it/mag/risultati.html?q='+q},
+  {key:'amazon',name:'Amazon',          ico:'📦', subK:'chSubAmazon',      url:q=>'https://www.amazon.it/s?k='+q},
+  {key:'ebay',  name:'eBay',            ico:'🏷️', subK:'chSubEbay',                 url:q=>'https://www.ebay.it/sch/i.html?_nkw='+q},
 ];
 let _cheapItemId=null;
 function openCheaper(id){
@@ -5747,14 +5789,16 @@ function openCheaper(id){
     const item=S.items.find(i=>i.id===id); if(!item) return;
     _cheapItemId=id;
     const q=(item.title||'').trim();
+    document.getElementById('chMoHd').textContent=t('chTitle');
+    document.getElementById('cheapQuery').placeholder=t('chPh');
     document.getElementById('cheapQuery').value=q;
-    document.getElementById('cheapPrice').textContent=item.price>0?`You saved it at ${cur()}${fmt(item.price)} — beat that price:`:'Search this product across stores:';
+    document.getElementById('cheapPrice').textContent=item.price>0?`${t('chSavedAt')} ${cur()}${fmt(item.price)} ${t('chBeat')}`:t('chSearchAll');
     document.getElementById('cheapList').innerHTML=CHEAP_STORES.map(s=>`
       <div class="cheap-row" onclick="cheapGo('${s.key}')">
         <div class="cheap-row-ico">${s.ico}</div>
         <div style="flex:1;min-width:0">
           <div class="cheap-row-name">${s.name}</div>
-          <div class="cheap-row-sub">${s.sub}</div>
+          <div class="cheap-row-sub">${t(s.subK)}</div>
         </div>
         <span class="shared-row-arrow">↗</span>
       </div>`).join('');
@@ -5765,7 +5809,7 @@ function closeCheaper(){document.getElementById('cheaperOv').classList.remove('o
 function cheapGo(storeKey){
   const store=CHEAP_STORES.find(s=>s.key===storeKey); if(!store) return;
   const q=(document.getElementById('cheapQuery').value||'').trim();
-  if(!q){showToast('Enter a product name to search.');return;}
+  if(!q){showToast(t('chEmptyQ'));return;}
   _openExt(store.url(encodeURIComponent(q.slice(0,200))));
 }
 
@@ -5778,7 +5822,8 @@ function _giftTokKey(regId,itemId){return 'vault_giftTok_'+regId+'_'+itemId;}
 
 // ── Owner: manage registries ──
 function openGiftMode(){
-  if(!_sb||!_sbUser){showToast('Sign in to use gift lists.');return;}
+  if(!_sb||!_sbUser){showToast(t('gfSignIn'));return;}
+  document.getElementById('gfMoHd').textContent=t('gfTitle');
   document.getElementById('giftOv').classList.add('open');
   document.getElementById('giftIn').innerHTML='<div style="text-align:center;padding:30px;color:var(--t3);font-size:13px">Loading…</div>';
   _loadGiftRegs().then(renderGiftMode);
@@ -5789,7 +5834,7 @@ async function _loadGiftRegs(){
     const {data,error}=await _sb.from('gift_registries').select('id,name,emoji,items,reservations,updated_at').order('updated_at',{ascending:false});
     if(error) throw error;
     _giftRegs=data||[];
-  }catch(e){ _giftRegs=[]; showToast('Could not load gift lists.'); }
+  }catch(e){ _giftRegs=[]; showToast(t('gfErrLoad')); }
 }
 function renderGiftMode(){
   const el=document.getElementById('giftIn');
@@ -5800,21 +5845,21 @@ function renderGiftMode(){
     return `<div class="shared-row" onclick="event.stopPropagation()" style="cursor:default">
       <div class="shared-row-emoji">${esc(r.emoji||'🎁')}</div>
       <div style="flex:1;min-width:0">
-        <div class="shared-row-name">${esc(r.name||'Gift list')}</div>
-        <div class="shared-row-sub">${items.length} gift${items.length===1?'':'s'} · ${resCount} reserved</div>
+        <div class="shared-row-name">${esc(r.name||t('gfDefault'))}</div>
+        <div class="shared-row-sub">${items.length} ${t('gfGiftsLbl')} · ${resCount} ${t('gfReservedLbl')}</div>
       </div>
-      <button class="btn-s" style="padding:5px 9px;font-size:11px" onclick="copyGiftLink('${esc(r.id)}')">${ico('link',11)} Copy link</button>
+      <button class="btn-s" style="padding:5px 9px;font-size:11px" onclick="copyGiftLink('${esc(r.id)}')">${ico('link',11)} ${t('gfCopyLink')}</button>
       <button class="shared-card-x" onclick="deleteGiftRegistry('${esc(r.id)}')" title="Delete">✕</button>
     </div>`;
-  }).join('')||'<div style="text-align:center;padding:24px;color:var(--t3);font-size:13px;line-height:1.6">No gift lists yet.<br>Create one for your birthday, Christmas, a wedding…<br>Friends reserve gifts — nobody buys the same thing twice.</div>';
+  }).join('')||`<div style="text-align:center;padding:24px;color:var(--t3);font-size:13px;line-height:1.6">${t('gfEmptyHtml')}</div>`;
   el.innerHTML=`
-    <button class="btn-plus" style="width:100%;margin-bottom:14px" onclick="startGiftPicker()">${ico('plus',14)} New gift list</button>
+    <button class="btn-plus" style="width:100%;margin-bottom:14px" onclick="startGiftPicker()">${ico('plus',14)} ${t('gfNew')}</button>
     <div class="shared-list">${rows}</div>`;
 }
 function startGiftPicker(){
   requirePlus('giftMode',()=>{
     const items=S.items.filter(i=>!i.archived&&!i.isPlace&&i.type!=='luogo');
-    if(!items.length){showToast('Add some products to your vault first.');return;}
+    if(!items.length){showToast(t('gfAddFirst'));return;}
     const rows=items.map((it,idx)=>{
       const img=it.images&&it.images[0]?`<img src="${safeUrl(it.images[0])}" alt="" onerror="this.style.display='none'">`:`<div class="imp-row-ph">${ico('bag',16)}</div>`;
       const sub=it.price?`${cur()}${fmt(it.price)}`:getDomain(it.url||'');
@@ -5828,18 +5873,18 @@ function startGiftPicker(){
     document.getElementById('giftIn').innerHTML=`
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
         <button class="btn-s" style="padding:6px 9px" onclick="renderGiftMode()">←</button>
-        <div style="flex:1;font-size:14px;font-weight:800;color:var(--t1)">Choose the gifts</div>
+        <div style="flex:1;font-size:14px;font-weight:800;color:var(--t1)">${t('gfChoose')}</div>
       </div>
-      <input id="giftNameInp" class="inp" placeholder="List name — e.g. Compleanno di Giulia 🎂" style="width:100%;margin-bottom:10px" maxlength="60">
+      <input id="giftNameInp" class="inp" placeholder="${t('gfNamePh')}" style="width:100%;margin-bottom:10px" maxlength="60">
       <div style="max-height:44vh;overflow-y:auto;border:1px solid var(--bd);border-radius:10px;padding:4px 10px;margin-bottom:12px">${rows}</div>
-      <button class="btn-plus" style="width:100%" onclick="giftCreateConfirm()">Create gift list →</button>`;
+      <button class="btn-plus" style="width:100%" onclick="giftCreateConfirm()">${t('gfCreateBtn')}</button>`;
   });
 }
 async function giftCreateConfirm(){
   const items=window._giftPickItems||[];
   const sel=[...document.querySelectorAll('#giftIn input[data-gidx]:checked')].map(c=>items[+c.dataset.gidx]).filter(Boolean);
-  if(!sel.length){showToast('Select at least one gift.');return;}
-  const name=(document.getElementById('giftNameInp')?.value||'').trim().slice(0,60)||'Gift list';
+  if(!sel.length){showToast(t('gfSelectOne'));return;}
+  const name=(document.getElementById('giftNameInp')?.value||'').trim().slice(0,60)||t('gfDefault');
   const clean=sel.map(it=>({id:it.id,title:(it.title||'').slice(0,300),image:(it.images&&it.images[0]?String(it.images[0]):'').slice(0,2048),url:(it.url||'').slice(0,2048),price:it.price||null}));
   try{
     const {data,error}=await _sb.from('gift_registries').insert({owner:_sbUser.id,name,items:clean}).select().single();
@@ -5847,35 +5892,35 @@ async function giftCreateConfirm(){
     await _loadGiftRegs();
     renderGiftMode();
     copyGiftLink(data.id);
-  }catch(e){ showToast('Could not create gift list.'); }
+  }catch(e){ showToast(t('gfErrCreate')); }
 }
 function copyGiftLink(id){
   const link=location.origin+location.pathname+'#gift='+id;
   if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(link).then(()=>showToast('🎁 Gift link copied — send it to friends & family!')).catch(()=>prompt('Gift link:',link));
-  }else{ prompt('Gift link:',link); }
+    navigator.clipboard.writeText(link).then(()=>showToast(t('gfLinkCopied'))).catch(()=>prompt(t('shInviteLink'),link));
+  }else{ prompt(t('shInviteLink'),link); }
 }
 function deleteGiftRegistry(id){
-  if(!confirm('Delete this gift list? Guests will no longer see it.')) return;
+  if(!confirm(t('gfConfirmDel'))) return;
   _sb.from('gift_registries').delete().eq('id',id).then(({error})=>{
-    if(error){ showToast('Could not delete.'); return; }
+    if(error){ showToast(t('gfErrDelete')); return; }
     _loadGiftRegs().then(renderGiftMode);
-    showToast('Gift list deleted.');
+    showToast(t('gfDeleted'));
   });
 }
 
 // ── Public: view + reserve (no account needed) ──
 async function _openGiftView(id){
-  if(!_sb){showToast('Service unavailable.');return;}
+  if(!_sb){showToast(t('shSyncFail'));return;}
   try{
     const {data,error}=await _sb.rpc('get_gift_registry',{reg_id:id});
-    if(error||!data){ showToast('This gift list does not exist anymore.'); return; }
+    if(error||!data){ showToast(t('gfGone')); return; }
     _activeGiftPub=data;
     _renderGiftPub();
     document.getElementById('giftPubOv').style.display='block';
     clearInterval(_giftPollT);
     _giftPollT=setInterval(_giftRefreshPub,15000); // reservations refresh
-  }catch(e){ showToast('Could not open the gift list.'); }
+  }catch(e){ showToast(t('gfErrOpen')); }
 }
 function closeGiftPub(){
   document.getElementById('giftPubOv').style.display='none';
@@ -5902,12 +5947,12 @@ function _renderGiftPub(){
     const price=it.price?`<div class="gift-card-price">${cur()}${fmt(it.price)}</div>`:'';
     const dom=it.url?`<a href="${safeUrl(it.url)}" target="_blank" rel="noopener noreferrer" style="font-size:10px;color:var(--t3);text-decoration:none">${esc(getDomain(it.url))} ↗</a>`:'';
     let action;
-    if(mine) action=`<button class="gift-mine-btn" onclick="giftUnreserve('${esc(it.id)}')">You reserved this — tap to undo</button>`;
-    else if(r) action=`<div class="gift-taken-tag">🎁 Taken by ${esc(r.name||'someone')}</div>`;
-    else action=`<button class="gift-reserve-btn" onclick="giftReserve('${esc(it.id)}')">🎁 I'll take this one</button>`;
+    if(mine) action=`<button class="gift-mine-btn" onclick="giftUnreserve('${esc(it.id)}')">${t('gfMineUndo')}</button>`;
+    else if(r) action=`<div class="gift-taken-tag">${t('gfTakenBy')} ${esc(r.name||t('gfSomeone'))}</div>`;
+    else action=`<button class="gift-reserve-btn" onclick="giftReserve('${esc(it.id)}')">${t('gfTake')}</button>`;
     return `<div class="gift-card${r?' taken':''}">${img}
       <div class="gift-card-body">
-        <div class="gift-card-title">${esc(it.title||'Gift')}</div>
+        <div class="gift-card-title">${esc(it.title||t('gfDefault'))}</div>
         ${price}${dom}${action}
       </div></div>`;
   }).join('');
@@ -5916,25 +5961,25 @@ function _renderGiftPub(){
     <div style="display:flex;justify-content:flex-end"><button class="btn-s" onclick="closeGiftPub()">✕ Close</button></div>
     <div class="gift-pub-hd">
       <div class="gift-pub-emoji">${esc(g.emoji||'🎁')}</div>
-      <div class="gift-pub-title">${esc(g.name||'Gift list')}</div>
-      <div class="gift-pub-sub">Pick a gift and reserve it — everyone sees what's taken,<br>so nobody buys the same thing twice. ${taken}/${items.length} reserved.</div>
+      <div class="gift-pub-title">${esc(g.name||t('gfDefault'))}</div>
+      <div class="gift-pub-sub">${t('gfPubSub')} ${taken}/${items.length} ${t('gfReservedLbl')}.</div>
     </div>
     <div class="gift-grid">${cards}</div>
-    <div style="text-align:center;margin-top:28px;font-size:11px;color:var(--t3)">Made with <a href="${location.origin+location.pathname}" style="color:var(--accent);text-decoration:none;font-weight:700">Vault</a></div>
+    <div style="text-align:center;margin-top:28px;font-size:11px;color:var(--t3)">${t('gfMadeWith')} <a href="${location.origin+location.pathname}" style="color:var(--accent);text-decoration:none;font-weight:700">Vault</a></div>
   </div>`;
 }
 async function giftReserve(itemId){
   if(!_activeGiftPub) return;
-  const name=prompt('Your name (shown to others so they know it\'s taken):','');
+  const name=prompt(t('gfNamePrompt'),'');
   if(name===null) return;
   try{
     const {data:tok,error}=await _sb.rpc('reserve_gift',{reg_id:_activeGiftPub.id,item_id:itemId,guest_name:name});
     if(error) throw error;
-    if(!tok){ showToast('Oops — someone reserved it seconds ago!'); _giftRefreshPub(); return; }
+    if(!tok){ showToast(t('gfTooLate')); _giftRefreshPub(); return; }
     localStorage.setItem(_giftTokKey(_activeGiftPub.id,itemId),tok);
-    showToast('🎁 Reserved! It\'s yours to gift.');
+    showToast(t('gfReservedOk'));
     _giftRefreshPub();
-  }catch(e){ showToast('Could not reserve — try again.'); }
+  }catch(e){ showToast(t('gfErrReserve')); }
 }
 async function giftUnreserve(itemId){
   if(!_activeGiftPub) return;
@@ -5943,9 +5988,9 @@ async function giftUnreserve(itemId){
   try{
     const {data:ok,error}=await _sb.rpc('cancel_gift_reservation',{reg_id:_activeGiftPub.id,item_id:itemId,cancel_token:tok});
     if(error) throw error;
-    if(ok){ localStorage.removeItem(_giftTokKey(_activeGiftPub.id,itemId)); showToast('Reservation cancelled.'); }
+    if(ok){ localStorage.removeItem(_giftTokKey(_activeGiftPub.id,itemId)); showToast(t('gfCancelled')); }
     _giftRefreshPub();
-  }catch(e){ showToast('Could not cancel — try again.'); }
+  }catch(e){ showToast(t('gfErrCancel')); }
 }
 
 // ══ PRIVACY NOTICE (informational — technical storage only) ══
@@ -5980,16 +6025,16 @@ function _consumePendingJoin(){
 async function _joinSharedList(id){
   if(!_sb||!_sbUser){
     localStorage.setItem('vault_pendingJoin',id);
-    showToast('Sign in to join this shared list.');
+    showToast(t('shJoinSignIn'));
     return;
   }
   try{
     const {data,error}=await _sb.rpc('join_shared_list',{list_id:id});
     if(error) throw error;
-    if(!data||!data.length){ showToast('This invite is invalid or expired.'); return; }
+    if(!data||!data.length){ showToast(t('shInvalidInvite')); return; }
     openSharedLists();
     setTimeout(()=>openSharedList(id),300);
-  }catch(e){ showToast('Could not join this list.'); }
+  }catch(e){ showToast(t('shErrJoin')); }
 }
 
 // ── BOOT ──
@@ -6355,12 +6400,12 @@ async function _initGlobe(){
 <div class="ov" id="cheaperOv" onclick="if(event.target===this)closeCheaper()">
   <div class="plus-mo">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-      <div style="flex:1;font-size:16px;font-weight:800;color:var(--t1)">🔍 Find it cheaper</div>
+      <div style="flex:1;font-size:16px;font-weight:800;color:var(--t1)" id="chMoHd">🔍 Find it cheaper</div>
       <span class="plus-badge">Plus</span>
       <button style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:18px;line-height:1;padding:2px 4px;border-radius:6px;font-family:inherit" onclick="closeCheaper()">×</button>
     </div>
     <div id="cheapPrice" style="font-size:12px;color:var(--t3);margin-bottom:10px"></div>
-    <input id="cheapQuery" class="inp" placeholder="Product name…" style="width:100%;margin-bottom:12px" maxlength="200">
+    <input id="cheapQuery" class="inp" placeholder="Product name…" data-i18n-ph="chPh" style="width:100%;margin-bottom:12px" maxlength="200">
     <div id="cheapList"></div>
   </div>
 </div>
@@ -6369,7 +6414,7 @@ async function _initGlobe(){
 <div class="ov" id="giftOv" onclick="if(event.target===this)closeGiftMode()">
   <div class="plus-mo">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px">
-      <div style="flex:1;font-size:16px;font-weight:800;color:var(--t1)">🎁 Gift lists</div>
+      <div style="flex:1;font-size:16px;font-weight:800;color:var(--t1)" id="gfMoHd">🎁 Gift lists</div>
       <span class="plus-badge">Plus</span>
       <button style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:18px;line-height:1;padding:2px 4px;border-radius:6px;font-family:inherit" onclick="closeGiftMode()">×</button>
     </div>
@@ -6384,7 +6429,7 @@ async function _initGlobe(){
 <div class="ov" id="sharedOv" onclick="if(event.target===this)closeSharedLists()">
   <div class="plus-mo">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px">
-      <div style="flex:1;font-size:16px;font-weight:800;color:var(--t1)">👥 Shared lists</div>
+      <div style="flex:1;font-size:16px;font-weight:800;color:var(--t1)" id="shMoHd">👥 Shared lists</div>
       <span class="plus-badge">Plus</span>
       <button style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:18px;line-height:1;padding:2px 4px;border-radius:6px;font-family:inherit" onclick="closeSharedLists()">×</button>
     </div>
@@ -6404,7 +6449,7 @@ async function _initGlobe(){
       <button class="mood-fs-btn" id="moodFsExportBtn" onclick="exportMoodboard(true)">
         <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M5 7l3 3 3-3M2 12v2h12v-2"/></svg> Export PNG
       </button>
-      <button class="mood-fs-btn" onclick="closeMoodFullscreen()">
+      <button class="mood-fs-btn" id="moodFsCloseBtn" onclick="closeMoodFullscreen()">
         <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 2l12 12M14 2L2 14"/></svg> Chiudi
       </button>
     </div>
