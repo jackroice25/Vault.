@@ -5197,11 +5197,14 @@ function showPlusModal(featureName){
 function closePlusModal(){document.getElementById('plusOv').classList.remove('open');_plusTriggeredFeature=null;}
 function renderPlusModal(){
   const feats=[
+    {icon:'share',      name:'Shared lists',                  desc:'Plan together in real time — home, trips, gifts.'},
+    {icon:'gift',       name:'Gift mode',                     desc:'Friends reserve gifts. No more duplicates.'},
+    {icon:'external',   name:'Browser extension',             desc:'Save from any site in one click.'},
+    {icon:'wallet',     name:'Savings goals',                 desc:'Track what you set aside for each wish.'},
+    {icon:'bell-ring',  name:'Smart reminders',               desc:'Get pinged when it\'s time to buy.'},
+    {icon:'trend-up',   name:'Find it cheaper',               desc:'Compare prices across stores instantly.'},
     {icon:'sparkle',    name:'Advanced statistics',           desc:'Deep insights into your spending and habits.'},
-    {icon:'layers',     name:'Multiple workspaces',           desc:'Separate vaults for different contexts.'},
     {icon:'sparkle',    name:'AI Taste Profile',              desc:'Your personal style fingerprint.'},
-    {icon:'sparkle',    name:'AI suggestions',                desc:'Smart picks based on what you love.'},
-    {icon:'palette',    name:'Premium themes',                desc:'Exclusive colour palettes and layouts.'},
     {icon:'layers',     name:'Advanced mood boards',          desc:'Fullscreen editing, labels and captions.'},
     {icon:'star',       name:'Priority future features',      desc:'You get every new feature first.'},
   ];
