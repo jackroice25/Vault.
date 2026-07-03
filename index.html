@@ -1424,7 +1424,14 @@ body.cmp-mode .card{cursor:default}
     <div class="auth-switch" id="authSwitch">Don't have an account? <b onclick="setAuthMode('register')">Create one</b></div>
     <div class="auth-guest" id="authGuestBtn" onclick="continueAsGuest()">Continue without account →</div>
     <div class="auth-lang-row" id="authLangRow"></div>
+    <div style="text-align:center;margin-top:14px;font-size:10px;color:var(--t3);line-height:1.6">By continuing you accept the <a href="terms.html" target="_blank" rel="noopener" style="color:var(--t2);font-weight:600">Terms of Service</a> and the <a href="privacy.html" target="_blank" rel="noopener" style="color:var(--t2);font-weight:600">Privacy Policy</a></div>
   </div>
+</div>
+
+<!-- ═══ PRIVACY NOTICE BANNER (technical storage only — informational, ePrivacy/GDPR) ═══ -->
+<div id="privacyNotice" style="display:none;position:fixed;left:14px;right:14px;bottom:14px;z-index:1000002;max-width:520px;margin:0 auto;background:var(--s2,#141414);border:1px solid var(--bd,#2a2a2a);border-radius:14px;padding:14px 16px;box-shadow:0 8px 32px rgba(0,0,0,.5);align-items:center;gap:12px;flex-wrap:wrap">
+  <div style="flex:1;min-width:220px;font-size:11.5px;color:var(--t2,#a8a8a8);line-height:1.55">🍪 Vault uses <b style="color:var(--t1,#f0f0f0)">only technical storage</b> needed for the app to work (sign-in, your data, preferences). No tracking, no ads, no profiling. <a href="privacy.html" target="_blank" rel="noopener" style="color:var(--accent,#c9a227);font-weight:700">Privacy Policy</a></div>
+  <button onclick="dismissPrivacyNotice()" style="background:var(--accent,#c9a227);color:#111;border:none;border-radius:9px;padding:8px 16px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit">OK</button>
 </div>
 <div class="ov" id="profileOv">
   <div class="mo" style="max-width:460px">
@@ -5313,7 +5320,8 @@ function _getPlanSectionHTML(){
     <button class="prof-btn" onclick="openGiftMode();closeProfileMo()">🎁 Gift lists</button>
   </div>
   <button class="prof-btn" style="width:100%;margin-bottom:8px;background:linear-gradient(135deg,rgba(201,162,39,.1),rgba(232,200,74,.05));border-color:rgba(201,162,39,.25);color:#c9a227" onclick="closeProfileMo();openPlusTutorial()">${ico('crown',13)} ${t('plusGuide')}</button>
-  <button class="prof-btn" style="width:100%;margin-bottom:14px;border-color:rgba(220,60,60,.25);color:#cc4444" onclick="openStripePortal()">${ico('gear',13)} Manage subscription</button>`:''}`;
+  <button class="prof-btn" style="width:100%;margin-bottom:14px;border-color:rgba(220,60,60,.25);color:#cc4444" onclick="openStripePortal()">${ico('gear',13)} Manage subscription</button>`:''}
+  <div style="text-align:center;margin-top:4px;font-size:10px;color:var(--t3)"><a href="privacy.html" target="_blank" rel="noopener" style="color:var(--t3)">Privacy Policy</a> · <a href="terms.html" target="_blank" rel="noopener" style="color:var(--t3)">Terms of Service</a></div>`;
 }
 
 async function openStripePortal(){
@@ -5939,6 +5947,19 @@ async function giftUnreserve(itemId){
     _giftRefreshPub();
   }catch(e){ showToast('Could not cancel — try again.'); }
 }
+
+// ══ PRIVACY NOTICE (informational — technical storage only) ══
+function initPrivacyNotice(){
+  if(localStorage.getItem('vaultPrivacyNoticeSeen')) return;
+  const el=document.getElementById('privacyNotice');
+  if(el) el.style.display='flex';
+}
+function dismissPrivacyNotice(){
+  localStorage.setItem('vaultPrivacyNoticeSeen','1');
+  const el=document.getElementById('privacyNotice');
+  if(el){el.style.opacity='0';el.style.transition='opacity .25s';setTimeout(()=>el.remove(),260);}
+}
+setTimeout(initPrivacyNotice,800);
 
 // ══ BROWSER EXTENSION HOOK (#add=<url>) ══
 function _extAdd(url){

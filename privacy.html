@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Privacy Policy — Vault</title>
+<style>
+  :root{--bg:#0a0a0a;--s2:#141414;--bd:#2a2a2a;--t1:#f0f0f0;--t2:#a8a8a8;--t3:#707070;--accent:#c9a227}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--t2);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.7;font-size:15px}
+  .wrap{max-width:760px;margin:0 auto;padding:48px 20px 80px}
+  .back{display:inline-flex;align-items:center;gap:6px;color:var(--accent);text-decoration:none;font-size:13px;font-weight:700;margin-bottom:28px}
+  h1{color:var(--t1);font-size:30px;letter-spacing:-.02em;margin-bottom:6px}
+  .updated{font-size:12px;color:var(--t3);margin-bottom:36px}
+  h2{color:var(--t1);font-size:19px;margin:36px 0 12px;letter-spacing:-.01em}
+  h3{color:var(--t1);font-size:15px;margin:22px 0 8px}
+  p{margin-bottom:12px}
+  ul{margin:0 0 12px 22px}
+  li{margin-bottom:6px}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+  th,td{text-align:left;padding:9px 12px;border:1px solid var(--bd);vertical-align:top}
+  th{color:var(--t1);background:var(--s2)}
+  a{color:var(--accent)}
+  .box{background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:16px 18px;margin:16px 0;font-size:13px}
+  strong{color:var(--t1)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="./">← Back to Vault</a>
+  <h1>Privacy Policy</h1>
+  <div class="updated">Last updated: 3 July 2026 · Applies to the Vault web app and related services</div>
+
+  <div class="box">
+    <strong>In short:</strong> Vault stores your account email and the wishlist data you create, so the app can work and sync across your devices. We don't run ads, we don't sell your data, and we don't use tracking or profiling cookies. Payments are handled entirely by Stripe — we never see your card details.
+  </div>
+
+  <h2>1. Data Controller</h2>
+  <p>The data controller for Vault is:</p>
+  <p><strong>Giacomo Piccini</strong><br>
+  Contact: <a href="mailto:jackroice@gmail.com">jackroice@gmail.com</a></p>
+  <p>For any privacy-related request, write to the address above with the subject "Privacy".</p>
+
+  <h2>2. What data we collect and why</h2>
+  <table>
+    <tr><th>Data</th><th>Purpose</th><th>Legal basis (GDPR)</th></tr>
+    <tr><td>Email address and password (hashed)</td><td>Creating and securing your account, sign-in, account recovery</td><td>Art. 6(1)(b) — contract performance</td></tr>
+    <tr><td>Your vault content (saved items, titles, links, images URLs, prices, notes, lists, reminders)</td><td>Providing the core service: storing and syncing your wishlists across devices</td><td>Art. 6(1)(b) — contract performance</td></tr>
+    <tr><td>Subscription status (Free / Plus)</td><td>Activating paid features you purchased</td><td>Art. 6(1)(b) — contract performance</td></tr>
+    <tr><td>Names entered by guests when reserving a gift on a shared gift list</td><td>Showing other guests that a gift is taken, to avoid duplicates</td><td>Art. 6(1)(f) — legitimate interest of the list participants</td></tr>
+    <tr><td>Technical logs (IP address, timestamps) processed by our infrastructure providers</td><td>Security, abuse prevention, service operation</td><td>Art. 6(1)(f) — legitimate interest</td></tr>
+  </table>
+  <p>We do <strong>not</strong> collect: payment card numbers (handled by Stripe), precise location, contacts, advertising identifiers, or behavioural profiles.</p>
+
+  <h2>3. Passwords</h2>
+  <p>Passwords are never stored or transmitted in plain text. Authentication is operated by Supabase, which stores passwords using the industry-standard <strong>bcrypt</strong> hashing algorithm. Neither we nor Supabase can read your password.</p>
+
+  <h2>4. Where your data lives (processors)</h2>
+  <p>We use a small number of service providers ("processors") to run Vault:</p>
+  <table>
+    <tr><th>Provider</th><th>Role</th><th>Location / transfers</th></tr>
+    <tr><td><strong>Supabase</strong> (Supabase Inc.)</td><td>Database, authentication, backend functions — stores your account and vault data</td><td>Project hosted in the EU. <a href="https://supabase.com/privacy" target="_blank" rel="noopener">Supabase privacy policy</a></td></tr>
+    <tr><td><strong>Stripe</strong> (Stripe, Inc.)</td><td>Payment processing for Vault Plus subscriptions — card data is entered on Stripe's own pages and never touches our servers</td><td>EU/US — Stripe participates in the EU-US Data Privacy Framework. <a href="https://stripe.com/privacy" target="_blank" rel="noopener">Stripe privacy policy</a></td></tr>
+    <tr><td><strong>GitHub Pages</strong> (GitHub, Inc.)</td><td>Hosting of the app's static files</td><td>Global CDN — GitHub participates in the EU-US Data Privacy Framework. <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">GitHub privacy statement</a></td></tr>
+  </table>
+  <p>When you use "fetch data" on a product link, the request to read that page is made by our backend on your behalf; the target site sees our server's request, not your identity.</p>
+
+  <h2>5. Cookies and local storage</h2>
+  <p>Vault uses <strong>only technical storage that is strictly necessary</strong> for the app to function:</p>
+  <ul>
+    <li><strong>localStorage</strong> — keeps your app data and preferences (theme, language, plan) on your device so the app works and loads fast;</li>
+    <li><strong>Supabase auth token</strong> — keeps you signed in between visits.</li>
+  </ul>
+  <p>We use <strong>no analytics, advertising, or profiling cookies</strong>. Because this storage is strictly necessary, it does not require consent under the ePrivacy rules — we show a notice for transparency. If you clear your browser storage, local data is removed (cloud-synced data remains in your account).</p>
+  <p>Stripe's checkout pages, which open on stripe.com when you subscribe, set their own cookies as an independent controller — see Stripe's policy linked above.</p>
+
+  <h2>6. How long we keep data</h2>
+  <ul>
+    <li><strong>Account and vault data</strong> — for as long as your account exists. If you delete your account, data is deleted from the production database within 30 days (backup copies expire within a further 30 days).</li>
+    <li><strong>Gift list reservations</strong> — until the list owner deletes the gift list, or the reservation is cancelled.</li>
+    <li><strong>Payment records</strong> — kept by Stripe according to legal retention duties (tax law requires up to 10 years for invoicing data).</li>
+  </ul>
+
+  <h2>7. Your rights (GDPR Articles 15–22)</h2>
+  <p>You have the right to:</p>
+  <ul>
+    <li><strong>Access</strong> — get a copy of the personal data we hold about you;</li>
+    <li><strong>Rectification</strong> — correct inaccurate data;</li>
+    <li><strong>Erasure</strong> — delete your account and data ("right to be forgotten");</li>
+    <li><strong>Portability</strong> — receive your data in a machine-readable format (the app's Export CSV feature covers your vault content instantly);</li>
+    <li><strong>Restriction and objection</strong> — limit or object to processing based on legitimate interest;</li>
+    <li><strong>Complaint</strong> — lodge a complaint with your supervisory authority. In Italy this is the <a href="https://www.garanteprivacy.it" target="_blank" rel="noopener">Garante per la Protezione dei Dati Personali</a>.</li>
+  </ul>
+  <p>To exercise any right, email <a href="mailto:jackroice@gmail.com">jackroice@gmail.com</a>. We respond within 30 days.</p>
+
+  <h2>8. Security</h2>
+  <ul>
+    <li>All traffic is encrypted in transit (HTTPS/TLS).</li>
+    <li>Database access is protected by row-level security: each account can only read and write its own data.</li>
+    <li>Passwords are bcrypt-hashed (see section 3).</li>
+    <li>Payment data is handled exclusively by Stripe, a PCI-DSS Level 1 certified provider.</li>
+  </ul>
+
+  <h2>9. Children</h2>
+  <p>Vault is not directed at children under 16. We do not knowingly collect data from children. If you believe a child has created an account, contact us and we will delete it.</p>
+
+  <h2>10. Changes to this policy</h2>
+  <p>If we make material changes, we will show a notice in the app before the changes take effect. The "last updated" date at the top always reflects the current version.</p>
+</div>
+</body>
+</html>
