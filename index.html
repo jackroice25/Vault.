@@ -866,6 +866,23 @@ body.cmp-mode .card{cursor:default}
 .c-sv .sv-bar{height:4px}
 .c-sv-lbl{font-size:9px;color:var(--t3);font-weight:700;margin-top:3px;display:flex;justify-content:space-between}
 .c-sv-lbl b{color:var(--accent)}
+/* ── SMART REMINDERS ── */
+.rem-wrap{margin-top:12px;padding:12px 13px;border:1px solid var(--bd);border-radius:11px;background:var(--s2)}
+.rem-hd{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.rem-title{font-size:12px;font-weight:800;color:var(--t1);display:flex;align-items:center;gap:6px}
+.rem-set{font-size:11px;color:var(--accent);font-weight:700}
+.rem-acts{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.rem-banner{display:flex;align-items:center;gap:10px;margin:0 0 12px;padding:11px 14px;border:1px solid rgba(201,162,39,.35);border-radius:12px;background:linear-gradient(135deg,rgba(201,162,39,.10),rgba(232,200,74,.04));flex-wrap:wrap}
+.rem-banner-title{font-size:12px;font-weight:800;color:var(--accent);display:flex;align-items:center;gap:6px;flex-shrink:0}
+.rem-banner-items{display:flex;gap:6px;flex-wrap:wrap;flex:1}
+.rem-pill{display:inline-flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600;color:var(--t1);cursor:pointer;transition:all .12s}
+.rem-pill:hover{border-color:var(--accent);color:var(--accent)}
+.rem-pill-x{color:var(--t3);cursor:pointer;font-size:12px;padding:0 1px}
+.rem-pill-x:hover{color:#cc4444}
+.rem-banner-close{background:none;border:none;color:var(--t3);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:6px;font-family:inherit;flex-shrink:0}
+.rem-banner-close:hover{color:var(--t1)}
+.c-rem{display:inline-flex;align-items:center;gap:3px;font-size:10px;color:var(--t2);padding:2px 7px;border-radius:8px;background:var(--s3);border:1px solid var(--bd);margin-top:3px}
+.c-rem.due{color:var(--accent);border-color:rgba(201,162,39,.4);background:rgba(201,162,39,.08)}
 
 /* ── GIFT BADGE ── */
 .c-gift{display:inline-flex;align-items:center;gap:3px;font-size:10px;color:var(--accent);padding:2px 7px;border-radius:8px;background:var(--ax);border:1px solid var(--bd);margin-top:3px}
@@ -1816,6 +1833,7 @@ function load(){
         if(!it.giftFor) it.giftFor='';
         if(it.userRating===undefined) it.userRating=0;
         if(typeof it.saved!=='number'||it.saved<0) it.saved=0;
+        if(it.remindAt===undefined) it.remindAt=null;
         if(it.isPlace===undefined) it.isPlace=(it.type==='luogo'||!!(it.address||it.hours||it.cuisine));
         return it;
       });
@@ -1881,6 +1899,7 @@ function _applyRemoteData(remote){
     if(!it.giftFor) it.giftFor='';
     if(it.userRating===undefined) it.userRating=0;
     if(typeof it.saved!=='number'||it.saved<0) it.saved=0;
+    if(it.remindAt===undefined) it.remindAt=null;
     if(it.isPlace===undefined) it.isPlace=(it.type==='luogo'||!!(it.address||it.hours||it.cuisine));
     return it;
   });
@@ -2372,6 +2391,7 @@ function render(){
     grid.className='';
     const emptyIco=S.chip==='voglio'?ico('bag',36):S.chip==='comprato'?ico('check-circle',36):S.chip==='ordinato'?ico('box',36):S.chip==='visitare'?ico('pin',36):S.chip==='visitato'?ico('map',36):S.chip==='archivio'?ico('archive',36):ico('sparkle',36);
     grid.innerHTML=`<div class="empty"><div class="empty-icon" style="opacity:.35;color:var(--accent)">${emptyIco}</div><h3>${t('emptyTitle')||'Nessun elemento'}</h3></div>`;
+    renderRemBanner();
     return;
   }
   if(S.view==='mood'){
@@ -2389,6 +2409,7 @@ function render(){
     grid.className=S.view==='list'?'lv':'grid';
     grid.innerHTML=sortedItems(items).map(item=>cardHTML(item)).join('');
   }
+  renderRemBanner();
 }
 
 function cardHTML(item){
@@ -2466,6 +2487,7 @@ function cardHTML(item){
       ${tagPills?`<div class="c-tags">${tagPills}</div>`:''}
       ${giftBadge}
       ${voiceIco}
+      ${item.remindAt?`<div class="c-rem${item.remindAt<=Date.now()?' due':''}">${ico('bell-ring',9)} ${_remFmtDate(item.remindAt)}</div>`:''}
       ${(item.saved>0&&item.price>0&&item.status!=='comprato')?(()=>{const g=item.price*(item.qty||1);const s=Math.min(item.saved,g);const p=Math.min(100,Math.round(s/g*100));return `<div class="c-sv"><div class="sv-bar"><div class="sv-bar-fill${s>=g?' done':''}" style="width:${p}%"></div></div><div class="c-sv-lbl"><span>${ico('wallet',9)} saved</span><b>${p}%</b></div></div>`;})():''}
     </div>
     <span class="drag-handle" onclick="event.stopPropagation()">⠿</span>
@@ -2547,6 +2569,8 @@ function openDetMo(id){
   if(item.price>0&&!item.isPlace&&item.type!=='luogo'&&item.status!=='comprato'){
     h+=svSectionHTML(item);
   }
+  // smart reminder (any non-archived item)
+  if(!item.archived) h+=remSectionHTML(item);
   if(item.type==='luogo'){
     const cells=[];
     if(item.rating) cells.push({k:'Valutazione',v:`<span style="color:var(--yellow)">${stars(item.rating)}</span> ${item.rating}/5${item.reviewCount?` (${item.reviewCount} rec.)`:''}`});
@@ -5140,7 +5164,7 @@ function _initAuthSession(){
 // ══ VAULT PLUS ══
 const PLANS={
   free:{name:'Free',features:[]},
-  plus:{name:'Plus',price:'€4.99/month',features:['sharedLists','giftMode','browserExtension','savingsGoal','advancedStats','folders','aiProfile','aiSuggestions','multiWorkspace','cloudBackup','premiumThemes','advancedMoodboard']}
+  plus:{name:'Plus',price:'€4.99/month',features:['sharedLists','giftMode','browserExtension','savingsGoal','smartReminders','advancedStats','folders','aiProfile','aiSuggestions','multiWorkspace','cloudBackup','premiumThemes','advancedMoodboard']}
 };
 function getCurrentPlan(){return _sbPlan!=='free'?_sbPlan:(localStorage.getItem('vaultPlan')||'free');}
 function isPlus(){return getCurrentPlan()==='plus';}
@@ -5606,6 +5630,89 @@ function svReset(id){
   item.saved=0;
   save();render();openDetMo(id);
 }
+
+// ══ SMART REMINDERS ══
+function _remFmtDate(ts){
+  const d=new Date(ts);
+  return d.toLocaleDateString(undefined,{day:'numeric',month:'short'});
+}
+function remSectionHTML(item){
+  if(!isPlus()&&!item.remindAt){
+    return `<div class="rem-wrap" style="cursor:pointer" onclick="showPlusModal('smartReminders')">
+      <div class="rem-hd"><div class="rem-title">${ico('bell-ring',13)} Reminder <span class="plus-badge" style="margin-left:2px">${ico('crown',9)} Plus</span></div>
+      <span style="font-size:11px;color:var(--t3)">Get pinged when it's time →</span></div>
+    </div>`;
+  }
+  const set=item.remindAt
+    ?`<span class="rem-set">${ico('bell-ring',11)} ${_remFmtDate(item.remindAt)}${item.remindAt<=Date.now()?' — due!':''}</span>`
+    :`<span style="font-size:11px;color:var(--t3)">None set</span>`;
+  const acts=item.remindAt
+    ?`<div class="rem-acts"><button class="sv-btn reset" onclick="remClear('${item.id}')">✕ Remove reminder</button></div>`
+    :`<div class="rem-acts">
+        <button class="sv-btn" onclick="remSet('${item.id}','tomorrow')">Tomorrow</button>
+        <button class="sv-btn" onclick="remSet('${item.id}','week')">In 1 week</button>
+        <button class="sv-btn" onclick="remSet('${item.id}','month')">In 1 month</button>
+        <button class="sv-btn" onclick="remSet('${item.id}','eom')">End of month</button>
+        <button class="sv-btn" onclick="remSet('${item.id}','custom')">📅 Pick date</button>
+      </div>`;
+  return `<div class="rem-wrap">
+    <div class="rem-hd"><div class="rem-title">${ico('bell-ring',13)} Reminder</div>${set}</div>
+    ${acts}
+  </div>`;
+}
+function remSet(id,kind){
+  requirePlus('smartReminders',()=>{
+    const item=S.items.find(i=>i.id===id); if(!item) return;
+    const now=new Date(); let d;
+    if(kind==='tomorrow'){ d=new Date(now); d.setDate(d.getDate()+1); }
+    else if(kind==='week'){ d=new Date(now); d.setDate(d.getDate()+7); }
+    else if(kind==='month'){ d=new Date(now); d.setMonth(d.getMonth()+1); }
+    else if(kind==='eom'){ d=new Date(now.getFullYear(),now.getMonth()+1,0); }
+    else{
+      const v=prompt('Remind me on (YYYY-MM-DD):',new Date(now.getTime()+7*864e5).toISOString().slice(0,10));
+      if(v===null) return;
+      d=new Date(v+'T09:00:00');
+      if(isNaN(d.getTime())){showToast('Invalid date — use YYYY-MM-DD.');return;}
+      if(d.getTime()<=Date.now()){showToast('Pick a future date.');return;}
+    }
+    d.setHours(9,0,0,0);
+    item.remindAt=d.getTime();
+    save();render();openDetMo(id);
+    showToast('🔔 Reminder set for '+_remFmtDate(item.remindAt));
+  });
+}
+function remClear(id){
+  const item=S.items.find(i=>i.id===id); if(!item) return;
+  item.remindAt=null;
+  save();render();renderRemBanner();
+  if(document.getElementById('detOv').classList.contains('open')) openDetMo(id);
+}
+function _dueReminders(){
+  return S.items.filter(i=>!i.archived&&i.remindAt&&i.remindAt<=Date.now());
+}
+let _remBannerHidden=false;
+function renderRemBanner(){
+  let el=document.getElementById('remBanner');
+  const due=_dueReminders();
+  if(!due.length||_remBannerHidden){ if(el) el.remove(); return; }
+  if(!el){
+    el=document.createElement('div');
+    el.id='remBanner';
+    el.className='rem-banner';
+    const grid=document.getElementById('grid');
+    if(grid&&grid.parentNode) grid.parentNode.insertBefore(el,grid);
+    else return;
+  }
+  el.innerHTML=`
+    <div class="rem-banner-title">${ico('bell-ring',13)} Reminders</div>
+    <div class="rem-banner-items">${due.slice(0,6).map(i=>
+      `<span class="rem-pill" onclick="openDetMo('${i.id}')">${esc((i.title||'Item').slice(0,34))}
+        <span class="rem-pill-x" onclick="event.stopPropagation();remClear('${i.id}')" title="Dismiss">✕</span></span>`).join('')}
+      ${due.length>6?`<span style="font-size:11px;color:var(--t3);align-self:center">+${due.length-6} more</span>`:''}
+    </div>
+    <button class="rem-banner-close" onclick="_remBannerHidden=true;this.parentElement.remove()" title="Hide until next reload">✕</button>`;
+}
+setInterval(renderRemBanner,60000);
 
 // ══ GIFT MODE (registries with reservations) ══
 let _giftRegs=[];        // registries owned by the user
