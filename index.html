@@ -8,6 +8,16 @@
 <meta property="og:title" content="Vault — The home for everything you want">
 <meta property="og:description" content="Keep everything you want in one considered place. Products, places, trips — saved from anywhere, organised, shared.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://vaultwishlist.com/">
+<meta property="og:site_name" content="Vault">
+<meta property="og:image" content="https://vaultwishlist.com/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Vault — The home for everything you want">
+<meta name="twitter:description" content="Keep everything you want in one considered place. Products, places, trips — saved from anywhere, organised, shared.">
+<meta name="twitter:image" content="https://vaultwishlist.com/assets/og.png">
+<link rel="icon" type="image/png" href="assets/og.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -193,7 +203,43 @@
     .plus-grid{border-radius:16px}
     .foot-in{align-items:flex-start;flex-direction:column;gap:18px}
     .foot-links{margin-left:0;gap:18px 24px}
+    .aw-side{display:none}
+    .aw-main{grid-template-columns:repeat(2,1fr)}
+    .faq summary{font-size:15px}
   }
+
+  /* app window showcase */
+  .appwin-wrap{margin-top:56px}
+  .appwin{border:1px solid var(--bd);border-radius:16px;overflow:hidden;background:#080808;box-shadow:0 40px 110px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.02)}
+  .appwin-bar{display:flex;align-items:center;gap:7px;padding:12px 15px;border-bottom:1px solid var(--bd);background:#0d0d0d}
+  .awdot{width:11px;height:11px;border-radius:50%;background:#1e1e1e}
+  .appwin-url{margin-left:14px;font-size:11px;color:var(--t3);background:#050505;border:1px solid var(--bd);border-radius:7px;padding:5px 14px}
+  .appwin-body{display:flex;min-height:440px}
+  .aw-side{width:186px;border-right:1px solid var(--bd);padding:16px 12px;flex-shrink:0;background:#0b0b0b}
+  .aw-side-h{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--t3);margin:0 6px 11px;font-weight:700}
+  .aw-nav{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;font-size:12.5px;color:var(--t2);margin-bottom:2px}
+  .aw-nav.on{background:rgba(184,184,184,.08);color:var(--t1)}
+  .aw-nav .ico{width:14px;height:14px;opacity:.75}
+  .aw-side-div{height:1px;background:var(--bd);margin:14px 6px}
+  .aw-main{flex:1;padding:16px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-content:start}
+  .aw-card{border:1px solid var(--bd);border-radius:12px;overflow:hidden;background:#0d0d0d}
+  .aw-card-img{position:relative;height:112px}
+  .aw-card-img img{width:100%;height:100%;object-fit:cover;display:block}
+  .aw-st{position:absolute;top:8px;left:8px;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(10,10,10,.7);color:#d8d8d8;backdrop-filter:blur(4px)}
+  .aw-card-b{padding:9px 11px 12px}
+  .aw-card-t{font-size:12px;font-weight:600;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .aw-card-p{font-size:12px;font-weight:700;color:var(--silver);margin-top:4px}
+
+  /* FAQ */
+  .faq{max-width:760px;margin:52px auto 0;border-top:1px solid var(--bd)}
+  .faq details{border-bottom:1px solid var(--bd)}
+  .faq summary{list-style:none;cursor:pointer;padding:24px 4px;display:flex;align-items:center;gap:16px;font-size:17px;font-weight:600;color:var(--t1);transition:color .2s}
+  .faq summary:hover{color:#fff}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary .q-ico{margin-left:auto;color:var(--t3);transition:transform .25s;flex-shrink:0;font-size:22px;line-height:1;font-weight:400}
+  .faq details[open] summary .q-ico{transform:rotate(45deg);color:var(--silver)}
+  .faq .a{padding:0 4px 24px;font-size:15px;color:var(--t2);line-height:1.68;max-width:660px}
+  .faq .a a{color:var(--silver);text-decoration:underline;text-underline-offset:2px}
 </style>
 </head>
 <body>
@@ -299,10 +345,42 @@
   </div>
 </section>
 
+<!-- ═══ APP SHOWCASE ═══ -->
+<section class="band" style="padding-top:0">
+  <div class="wrap">
+    <div style="text-align:center">
+      <div class="eyebrow reveal" style="justify-content:center"><span class="num">02</span> The app</div>
+      <h2 class="big reveal" style="margin-top:20px">A place you'll want to open.</h2>
+      <p class="lead reveal" style="max-width:540px;margin:14px auto 0">Clean, fast and quietly beautiful. Your wishlist, the way it should look.</p>
+    </div>
+    <div class="appwin-wrap reveal">
+      <div class="appwin">
+        <div class="appwin-bar">
+          <span class="awdot"></span><span class="awdot"></span><span class="awdot"></span>
+          <span class="appwin-url">vaultwishlist.com/app</span>
+        </div>
+        <div class="appwin-body">
+          <div class="aw-side">
+            <div class="aw-side-h">Sections</div>
+            <div class="aw-nav on"><svg class="ico"><use href="#ic-layers"/></svg> All items</div>
+            <div class="aw-nav"><svg class="ico"><use href="#ic-bag"/></svg> Fashion</div>
+            <div class="aw-nav"><svg class="ico"><use href="#ic-sparkle"/></svg> Tech</div>
+            <div class="aw-nav"><svg class="ico"><use href="#ic-palette"/></svg> Home</div>
+            <div class="aw-side-div"></div>
+            <div class="aw-nav"><svg class="ico"><use href="#ic-pin"/></svg> Travel</div>
+            <div class="aw-nav"><svg class="ico"><use href="#ic-globe"/></svg> Restaurants</div>
+          </div>
+          <div class="aw-main" id="awGrid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ═══ WHAT YOU SAVE ═══ -->
 <section class="band" id="save">
   <div class="wrap">
-    <div class="eyebrow reveal"><span class="num">02</span> What you save <span class="rule"></span></div>
+    <div class="eyebrow reveal"><span class="num">03</span> What you save <span class="rule"></span></div>
     <h2 class="big reveal" style="margin-top:22px;max-width:640px">Two kinds of wanting, one place to keep them.</h2>
     <div class="duo">
       <div class="duo-card reveal">
@@ -331,7 +409,7 @@
   <div class="globe-fade"></div>
   <div class="globe-copy">
     <div class="inner reveal">
-      <div class="eyebrow"><span class="num">03</span> Places</div>
+      <div class="eyebrow"><span class="num">04</span> Places</div>
       <h2 class="big">Not just things.<br>The whole world.</h2>
       <p class="lead">Every place you save lands on a living globe — the restaurants you're curious about, the cities on your list, the trip you're quietly planning. Give it a spin and watch your someday-map take shape.</p>
       <div class="globe-list">
@@ -346,7 +424,7 @@
 <!-- ═══ FEATURES ═══ -->
 <section class="band" id="features" style="padding-bottom:40px">
   <div class="wrap">
-    <div class="eyebrow reveal"><span class="num">04</span> How it works <span class="rule"></span></div>
+    <div class="eyebrow reveal"><span class="num">05</span> How it works <span class="rule"></span></div>
     <h2 class="big reveal" style="margin-top:22px;max-width:600px;margin-bottom:20px">Everything it does, and nothing it doesn't.</h2>
   </div>
   <div class="wrap">
@@ -468,7 +546,7 @@
 <!-- ═══ PRICING ═══ -->
 <section class="band" id="pricing">
   <div class="wrap">
-    <div class="eyebrow reveal" style="justify-content:center"><span class="num">05</span> Pricing</div>
+    <div class="eyebrow reveal" style="justify-content:center"><span class="num">06</span> Pricing</div>
     <h2 class="big reveal" style="text-align:center;margin-top:20px">Simple, honest pricing.</h2>
     <p class="lead reveal" style="text-align:center;max-width:520px;margin:14px auto 0">Start free and stay free for as long as you like. Upgrade the day you want more.</p>
 
@@ -502,6 +580,38 @@
         </ul>
         <a class="btn btn-gold" href="app.html">Get Vault Plus</a>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FAQ ═══ -->
+<section class="band" id="faq">
+  <div class="wrap">
+    <div style="text-align:center">
+      <div class="eyebrow reveal" style="justify-content:center"><span class="num">07</span> Questions</div>
+      <h2 class="big reveal" style="margin-top:20px">Good to know.</h2>
+    </div>
+    <div class="faq">
+      <details class="reveal"><summary>Is Vault really free?<span class="q-ico">+</span></summary>
+        <div class="a">Yes. The free plan is free forever — save products and places from any site, organise them into sections, use the grid, list, globe and moodboard views, and sync privately across your devices. Vault Plus (€4.99/month) is optional and adds sharing, gift lists, reminders and more.</div></details>
+
+      <details class="reveal"><summary>How does saving from a website work?<span class="q-ico">+</span></summary>
+        <div class="a">Copy the link of anything you like — a product, a restaurant, a hotel — and paste it into Vault. It reads the page and fills in the title, image and price automatically. With Vault Plus you can also save the page you're on in one click using the browser extension.</div></details>
+
+      <details class="reveal"><summary>Which websites are supported?<span class="q-ico">+</span></summary>
+        <div class="a">Most of the web works out of the box — shops, marketplaces, Google Maps, Booking and countless others. A few large brands use aggressive bot protection that can block automatic reading; on those, Vault still saves the item with a clean name from the link, and you can add the photo and price yourself in a couple of seconds.</div></details>
+
+      <details class="reveal"><summary>What exactly do I get with Vault Plus?<span class="q-ico">+</span></summary>
+        <div class="a">Everything in Free, plus: shared &amp; collaborative lists, gift mode with reservations, the one-click browser extension, savings goals, smart reminders, price comparison across stores, AI insights into your taste and spending, advanced moodboards and premium themes. See the <a href="#plus">Plus section</a> above for the full breakdown.</div></details>
+
+      <details class="reveal"><summary>Can I share a list with other people?<span class="q-ico">+</span></summary>
+        <div class="a">Yes, with Vault Plus. Shared lists let you invite anyone and edit together in real time — ideal for couples, families or a group trip. Gift lists go a step further: share one link (no account needed to open it) and friends quietly reserve what they'll buy, so nobody gifts the same thing twice.</div></details>
+
+      <details class="reveal"><summary>Is my data private?<span class="q-ico">+</span></summary>
+        <div class="a">Completely. There are no ads and no tracking. Your data is yours — passwords are securely hashed, everything travels encrypted, and you can export all of it to CSV or delete your account at any time. Read our <a href="privacy.html">Privacy Policy</a> for the details.</div></details>
+
+      <details class="reveal"><summary>Do I need to install anything?<span class="q-ico">+</span></summary>
+        <div class="a">No. Vault runs in your browser — nothing to download. You can use it as a guest with everything stored locally, or create a free account to sync across devices. Native desktop and mobile apps are on the way.</div></details>
     </div>
   </div>
 </section>
@@ -599,6 +709,27 @@
     const cardHTML=([t,cat,pr,img])=>`<div class="m-card"><img src="${img}" alt="" loading="lazy"><div class="m-b"><div class="m-t">${t}</div><div class="m-s"><span>${cat}</span><span class="pr">${pr||''}</span></div></div></div>`;
     // duplicate the set so the marquee loops seamlessly
     track.innerHTML=[...ITEMS,...ITEMS].map(cardHTML).join('');
+  })();
+
+  // ── app-window grid (faithful preview with real product photos) ──
+  (function(){
+    const grid=document.getElementById('awGrid');
+    if(!grid) return;
+    const G=id=>`https://images.unsplash.com/${id}?w=320&q=80&auto=format&fit=crop`;
+    const CARDS=[
+      ['Chronograph watch','€1,250','Want it',G('photo-1523275335684-37898b6baf30')],
+      ['Studio headphones','€349','Ordered',G('photo-1505740420928-5e560c06d30e')],
+      ['Wool overcoat','€420','Want it',G('photo-1591047139829-d91aecb6caea')],
+      ['Mirrorless camera','€1,499','Want it',G('photo-1516035069371-29a1b244cc32')],
+      ['Acetate sunglasses','€210','Bought',G('photo-1511499767150-a48a237f0083')],
+      ['Sculptural chair','€890','Want it',G('photo-1567538096630-e0c55bd6374c')],
+      ['Leather weekender','€380','Ordered',G('photo-1584917865442-de89df76afd3')],
+      ['Ceramic table lamp','€165','Want it',G('photo-1507473885765-e6ed057f782c')],
+    ];
+    grid.innerHTML=CARDS.map(([t,p,st,img])=>`<div class="aw-card">
+      <div class="aw-card-img"><img src="${img}" alt="" loading="lazy"><span class="aw-st">${st}</span></div>
+      <div class="aw-card-b"><div class="aw-card-t">${t}</div><div class="aw-card-p">${p}</div></div>
+    </div>`).join('');
   })();
 
   // ── nav scrolled state ──
