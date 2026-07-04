@@ -1846,30 +1846,31 @@ let fetched=null;
 let extraImages=[];
 
 function load(){
+  // Always start from a clean default so a new/empty account never inherits
+  // the previously loaded account's in-memory data (data-isolation fix).
+  const DEF=()=>({sections:[],items:[],active:null,view:'grid',chip:'tutti',currency:'EUR',lang:'en',theme:'dark',statusColors:{},onboardingDone:false,profile:{name:'',emoji:'🔐',joined:null}});
   try{
     const d=localStorage.getItem(vaultKey());
-    if(d){
-      S={sections:[],items:[],active:null,view:'grid',chip:'tutti',currency:'EUR',lang:'en',theme:'dark',statusColors:{},onboardingDone:false,profile:{name:'',emoji:'🔐',joined:null},...JSON.parse(d)};
-      S.items=S.items.map(it=>{
-        if(!it.images) it.images=it.img?[it.img]:[];
-        if(!it.tags) it.tags=[];
-        if(!it.priceHistory) it.priceHistory=[];
-        if(!it.relatedIds) it.relatedIds=[];
-        if(it.archived===undefined) it.archived=false;
-        if(it.priceFound===undefined) it.priceFound=0;
-        if(it.deadline===undefined) it.deadline=null;
-        if(!it.variant) it.variant='';
-        if(!it.qty||it.qty<1) it.qty=1;
-        if(it.voiceMemo===undefined) it.voiceMemo=null;
-        if(!it.giftFor) it.giftFor='';
-        if(it.userRating===undefined) it.userRating=0;
-        if(typeof it.saved!=='number'||it.saved<0) it.saved=0;
-        if(it.remindAt===undefined) it.remindAt=null;
-        if(it.isPlace===undefined) it.isPlace=(it.type==='luogo'||!!(it.address||it.hours||it.cuisine));
-        return it;
-      });
-    }
-  }catch(e){}
+    S = d ? {...DEF(),...JSON.parse(d)} : DEF();
+    S.items=(S.items||[]).map(it=>{
+      if(!it.images) it.images=it.img?[it.img]:[];
+      if(!it.tags) it.tags=[];
+      if(!it.priceHistory) it.priceHistory=[];
+      if(!it.relatedIds) it.relatedIds=[];
+      if(it.archived===undefined) it.archived=false;
+      if(it.priceFound===undefined) it.priceFound=0;
+      if(it.deadline===undefined) it.deadline=null;
+      if(!it.variant) it.variant='';
+      if(!it.qty||it.qty<1) it.qty=1;
+      if(it.voiceMemo===undefined) it.voiceMemo=null;
+      if(!it.giftFor) it.giftFor='';
+      if(it.userRating===undefined) it.userRating=0;
+      if(typeof it.saved!=='number'||it.saved<0) it.saved=0;
+      if(it.remindAt===undefined) it.remindAt=null;
+      if(it.isPlace===undefined) it.isPlace=(it.type==='luogo'||!!(it.address||it.hours||it.cuisine));
+      return it;
+    });
+  }catch(e){ S=DEF(); }
   if(!S.sections.length) S.sections=[...DEFAULT_SECTIONS];
   const _secRename={'Moda & Stile':'Fashion & Style','Tech & Gadget':'Tech & Gadgets','Casa & Design':'Home & Design','Varie':'Misc','Ristoranti':'Restaurants','Negozi':'Shops','Posti da vedere':'Places to see','Hotel & Viaggi':'Hotels & Travel'};
   S.sections.forEach(s=>{if(_secRename[s.name])s.name=_secRename[s.name];});
