@@ -1949,9 +1949,10 @@ const STRIPE_ANNUAL='https://buy.stripe.com/test_8x28wPaevfNc5kT0JOgUM01';
 // Cloud push — fire-and-forget after every local save
 // Immediate write of the whole vault to Supabase. Skips the write when nothing
 // actually changed since the last push (avoids redundant Disk IO).
-let _sbPushTimer=null, _lastPushedJSON='';
+let _sbPushTimer=null, _lastPushedJSON='', _syncReady=false;
 async function _sbPushNow(){
   if(!_sb||!_sbUser) return;
+  if(!_syncReady) return; // never write before the initial cloud pull has reconciled — prevents wiping the cloud with an empty/unloaded state
   try{
     const payload=JSON.stringify(S);
     if(payload===_lastPushedJSON) return; // no real change — don't hit the DB
@@ -1979,13 +1980,30 @@ async function _sbPull(){
   if(!_sb||!_sbUser) return false;
   try{
     const {data,error}=await _sb.from('vault_data').select('data,plan').eq('id',_sbUser.id).single();
-    if(!error&&data){
+    if(error){
+      // No cloud row yet (new user) → safe to start syncing this device's data up.
+      if(error.code==='PGRST116'){ _syncReady=true; }
+      return false;
+    }
+    if(data){
       if(data.plan) _sbPlan=data.plan;
-      if(data.data){ _applyRemoteData(data.data); localStorage.setItem(vaultKey(),JSON.stringify(S)); _lastPushedJSON=JSON.stringify(S); }
+      const remote=data.data;
+      const remoteItems=(remote&&Array.isArray(remote.items))?remote.items.length:0;
+      const localItems=(S&&Array.isArray(S.items))?S.items.length:0;
+      // SAFETY NET: if the cloud lost its items but this device still has them,
+      // DO NOT overwrite local with the empty cloud. Keep local and repair the
+      // cloud by pushing local back up. Local-with-data always beats empty-cloud.
+      if(remote && remoteItems===0 && localItems>0){
+        _syncReady=true;
+        _sbPushNow();       // restore the cloud from this device's copy
+        return true;
+      }
+      if(remote){ _applyRemoteData(remote); localStorage.setItem(vaultKey(),JSON.stringify(S)); _lastPushedJSON=JSON.stringify(S); }
+      _syncReady=true;
       return true;
     }
   }catch(e){}
-  return false;
+  return false; // network/other error → _syncReady stays false, no risky writes
 }
 
 function _applyRemoteData(remote){
@@ -6262,6 +6280,9 @@ setTimeout(_hideBootLoader, 2000);
       const eHash=await _sha256(session.user.email);
       _currentUser={eHash,email:session.user.email};
     }
+    load(); // reload THIS user's local copy (vault5_<hash>) before syncing, so the
+            // safety net can compare local-vs-cloud and recover if the cloud is empty
+    renderSidebar();render();
     const prevPlan=_sbPlan;
     const synced=await _sbPull();
     if(synced){
