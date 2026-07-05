@@ -151,6 +151,9 @@ body{background:var(--bg);color:var(--t1);display:flex}
   .chips{padding:9px 12px 0}
   .content{padding:12px 12px 20px}
   .grid{grid-template-columns:1fr;gap:12px}
+  /* iOS auto-zooms into any focused field whose font-size is < 16px, then can
+     get stuck zoomed. Forcing 16px on every input kills the auto-zoom entirely. */
+  input, textarea, select{font-size:16px !important}
 }
 @media(max-width:440px){
   .add-btn{font-size:0;padding:8px 11px}
