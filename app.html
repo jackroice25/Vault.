@@ -1476,6 +1476,18 @@ body.cmp-mode .card{cursor:default}
   <div id="pnTextEl" style="flex:1;min-width:220px;font-size:11.5px;color:var(--t2,#a8a8a8);line-height:1.55">🍪 Vault uses <b style="color:var(--t1,#f0f0f0)">only technical storage</b> needed for the app to work (sign-in, your data, preferences). No tracking, no ads, no profiling. <a href="privacy.html" target="_blank" rel="noopener" style="color:var(--accent,#c9a227);font-weight:700">Privacy Policy</a></div>
   <button id="pnOkBtn" onclick="dismissPrivacyNotice()" style="background:var(--accent,#c9a227);color:#111;border:none;border-radius:9px;padding:8px 16px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit">OK</button>
 </div>
+<!-- Set-new-password screen (shown after clicking the reset link in the email) -->
+<div id="pwResetOv" style="position:fixed;inset:0;background:rgba(0,0,0,.96);backdrop-filter:blur(20px);z-index:1000001;display:none;align-items:center;justify-content:center;padding:16px">
+  <div class="auth-box">
+    <div class="auth-logo"><svg width="52" height="52" viewBox="0 0 16 16" style="display:block;margin:0 auto;color:var(--accent)"><use href="#ic-lock"/></svg></div>
+    <div class="auth-title">Set a new password</div>
+    <div class="auth-sub">Choose a new password for your Vault account.</div>
+    <div class="auth-inp-wrap"><input class="auth-inp" type="password" id="pwResetNew" placeholder="New password" autocomplete="new-password" onkeydown="if(event.key==='Enter')document.getElementById('pwResetNew2').focus()"></div>
+    <div class="auth-inp-wrap"><input class="auth-inp" type="password" id="pwResetNew2" placeholder="Repeat password" autocomplete="new-password" onkeydown="if(event.key==='Enter')submitPasswordReset()"></div>
+    <div class="auth-err" id="pwResetErr"></div>
+    <button class="auth-btn" id="pwResetBtn" onclick="submitPasswordReset()">Update password</button>
+  </div>
+</div>
 <div class="ov" id="profileOv">
   <div class="mo" style="max-width:460px">
     <div class="mo-hd" id="profileMoHd"><svg class="ico" width="16" height="16" viewBox="0 0 16 16" style="margin-right:6px"><use href="#ic-user"/></svg>Profile</div>
@@ -1933,6 +1945,9 @@ const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
   if(!SUPABASE_URL||!SUPABASE_ANON_KEY) return;
   if(typeof window.supabase==='undefined') return;
   _sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+  // When the user opens a password-reset link, supabase-js processes the recovery
+  // token in the URL and fires PASSWORD_RECOVERY → show the "set new password" screen.
+  _sb.auth.onAuthStateChange((event)=>{ if(event==='PASSWORD_RECOVERY') openPasswordReset(); });
 })();
 
 // Cloud push — fire-and-forget after every local save
@@ -5172,12 +5187,42 @@ async function doForgotPass(){
   if(!email||!email.includes('@')){_authErr('Enter your email first.');return;}
   if(!_sb){_authErr('Auth not available.');return;}
   _authErr('');
-  const {error}=await _sb.auth.resetPasswordForEmail(email);
+  const {error}=await _sb.auth.resetPasswordForEmail(email,{redirectTo:'https://vaultwishlist.com/app.html'});
   if(error){_authErr(error.message);return;}
   _authErr('');
   document.getElementById('authErr').style.color='var(--green)';
   document.getElementById('authErr').textContent='Reset link sent — check your inbox.';
   setTimeout(()=>{document.getElementById('authErr').style.color='';},4000);
+}
+// ── PASSWORD RECOVERY (set a new password after clicking the reset email) ──
+function openPasswordReset(){
+  const ov=document.getElementById('authOv'); if(ov) ov.style.display='none';
+  const r=document.getElementById('pwResetOv'); if(r) r.style.display='flex';
+  const e=document.getElementById('pwResetErr'); if(e) e.textContent='';
+  const n=document.getElementById('pwResetNew'); if(n){n.value='';n.focus();}
+  const n2=document.getElementById('pwResetNew2'); if(n2) n2.value='';
+}
+async function submitPasswordReset(){
+  const p1=(document.getElementById('pwResetNew').value||'');
+  const p2=(document.getElementById('pwResetNew2').value||'');
+  const err=document.getElementById('pwResetErr');
+  if(p1.length<6){err.textContent='Password must be at least 6 characters.';return;}
+  if(p1!==p2){err.textContent='The two passwords do not match.';return;}
+  if(!_sb){err.textContent='Auth not available.';return;}
+  err.textContent='';
+  const btn=document.getElementById('pwResetBtn'); if(btn){btn.disabled=true;btn.textContent='Updating…';}
+  try{
+    const {error}=await _sb.auth.updateUser({password:p1});
+    if(error){err.textContent=error.message||'Could not update password.';if(btn){btn.disabled=false;btn.textContent='Update password';}return;}
+    document.getElementById('pwResetOv').style.display='none';
+    // clear the recovery token from the URL, then reload — the now-valid session logs the user in
+    try{history.replaceState(null,'',location.pathname);}catch(e){}
+    showToast('Password updated — signing you in…');
+    setTimeout(()=>location.reload(),600);
+  }catch(e){
+    err.textContent='Something went wrong. Please try again.';
+    if(btn){btn.disabled=false;btn.textContent='Update password';}
+  }
 }
 function _authErr(msg){
   document.getElementById('authErr').textContent=msg;
