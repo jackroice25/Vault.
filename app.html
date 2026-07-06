@@ -1944,10 +1944,14 @@ const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 (function(){
   if(!SUPABASE_URL||!SUPABASE_ANON_KEY) return;
   if(typeof window.supabase==='undefined') return;
-  _sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+  // implicit flow: recovery/confirm tokens arrive in the URL hash directly, so the
+  // reset link works in ANY browser/device (PKCE is browser-bound and breaks reset).
+  _sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{flowType:'implicit',detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}});
   // When the user opens a password-reset link, supabase-js processes the recovery
   // token in the URL and fires PASSWORD_RECOVERY → show the "set new password" screen.
   _sb.auth.onAuthStateChange((event)=>{ if(event==='PASSWORD_RECOVERY') openPasswordReset(); });
+  // Fallback: if the URL is a recovery link, show the reset screen even if the event timing is off.
+  if((location.hash||'').indexOf('type=recovery')>=0) setTimeout(()=>{ if(document.getElementById('pwResetOv')) openPasswordReset(); }, 900);
 })();
 
 // Cloud push — fire-and-forget after every local save
