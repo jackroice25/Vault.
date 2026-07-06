@@ -5589,6 +5589,7 @@ async function loadAISuggestions(){
     if(!res.ok||!d.ok){
       const msg=d.error==='plus_required'?'This is a Vault Plus feature.'
         :d.error==='not_configured'?'AI suggestions aren\'t switched on yet.'
+        :d.error==='rate_limited'?'You\'ve reached today\'s AI suggestions limit. Come back tomorrow.'
         :d.error==='refused'?'Couldn\'t generate suggestions this time — try again.'
         :'Something went wrong. Please try again in a moment.';
       _aiSugIn(`<div style="color:var(--t3);font-size:13px;text-align:center;padding:28px">${esc(msg)}</div>`);
