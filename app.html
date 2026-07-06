@@ -831,17 +831,6 @@ body.cmp-mode .card{cursor:default}
 .ai-trait-dot{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:17px;background:var(--s3)}
 .ai-trait-name{font-size:10px;font-weight:700;color:var(--t3);margin-bottom:2px;text-transform:uppercase;letter-spacing:.5px}
 .ai-trait-val{font-size:13px;font-weight:600;color:var(--t1)}
-/* ── AI SUGGESTIONS ── */
-.ai-sug-card{background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:13px 14px;margin-bottom:10px}
-.ai-sug-top{display:flex;align-items:flex-start;gap:11px}
-.ai-sug-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(201,162,39,.12);color:#c9a227}
-.ai-sug-title{font-size:14px;font-weight:800;color:var(--t1);line-height:1.3}
-.ai-sug-meta{font-size:11px;color:var(--t3);margin-top:2px}
-.ai-sug-reason{font-size:12.5px;color:var(--t2);line-height:1.6;margin:9px 0 11px}
-.ai-sug-find{display:inline-flex;align-items:center;gap:6px;font-family:inherit;font-size:12px;font-weight:700;color:#c9a227;background:rgba(201,162,39,.08);border:1px solid rgba(201,162,39,.25);border-radius:8px;padding:6px 12px;cursor:pointer}
-.ai-sug-find:hover{background:rgba(201,162,39,.15)}
-.ai-sug-spin{width:26px;height:26px;border-radius:50%;border:2.5px solid var(--bd);border-top-color:#c9a227;display:inline-block;animation:aiSugSpin .7s linear infinite}
-@keyframes aiSugSpin{to{transform:rotate(360deg)}}
 /* ── SHARED / COLLABORATIVE LISTS ── */
 .shared-list{display:flex;flex-direction:column;gap:8px}
 .shared-row{display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid var(--bd);border-radius:11px;background:var(--s2);cursor:pointer;transition:background .12s,border-color .12s}
@@ -5324,7 +5313,7 @@ function _initAuthSession(){
 // ══ VAULT PLUS ══
 const PLANS={
   free:{name:'Free',features:[]},
-  plus:{name:'Plus',price:'€4.99/month',features:['sharedLists','giftMode','browserExtension','savingsGoal','smartReminders','findCheaper','advancedStats','folders','aiProfile','aiSuggestions','multiWorkspace','cloudBackup','premiumThemes','advancedMoodboard']}
+  plus:{name:'Plus',price:'€4.99/month',features:['sharedLists','giftMode','browserExtension','savingsGoal','smartReminders','findCheaper','advancedStats','folders','aiProfile','multiWorkspace','cloudBackup','premiumThemes','advancedMoodboard']}
 };
 function getCurrentPlan(){return _sbPlan!=='free'?_sbPlan:(localStorage.getItem('vaultPlan')||'free');}
 function isPlus(){return getCurrentPlan()==='plus';}
@@ -5460,7 +5449,6 @@ function _getPlanSectionHTML(){
     <button class="prof-btn" onclick="openAIProfile();closeProfileMo()">${ico('sparkle',13)} ${t('profAI')}</button>
     <button class="prof-btn" onclick="openCloudBackup();closeProfileMo()">${ico('upload',13)} ${t('profCloud')}</button>
   </div>
-  <button class="prof-btn" style="width:100%;margin-bottom:10px" onclick="openAISuggestions();closeProfileMo()">${ico('sparkle',13)} AI Suggestions</button>
   <div class="prof-btn-row" style="margin-bottom:10px">
     <button class="prof-btn" onclick="openSharedLists();closeProfileMo()">${ico('share',13)} ${t('shTitle')}</button>
     <button class="prof-btn" onclick="openGiftMode();closeProfileMo()">${t('gfTitle')}</button>
@@ -5554,77 +5542,6 @@ function renderAIProfile(){
       <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--t3);margin-bottom:6px">${ico('sparkle',11)} AI Insight</div>
       <div style="font-size:13px;color:var(--t2);line-height:1.65">You're a <strong style="color:var(--t1)">${priceStyle}</strong>${topSec?` with a focus on <strong style="color:var(--t1)">${esc(topSec.name)}</strong>`:''}.  ${placeCount>items.length-placeCount?'You love discovering new places and experiences.':'You curate products with a discerning eye.'} ${starCount>0?`You've starred ${starCount} top picks — your vault has real depth.`:''}</div>
     </div>`;
-}
-
-// ── AI SUGGESTIONS ──
-function openAISuggestions(){
-  requirePlus('aiSuggestions',()=>{
-    document.getElementById('aiSugOv').classList.add('open');
-    loadAISuggestions();
-  });
-}
-function closeAISuggestions(){document.getElementById('aiSugOv').classList.remove('open');}
-function _aiSugIn(html){const el=document.getElementById('aiSugIn');if(el)el.innerHTML=html;}
-async function loadAISuggestions(){
-  const items=S.items.filter(i=>!i.archived);
-  if(items.length<3){
-    _aiSugIn('<div style="color:var(--t3);font-size:13px;text-align:center;padding:28px">Add a few items first — I need at least 3 to learn your taste.</div>');
-    return;
-  }
-  if(!_sb||!_sbUser){
-    _aiSugIn('<div style="color:var(--t3);font-size:13px;text-align:center;padding:28px">Sign in to sync your vault, then try again.</div>');
-    return;
-  }
-  _aiSugIn('<div style="text-align:center;padding:34px 0"><div class="ai-sug-spin"></div><div style="color:var(--t3);font-size:13px;margin-top:14px">Reading your taste…</div></div>');
-  const payload=items.slice(0,60).map(i=>({
-    title:String(i.title||i.name||'').slice(0,90),
-    category:(S.sections.find(s=>s.id===i.sid)||{}).name||'',
-    price:i.price>0?Math.round(i.price):0,
-    type:(i.type==='luogo'||i.isPlace)?'place':'product',
-    star:!!i.star
-  })).filter(i=>i.title);
-  try{
-    const {data:{session}}=await _sb.auth.getSession();
-    const token=session?.access_token;
-    if(!token){_aiSugIn('<div style="color:var(--t3);font-size:13px;text-align:center;padding:28px">Session expired — sign in again.</div>');return;}
-    const res=await fetch(SUPABASE_URL+'/functions/v1/ai-suggestions',{
-      method:'POST',
-      headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY},
-      body:JSON.stringify({items:payload,lang:S.lang||'en'})
-    });
-    const d=await res.json().catch(()=>({}));
-    if(!res.ok||!d.ok){
-      const msg=d.error==='plus_required'?'This is a Vault Plus feature.'
-        :d.error==='not_configured'?'AI suggestions aren\'t switched on yet.'
-        :d.error==='rate_limited'?'You\'ve reached today\'s AI suggestions limit. Come back tomorrow.'
-        :d.error==='refused'?'Couldn\'t generate suggestions this time — try again.'
-        :'Something went wrong. Please try again in a moment.';
-      _aiSugIn(`<div style="color:var(--t3);font-size:13px;text-align:center;padding:28px">${esc(msg)}</div>`);
-      return;
-    }
-    renderAISuggestions(d.suggestions||[]);
-  }catch(e){
-    _aiSugIn('<div style="color:var(--t3);font-size:13px;text-align:center;padding:28px">Network error — please try again.</div>');
-  }
-}
-function renderAISuggestions(list){
-  if(!list.length){_aiSugIn('<div style="color:var(--t3);font-size:13px;text-align:center;padding:28px">No suggestions right now — add more items and retry.</div>');return;}
-  _aiSugIn(list.map(s=>{
-    const isPlace=s.type==='place';
-    const q=encodeURIComponent(String(s.title||''));
-    const url='https://www.google.com/search?q='+q;
-    return `<div class="ai-sug-card">
-      <div class="ai-sug-top">
-        <div class="ai-sug-icon">${ico(isPlace?'globe':'price-tag',14)}</div>
-        <div style="flex:1;min-width:0">
-          <div class="ai-sug-title">${esc(s.title||'')}</div>
-          <div class="ai-sug-meta">${esc(s.category||(isPlace?'Place':'Product'))}${s.priceHint?' · '+esc(s.priceHint):''}</div>
-        </div>
-      </div>
-      <div class="ai-sug-reason">${esc(s.reason||'')}</div>
-      <button class="ai-sug-find" onclick="_openExt('${url}')">${ico('search',12)} Find it</button>
-    </div>`;
-  }).join(''));
 }
 
 // ── CLOUD BACKUP ──
@@ -6593,22 +6510,6 @@ async function _initGlobe(){
   </div>
 </div>
 
-<!-- ═══ AI SUGGESTIONS MODAL ═══ -->
-<div class="ov" id="aiSugOv" onclick="if(event.target===this)closeAISuggestions()">
-  <div class="plus-mo">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-      <div style="flex:1;font-size:16px;font-weight:800;color:var(--t1)">AI Suggestions</div>
-      <span class="plus-badge">Plus</span>
-      <button style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:18px;line-height:1;padding:2px 4px;border-radius:6px;font-family:inherit" onclick="closeAISuggestions()">×</button>
-    </div>
-    <div style="font-size:12px;color:var(--t3);margin-bottom:14px">Fresh picks tailored to what's already in your vault.</div>
-    <div id="aiSugIn"></div>
-    <div class="mo-acts" style="margin-top:16px">
-      <button class="btn-s" onclick="closeAISuggestions()">Close</button>
-      <button class="btn-plus" style="flex:1" onclick="loadAISuggestions()">Refresh picks</button>
-    </div>
-  </div>
-</div>
 
 <!-- ═══ FIND CHEAPER MODAL ═══ -->
 <div class="ov" id="cheaperOv" onclick="if(event.target===this)closeCheaper()">
@@ -6709,21 +6610,9 @@ async function _initGlobe(){
         </div>
       </div>
 
-      <!-- 3. AI Suggestions -->
+      <!-- 3. Multiple Workspaces -->
       <div class="tutorial-section">
         <div class="tutorial-step-num">3</div>
-        <div class="tutorial-icon-wrap purple"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-wand"/></svg></div>
-        <div style="flex:1">
-          <div class="tutorial-sec-title">AI suggestions</div>
-          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-sparkle"/></svg> Coming soon</div>
-          <div class="tutorial-sec-desc">Based on your Taste Profile, the system will generate product suggestions consistent with your shopping style: same category, similar price range, recurring brands from your list. Suggestions appear as clickable cards that open directly to the product page.</div>
-          <div class="tutorial-sec-note">Feature in active development — available in the next update for all Plus users.</div>
-        </div>
-      </div>
-
-      <!-- 4. Multiple Workspaces -->
-      <div class="tutorial-section">
-        <div class="tutorial-step-num">4</div>
         <div class="tutorial-icon-wrap green"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-workspace"/></svg></div>
         <div style="flex:1">
           <div class="tutorial-sec-title">Multiple workspaces</div>
@@ -6733,9 +6622,9 @@ async function _initGlobe(){
         </div>
       </div>
 
-      <!-- 5. Cloud Backup -->
+      <!-- 4. Cloud Backup -->
       <div class="tutorial-section">
-        <div class="tutorial-step-num">5</div>
+        <div class="tutorial-step-num">4</div>
         <div class="tutorial-icon-wrap green"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-cloud-check"/></svg></div>
         <div style="flex:1">
           <div class="tutorial-sec-title">Cloud Backup</div>
@@ -6745,9 +6634,9 @@ async function _initGlobe(){
         </div>
       </div>
 
-      <!-- 6. Premium Themes -->
+      <!-- 5. Premium Themes -->
       <div class="tutorial-section">
-        <div class="tutorial-step-num">6</div>
+        <div class="tutorial-step-num">5</div>
         <div class="tutorial-icon-wrap red"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-palette"/></svg></div>
         <div style="flex:1">
           <div class="tutorial-sec-title">Premium themes</div>
@@ -6757,9 +6646,9 @@ async function _initGlobe(){
         </div>
       </div>
 
-      <!-- 7. Advanced Mood Boards -->
+      <!-- 6. Advanced Mood Boards -->
       <div class="tutorial-section">
-        <div class="tutorial-step-num">7</div>
+        <div class="tutorial-step-num">6</div>
         <div class="tutorial-icon-wrap red"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-mood-board"/></svg></div>
         <div style="flex:1">
           <div class="tutorial-sec-title">Advanced mood boards</div>
@@ -6769,9 +6658,9 @@ async function _initGlobe(){
         </div>
       </div>
 
-      <!-- 8. Priority Features -->
+      <!-- 7. Priority Features -->
       <div class="tutorial-section">
-        <div class="tutorial-step-num">8</div>
+        <div class="tutorial-step-num">7</div>
         <div class="tutorial-icon-wrap gold"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-rocket"/></svg></div>
         <div style="flex:1">
           <div class="tutorial-sec-title">Priority access to new features</div>
