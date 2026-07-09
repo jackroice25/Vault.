@@ -1995,7 +1995,7 @@ async function _sbPull(){
       return false;
     }
     if(data){
-      if(data.plan) _sbPlan=data.plan;
+      if(data.plan){ _sbPlan=data.plan; try{ if(data.plan==='plus') localStorage.setItem('vaultPlan','plus'); else localStorage.removeItem('vaultPlan'); }catch(e){} }
       const remote=data.data;
       const remoteItems=(remote&&Array.isArray(remote.items))?remote.items.length:0;
       const localItems=(S&&Array.isArray(S.items))?S.items.length:0;
@@ -5276,6 +5276,13 @@ async function _doLogin(email,pass){
     _sbUser=data.user;
     const eHash=await _sha256(email);
     _currentUser={eHash,email};
+    // Persist the session locally so the NEXT reload restores _currentUser
+    // synchronously and load() reads THIS user's key (vault5_<hash>). Without
+    // this, a reload falls back to the guest key and flashes the welcome screen,
+    // the Free n/30 limit and hides the last-added item until the cloud pull.
+    localStorage.setItem('vault_session',JSON.stringify({eHash}));
+    try{const _a=JSON.parse(localStorage.getItem('vault_accounts')||'{}');_a[eHash]={email,joined:(_a[eHash]&&_a[eHash].joined)||new Date().toISOString()};localStorage.setItem('vault_accounts',JSON.stringify(_a));}catch(e){}
+    localStorage.removeItem('vault_guest');
     document.getElementById('authOv').style.display='none';
     load();
     initCurrencyUI();applyTheme();applyStatusColors();applyLang();renderSidebar();render();
@@ -5337,6 +5344,7 @@ function logout(){
   _currentUser=null;
   localStorage.removeItem('vault_session');
   localStorage.removeItem('vault_guest');
+  _sbPlan='free';localStorage.removeItem('vaultPlan'); // don't leak the previous account's Plus into the next
   S={sections:[],items:[],active:null,view:'grid',chip:'tutti',currency:'EUR',lang:'en',theme:'dark',statusColors:{},onboardingDone:true,profile:{name:'',emoji:'🔐',joined:null}};
   closeProfileMo();
   setAuthMode('login');
@@ -6263,6 +6271,15 @@ setTimeout(_hideBootLoader, 2000);
       const eHash=await _sha256(session.user.email);
       _currentUser={eHash,email:session.user.email};
     }
+    // Heal the local session record so FUTURE reloads restore _currentUser
+    // synchronously (older Supabase logins didn't persist it → guest-key flash).
+    try{
+      localStorage.setItem('vault_session',JSON.stringify({eHash:_currentUser.eHash}));
+      const _a=JSON.parse(localStorage.getItem('vault_accounts')||'{}');
+      if(!_a[_currentUser.eHash]) _a[_currentUser.eHash]={email:_currentUser.email,joined:new Date().toISOString()};
+      localStorage.setItem('vault_accounts',JSON.stringify(_a));
+      localStorage.removeItem('vault_guest');
+    }catch(e){}
     document.getElementById('authOv').style.display='none'; // logged in — never leave the login screen up on reload
     load(); // reload THIS user's local copy (vault5_<hash>) before syncing, so the
             // safety net can compare local-vs-cloud and recover if the cloud is empty
@@ -6273,6 +6290,9 @@ setTimeout(_hideBootLoader, 2000);
       renderSidebar();render();_updatePlusSideBtn();_showSyncDot('ok');
       // Tutorial only shown via Realtime (new upgrade), not on page load
     }
+    // A returning user may have flashed the welcome/onboarding from the stale
+    // pre-restore state — dismiss it now that we have the real (cloud) state.
+    if(S.onboardingDone){const _o=document.getElementById('onbOv');if(_o)_o.classList.remove('open');}
     // Subscribe to realtime plan changes (catches Stripe webhook updates)
     if(_sbUser&&_sbPlan==='free'){
       _sb.channel('plan-watch')
