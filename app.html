@@ -1945,7 +1945,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.07.10-merge';
+const APP_BUILD='2026.07.10-push';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 (function(){
@@ -1967,12 +1967,20 @@ const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 let _sbPushTimer=null, _lastPushedJSON='', _syncReady=false;
 async function _sbPushNow(){
   if(!_sb||!_sbUser) return;
-  if(!_syncReady) return; // never write before the initial cloud pull has reconciled — prevents wiping the cloud with an empty/unloaded state
   try{
+    // READ-MERGE-WRITE: fold the current cloud row into local first, THEN write the
+    // union. A push can therefore never wipe items another device added, and we no
+    // longer need the old _syncReady gate — which had silently blocked EVERY write
+    // whenever the initial pull didn't flip it, freezing the cloud.
+    const beforeN=(S.items||[]).length;
+    const {data:cur,error:rerr}=await _sb.from('vault_data').select('data').eq('id',_sbUser.id).single();
+    if(!rerr && cur && cur.data) _mergeRemoteData(cur.data);
+    if((S.items||[]).length!==beforeN){ try{localStorage.setItem(vaultKey(),JSON.stringify(S));renderSidebar();render();}catch(e){} }
     const payload=JSON.stringify(S);
-    if(payload===_lastPushedJSON) return; // no real change — don't hit the DB
-    await _sb.from('vault_data').upsert({id:_sbUser.id,data:S,updated_at:new Date().toISOString()});
-    _lastPushedJSON=payload;
+    if(payload===_lastPushedJSON) return; // nothing new to write
+    const {error}=await _sb.from('vault_data').upsert({id:_sbUser.id,data:S,updated_at:new Date().toISOString()});
+    if(error) throw error;
+    _lastPushedJSON=payload; _syncReady=true;
     _showSyncDot('ok');
   }catch(e){_showSyncDot('err');}
 }
@@ -1995,7 +2003,7 @@ function _sbFlush(){ if(_sbPushTimer){clearTimeout(_sbPushTimer);_sbPushTimer=nu
 // device's unsaved work is never clobbered.
 let _sbSyncing=false;
 async function _sbSyncNow(){
-  if(!_sb||!_sbUser||!_syncReady||_sbSyncing) return;
+  if(!_sb||!_sbUser||_sbSyncing) return;
   _sbSyncing=true;
   try{
     if(_sbPushTimer){ clearTimeout(_sbPushTimer); _sbPushTimer=null; await _sbPushNow(); }
