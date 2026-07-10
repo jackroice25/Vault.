@@ -1945,7 +1945,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.07.10-session';
+const APP_BUILD='2026.07.10-order';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 (function(){
@@ -2135,15 +2135,19 @@ function _mergeRemoteData(remote){
   const R=_normalizeState(remote);
   const tomb={...(S.tomb||{})};
   for(const k in (R.tomb||{})){ tomb[k]=Math.max(tomb[k]||0,R.tomb[k]||0); }
-  const byId={};
-  for(const it of (R.items||[])) byId[it.id]=it;
+  // Preserve THIS device's order (respects manual ordering & keeps just-added items
+  // on top), update each item's content to the newer copy, and place items that are
+  // new on another device at the TOP (they're the most recent additions).
+  const rById={}; for(const it of (R.items||[])) rById[it.id]=it;
+  const lById={}; for(const it of (S.items||[])) lById[it.id]=it;
+  const kept=[];
   for(const it of (S.items||[])){
-    const r=byId[it.id];
-    if(!r){ byId[it.id]=it; }
-    else { const lm=it.mod||it.at||0, rm=r.mod||r.at||0; byId[it.id]=(lm>=rm)?it:r; }
+    const r=rById[it.id];
+    if(r){ const lm=it.mod||it.at||0, rm=r.mod||r.at||0; kept.push(rm>lm?r:it); }
+    else kept.push(it);
   }
-  // drop items whose deletion (tombstone) is newer than the surviving copy
-  const items=Object.values(byId).filter(it=>!(tomb[it.id] && tomb[it.id]>=(it.mod||it.at||0)));
+  const remoteOnly=(R.items||[]).filter(it=>!lById[it.id]);
+  const items=[...remoteOnly, ...kept].filter(it=>!(tomb[it.id] && tomb[it.id]>=(it.mod||it.at||0)));
   // sections: union by id (keep local-only sections too)
   const secById={};
   for(const s of (R.sections||[])) secById[s.id]=s;
