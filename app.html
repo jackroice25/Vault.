@@ -1945,7 +1945,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.07.09-a';
+const APP_BUILD='2026.07.10-merge';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 (function(){
@@ -2073,7 +2073,15 @@ async function _sbPull(){
         _sbPushNow();       // restore the cloud from this device's copy
         return true;
       }
-      if(remote){ _applyRemoteData(remote); localStorage.setItem(vaultKey(),JSON.stringify(S)); _lastPushedJSON=JSON.stringify(S); }
+      if(remote){
+        _mergeRemoteData(remote);                    // MERGE, never overwrite — local additions survive
+        localStorage.setItem(vaultKey(),JSON.stringify(S));
+        _syncReady=true;
+        // If the merge kept local-only items the cloud didn't have, push the union up.
+        if((S.items||[]).length!==remoteItems){ _lastPushedJSON=''; await _sbPushNow(); }
+        else { _lastPushedJSON=JSON.stringify(S); }
+        return true;
+      }
       _syncReady=true;
       return true;
     }
@@ -2081,10 +2089,10 @@ async function _sbPull(){
   return false; // network/other error → _syncReady stays false, no risky writes
 }
 
-function _applyRemoteData(remote){
-  const def={sections:[],items:[],active:null,view:'grid',chip:'tutti',currency:'EUR',lang:'en',theme:'dark',statusColors:{},onboardingDone:false,profile:{name:'',emoji:'🔐',joined:null}};
-  S={...def,...remote};
-  S.items=(S.items||[]).map(it=>{
+function _normalizeState(remote){
+  const def={sections:[],items:[],active:null,view:'grid',chip:'tutti',currency:'EUR',lang:'en',theme:'dark',statusColors:{},onboardingDone:false,profile:{name:'',emoji:'🔐',joined:null},tomb:{}};
+  const st={...def,...remote};
+  st.items=(st.items||[]).map(it=>{
     if(!it.images) it.images=it.img?[it.img]:[];
     if(!it.tags) it.tags=[];
     if(!it.priceHistory) it.priceHistory=[];
@@ -2101,8 +2109,44 @@ function _applyRemoteData(remote){
     if(it.isPlace===undefined) it.isPlace=(it.type==='luogo'||!!(it.address||it.hours||it.cuisine));
     return it;
   });
-  if(!S.sections.length) S.sections=[...DEFAULT_SECTIONS];
-  if(!S.profile) S.profile={name:'',emoji:'🔐',joined:null};
+  if(!st.sections.length) st.sections=[...DEFAULT_SECTIONS];
+  if(!st.profile) st.profile={name:'',emoji:'🔐',joined:null};
+  if(!st.tomb||typeof st.tomb!=='object') st.tomb={};
+  return st;
+}
+function _applyRemoteData(remote){ S=_normalizeState(remote); }
+// ── NON-DESTRUCTIVE MERGE ─────────────────────────────────────────────────────
+// Union of local + remote so a sync can NEVER delete data. Items are merged by id
+// (newer mod/at wins); deletions propagate only via tombstones (S.tomb[id]=when),
+// so an item removed on one device stays removed, but items merely absent because
+// they were never uploaded are preserved. This is what makes cross-device sync safe.
+function _mergeRemoteData(remote){
+  if(!remote) return;
+  const localItems=(S&&Array.isArray(S.items))?S.items.length:0;
+  if(localItems===0){ _applyRemoteData(remote); return; } // fresh device → adopt cloud wholesale
+  const R=_normalizeState(remote);
+  const tomb={...(S.tomb||{})};
+  for(const k in (R.tomb||{})){ tomb[k]=Math.max(tomb[k]||0,R.tomb[k]||0); }
+  const byId={};
+  for(const it of (R.items||[])) byId[it.id]=it;
+  for(const it of (S.items||[])){
+    const r=byId[it.id];
+    if(!r){ byId[it.id]=it; }
+    else { const lm=it.mod||it.at||0, rm=r.mod||r.at||0; byId[it.id]=(lm>=rm)?it:r; }
+  }
+  // drop items whose deletion (tombstone) is newer than the surviving copy
+  const items=Object.values(byId).filter(it=>!(tomb[it.id] && tomb[it.id]>=(it.mod||it.at||0)));
+  // sections: union by id (keep local-only sections too)
+  const secById={};
+  for(const s of (R.sections||[])) secById[s.id]=s;
+  for(const s of (S.sections||[])) if(!secById[s.id]) secById[s.id]=s;
+  // trim tombstones to the last 500 to keep the row small
+  const tks=Object.keys(tomb); if(tks.length>500){ tks.sort((a,b)=>tomb[a]-tomb[b]).slice(0,tks.length-500).forEach(k=>delete tomb[k]); }
+  S.items=items;
+  S.sections=Object.values(secById).length?Object.values(secById):S.sections;
+  S.tomb=tomb;
+  S.onboardingDone=S.onboardingDone||R.onboardingDone;
+  if((!S.profile||!S.profile.name)&&R.profile&&R.profile.name) S.profile=R.profile;
 }
 
 // Sync dot indicator (top-right corner, fades out)
@@ -2839,7 +2883,7 @@ function galGo(idx){
 function closeDetMo(){document.getElementById('detOv').classList.remove('open');}
 function chStatus(id,st){
   const item=S.items.find(i=>i.id===id);if(!item)return;
-  item.status=st;save();closeDetMo();renderSidebar();render();
+  item.status=st;item.mod=Date.now();save();closeDetMo();renderSidebar();render();
 }
 
 // ── QUICK ADD (paste bar) ──
@@ -3317,7 +3361,7 @@ function saveItem(){
       const old=S.items[idx];
       const history=old.priceHistory||[];
       if(price&&old.price&&price!==old.price) history.push({price:old.price,date:new Date().toISOString().slice(0,10)});
-      S.items[idx]={...old,url,type:curType,status,title,note,sid,giftFor,
+      S.items[idx]={...old,mod:Date.now(),url,type:curType,status,title,note,sid,giftFor,
         price:price||(fetched?.price||old.price||0),
         priceFound,deadline,tags:[...editTags],variant,qty,
         voiceMemo:pendingVoice||old.voiceMemo||null,
@@ -3346,7 +3390,7 @@ function saveItem(){
       address:document.getElementById('addressI')?.value.trim()||fetched?.address||null,
       phone:fetched?.phone||null,cuisine:fetched?.cuisine||null,
       hours:fetched?.hours||null,menu:fetched?.menu||[],reviews:fetched?.reviews||[],
-      at:Date.now()
+      at:Date.now(),mod:Date.now()
     });
   }
   save();closeAddMo();renderSidebar();render();
@@ -3524,7 +3568,7 @@ function delSec(id){
 // ── ITEM ACTIONS ──
 function star(id){
   const item=S.items.find(i=>i.id===id);if(!item)return;
-  item.star=!item.star;save();render();
+  item.star=!item.star;item.mod=Date.now();save();render();
 }
 
 // ── THEME ──
@@ -3699,11 +3743,11 @@ function handleTagKey(e){
 // ── ARCHIVE ──
 function archiveItem(id){
   const item=S.items.find(i=>i.id===id);if(!item)return;
-  item.archived=true;save();render();renderSidebar();
+  item.archived=true;item.mod=Date.now();save();render();renderSidebar();
 }
 function unarchiveItem(id){
   const item=S.items.find(i=>i.id===id);if(!item)return;
-  item.archived=false;save();render();renderSidebar();
+  item.archived=false;item.mod=Date.now();save();render();renderSidebar();
 }
 
 // ── DEADLINE ──
@@ -4201,6 +4245,7 @@ function del(id){
   const idx=S.items.findIndex(i=>i.id===id);if(idx<0)return;
   _deletedItem={item:S.items[idx],idx};
   S.items.splice(idx,1);
+  if(!S.tomb)S.tomb={}; S.tomb[id]=Date.now(); // tombstone so the deletion propagates across devices (merge respects it)
   save();render();renderSidebar();
   showToast(t('ctxDelete')+' ✓');
 }
@@ -4213,7 +4258,8 @@ function showToast(msg){
 }
 function undoDelete(){
   if(!_deletedItem)return;
-  S.items.splice(_deletedItem.idx,0,_deletedItem.item);
+  const it=_deletedItem.item; if(it){ it.mod=Date.now(); if(S.tomb)delete S.tomb[it.id]; } // un-tombstone so the restore sticks through sync
+  S.items.splice(_deletedItem.idx,0,it);
   _deletedItem=null;
   clearTimeout(_toastTimer);
   document.getElementById('toast').classList.remove('show');
@@ -6377,14 +6423,12 @@ setTimeout(_hideBootLoader, 2000);
             if(n.data){
               const incoming=JSON.stringify(n.data);
               if(incoming!==_lastPushedJSON){                    // not our own echo
-                if(JSON.stringify(S)===_lastPushedJSON){          // this device is clean → apply live
-                  _applyRemoteData(n.data);
-                  try{ localStorage.setItem(vaultKey(),JSON.stringify(S)); }catch(e){}
-                  _lastPushedJSON=JSON.stringify(S);
-                  renderSidebar();render();_updatePlusSideBtn();
-                } else {
-                  _showSyncPill();                                // we have local edits → let the user merge on tap
-                }
+                const rlen=(n.data.items||[]).length;
+                _mergeRemoteData(n.data);                        // safe union merge — never deletes local data
+                try{ localStorage.setItem(vaultKey(),JSON.stringify(S)); }catch(e){}
+                renderSidebar();render();_updatePlusSideBtn();
+                if((S.items||[]).length!==rlen){ _lastPushedJSON=''; _sbPushNow(); } // we had extra locals → push the union up
+                else { _lastPushedJSON=JSON.stringify(S); }
               }
             }
           })
