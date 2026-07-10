@@ -1945,7 +1945,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.07.10-push';
+const APP_BUILD='2026.07.10-session';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 (function(){
@@ -6381,11 +6381,16 @@ setTimeout(_hideBootLoader, 2000);
   try{
     const {data:{session}}=await _sb.auth.getSession();
     if(!session?.user){
-      // No valid Supabase session (e.g. token expired). If we optimistically skipped
-      // the login at boot, show it now — unless the user is browsing as a guest.
-      if(!_currentUser && localStorage.getItem('vault_guest')!=='1'){
+      // No valid Supabase session (expired/invalidated — typically after a password
+      // reset, which revokes all device sessions). A Supabase account CANNOT sync
+      // without a session, so FORCE a re-login instead of silently running local-only
+      // (that silent desync is exactly what froze the cloud). Local data is preserved
+      // and merges back in after sign-in.
+      if(localStorage.getItem('vault_guest')!=='1'){
+        const _hadLocalLogin=!!_currentUser;
         setAuthMode('login');_renderAuthLang();
-        document.getElementById('authOv').style.display='flex';
+        const _ov=document.getElementById('authOv'); if(_ov) _ov.style.display='flex';
+        if(_hadLocalLogin){ const _sub=document.getElementById('authSub'); if(_sub) _sub.textContent=({it:'Sessione scaduta — accedi di nuovo per sincronizzare',es:'Sesión caducada — inicia sesión de nuevo',fr:'Session expirée — reconnecte-toi pour synchroniser',de:'Sitzung abgelaufen — bitte erneut anmelden',pt:'Sessão expirada — entre novamente',nl:'Sessie verlopen — meld je opnieuw aan'}[S&&S.lang]||'Session expired — sign in again to sync'); }
       }
       _hideBootLoader();return;
     }
