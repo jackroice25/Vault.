@@ -1943,6 +1943,9 @@ function vaultKey(){return _currentUser?'vault5_'+_currentUser.eHash:'vault5';}
 const SUPABASE_URL='https://ottgafbrcogkmflnisbh.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90dGdhZmJyY29na21mbG5pc2JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3Nzc4NDEsImV4cCI6MjA5ODM1Mzg0MX0.002lqUQ2LpAqQYHdje-3L9aD19MwzyMUjCvOKG1xifU';
 let _sb=null,_sbUser=null,_sbPlan='free';
+// Bump this on every web release AND set the same value in /version.json so open
+// tabs get an "Aggiorna" button instead of silently running stale code.
+const APP_BUILD='2026.07.09-a';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 (function(){
@@ -1984,8 +1987,68 @@ function _sbPush(){
 // Force any pending write out now (used when the app is backgrounded/closed so
 // the last edits aren't lost inside the debounce window).
 function _sbFlush(){ if(_sbPushTimer){clearTimeout(_sbPushTimer);_sbPushTimer=null;} _sbPushNow(); }
+
+// ── CROSS-DEVICE SYNC ────────────────────────────────────────────────────────
+// Push our pending edits, THEN pull the latest cloud copy. Runs when this device
+// regains focus/visibility, so switching between devices shows the other one's
+// changes. We only overwrite local AFTER our own edits are safely pushed, so a
+// device's unsaved work is never clobbered.
+let _sbSyncing=false;
+async function _sbSyncNow(){
+  if(!_sb||!_sbUser||!_syncReady||_sbSyncing) return;
+  _sbSyncing=true;
+  try{
+    if(_sbPushTimer){ clearTimeout(_sbPushTimer); _sbPushTimer=null; await _sbPushNow(); }
+    else if(JSON.stringify(S)!==_lastPushedJSON){ await _sbPushNow(); }
+    const before=_lastPushedJSON;
+    const ok=await _sbPull();
+    if(ok && _lastPushedJSON!==before){ renderSidebar(); render(); _updatePlusSideBtn(); }
+  }catch(e){}finally{ _sbSyncing=false; }
+}
+// Explicit "pull now" for the manual refresh pill (user tapped Aggiorna).
+async function _forcePull(){
+  if(!_sb||!_sbUser) return;
+  if(_sbPushTimer){ clearTimeout(_sbPushTimer); _sbPushTimer=null; await _sbPushNow(); }
+  const ok=await _sbPull(); if(ok){ renderSidebar(); render(); _updatePlusSideBtn(); }
+}
+
+// ── UPDATE / SYNC PILLS ──────────────────────────────────────────────────────
+function _lbl(map){ return (S&&map[S.lang])||map.en; }
+function _pill(id,label,onclick,bg){
+  if(document.getElementById(id)) return;
+  if(!document.getElementById('vpillKf')){const st=document.createElement('style');st.id='vpillKf';st.textContent='@keyframes vpillIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}';document.head.appendChild(st);}
+  const p=document.createElement('button'); p.id=id; p.type='button'; p.textContent=label; p.onclick=onclick;
+  p.style.cssText='position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:1000002;'
+    +'background:'+bg+';color:#141414;border:none;border-radius:22px;padding:11px 20px;'
+    +'font:700 14px Inter,-apple-system,sans-serif;letter-spacing:.2px;box-shadow:0 8px 28px rgba(0,0,0,.45);'
+    +'cursor:pointer;animation:vpillIn .25s ease';
+  document.body.appendChild(p);
+}
+// New app version was released → let the user reload into it without re-downloading.
+function _showUpdatePill(){
+  _pill('appUpdatePill','↻ '+_lbl({it:'Aggiorna',en:'Update',es:'Actualizar',fr:'Mettre à jour',de:'Aktualisieren',pt:'Atualizar',nl:'Bijwerken',ru:'Обновить'}),
+    ()=>{ location.replace(location.pathname+'?u='+Date.now()); }, '#c9a227');
+}
+// Another device changed the data while we had local edits → offer a manual merge-pull.
+function _showSyncPill(){
+  _pill('syncPill','↻ '+_lbl({it:'Nuovi aggiornamenti',en:'New updates',es:'Novedades',fr:'Nouveautés',de:'Neue Änderungen',pt:'Novidades',nl:'Nieuwe updates',ru:'Обновления'}),
+    async ()=>{ const p=document.getElementById('syncPill'); if(p)p.remove(); await _forcePull(); }, '#4ade80');
+}
+async function _checkAppVersion(){
+  try{
+    if(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()) return; // native updates come from the App Store
+    const r=await fetch('https://vaultwishlist.com/version.json?cb='+Date.now(),{cache:'no-store'});
+    if(!r.ok) return; const j=await r.json();
+    if(j&&j.build&&j.build!==APP_BUILD) _showUpdatePill();
+  }catch(e){}
+}
+
 window.addEventListener('beforeunload',()=>{try{_sbFlush();}catch(e){}});
-document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden'){try{_sbFlush();}catch(e){}} });
+window.addEventListener('focus',()=>{try{_sbSyncNow();}catch(e){}});
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='hidden'){ try{_sbFlush();}catch(e){} }
+  else { try{_sbSyncNow();}catch(e){} try{_checkAppVersion();}catch(e){} }
+});
 
 // Cloud pull — overwrites local with remote, returns true if data found
 async function _sbPull(){
@@ -6244,6 +6307,9 @@ if(!_hasSession && !_wasGuest){
   setTimeout(()=>{_renderOnbLang();initOnboarding();},400);
 }
 setInterval(checkServer,30000);
+// Check for a newer released web version (shows the "Aggiorna" pill; skipped on native).
+setTimeout(_checkAppVersion,4000);
+setInterval(_checkAppVersion,300000);
 
 function _hideBootLoader(){
   const bl=document.getElementById('bootLoader');
@@ -6296,15 +6362,30 @@ setTimeout(_hideBootLoader, 2000);
     // A returning user may have flashed the welcome/onboarding from the stale
     // pre-restore state — dismiss it now that we have the real (cloud) state.
     if(S.onboardingDone){const _o=document.getElementById('onbOv');if(_o)_o.classList.remove('open');}
-    // Subscribe to realtime plan changes (catches Stripe webhook updates)
-    if(_sbUser&&_sbPlan==='free'){
-      _sb.channel('plan-watch')
+    // Realtime: live-sync the PLAN (Stripe webhook) AND the vault DATA (other devices).
+    if(_sbUser){
+      _sb.channel('vault-'+_sbUser.id)
         .on('postgres_changes',{event:'UPDATE',schema:'public',table:'vault_data',filter:`id=eq.${_sbUser.id}`},
-          async(payload)=>{
-            if(payload.new?.plan&&payload.new.plan!==_sbPlan){
-              _sbPlan=payload.new.plan;
+          (payload)=>{
+            const n=payload.new; if(!n) return;
+            if(n.plan&&n.plan!==_sbPlan){
+              _sbPlan=n.plan;
+              try{ if(n.plan==='plus') localStorage.setItem('vaultPlan','plus'); else localStorage.removeItem('vaultPlan'); }catch(e){}
               _updatePlusSideBtn();renderSidebar();render();
               if(_sbPlan==='plus'&&!localStorage.getItem('vaultPlusTutorialSeen')) setTimeout(openPlusTutorial,400);
+            }
+            if(n.data){
+              const incoming=JSON.stringify(n.data);
+              if(incoming!==_lastPushedJSON){                    // not our own echo
+                if(JSON.stringify(S)===_lastPushedJSON){          // this device is clean → apply live
+                  _applyRemoteData(n.data);
+                  try{ localStorage.setItem(vaultKey(),JSON.stringify(S)); }catch(e){}
+                  _lastPushedJSON=JSON.stringify(S);
+                  renderSidebar();render();_updatePlusSideBtn();
+                } else {
+                  _showSyncPill();                                // we have local edits → let the user merge on tap
+                }
+              }
             }
           })
         .subscribe();
