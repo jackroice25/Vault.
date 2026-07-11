@@ -1945,7 +1945,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.07.10-order';
+const APP_BUILD='2026.07.11-sync2';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 (function(){
@@ -1974,6 +1974,11 @@ async function _sbPushNow(){
     // whenever the initial pull didn't flip it, freezing the cloud.
     const beforeN=(S.items||[]).length;
     const {data:cur,error:rerr}=await _sb.from('vault_data').select('data').eq('id',_sbUser.id).single();
+    // PGRST116 = no row yet (brand-new account) → safe to skip the merge and write local.
+    // Any OTHER read error (network blip, RLS hiccup, rate limit) means we truly don't
+    // know what's on the cloud right now, so abort instead of upserting local blind —
+    // otherwise this defeats the whole point of the read-merge-write pattern above.
+    if(rerr && rerr.code!=='PGRST116'){ _showSyncDot('err'); return; }
     if(!rerr && cur && cur.data) _mergeRemoteData(cur.data);
     if((S.items||[]).length!==beforeN){ try{localStorage.setItem(vaultKey(),JSON.stringify(S));renderSidebar();render();}catch(e){} }
     const payload=JSON.stringify(S);
@@ -2098,7 +2103,7 @@ async function _sbPull(){
 }
 
 function _normalizeState(remote){
-  const def={sections:[],items:[],active:null,view:'grid',chip:'tutti',currency:'EUR',lang:'en',theme:'dark',statusColors:{},onboardingDone:false,profile:{name:'',emoji:'🔐',joined:null},tomb:{}};
+  const def={sections:[],items:[],active:null,view:'grid',chip:'tutti',currency:'EUR',lang:'en',theme:'dark',statusColors:{},onboardingDone:false,profile:{name:'',emoji:'🔐',joined:null},tomb:{},tombSec:{}};
   const st={...def,...remote};
   st.items=(st.items||[]).map(it=>{
     if(!it.images) it.images=it.img?[it.img]:[];
@@ -2107,6 +2112,7 @@ function _normalizeState(remote){
     if(!it.relatedIds) it.relatedIds=[];
     if(it.archived===undefined) it.archived=false;
     if(it.priceFound===undefined) it.priceFound=0;
+    if(it.deadline===undefined) it.deadline=null;
     if(!it.variant) it.variant='';
     if(!it.qty||it.qty<1) it.qty=1;
     if(it.voiceMemo===undefined) it.voiceMemo=null;
@@ -2120,21 +2126,31 @@ function _normalizeState(remote){
   if(!st.sections.length) st.sections=[...DEFAULT_SECTIONS];
   if(!st.profile) st.profile={name:'',emoji:'🔐',joined:null};
   if(!st.tomb||typeof st.tomb!=='object') st.tomb={};
+  if(!st.tombSec||typeof st.tombSec!=='object') st.tombSec={};
   return st;
 }
 function _applyRemoteData(remote){ S=_normalizeState(remote); }
 // ── NON-DESTRUCTIVE MERGE ─────────────────────────────────────────────────────
-// Union of local + remote so a sync can NEVER delete data. Items are merged by id
-// (newer mod/at wins); deletions propagate only via tombstones (S.tomb[id]=when),
-// so an item removed on one device stays removed, but items merely absent because
-// they were never uploaded are preserved. This is what makes cross-device sync safe.
+// Union of local + remote so a sync can NEVER delete data. Items and sections are
+// each merged by id (newer mod/at wins); deletions propagate only via tombstones
+// (S.tomb[id]=when for items, S.tombSec[id]=when for sections), so something
+// removed on one device stays removed, but data merely absent because it was
+// never uploaded is preserved. This is what makes cross-device sync safe.
 function _mergeRemoteData(remote){
   if(!remote) return;
   const localItems=(S&&Array.isArray(S.items))?S.items.length:0;
-  if(localItems===0){ _applyRemoteData(remote); return; } // fresh device → adopt cloud wholesale
+  // A device only counts as "fresh" (never used) if it has zero items AND no
+  // deletion history at all. Without the tombstone check, a deliberate
+  // resetVault()/delete-everything (which also drops local items to 0) would be
+  // indistinguishable from a brand-new device and the cloud copy would silently
+  // get re-adopted, undoing the reset within one sync cycle.
+  const hasLocalHistory=(S.tomb&&Object.keys(S.tomb).length>0)||(S.tombSec&&Object.keys(S.tombSec).length>0);
+  if(localItems===0 && !hasLocalHistory){ _applyRemoteData(remote); return; } // fresh device → adopt cloud wholesale
   const R=_normalizeState(remote);
   const tomb={...(S.tomb||{})};
   for(const k in (R.tomb||{})){ tomb[k]=Math.max(tomb[k]||0,R.tomb[k]||0); }
+  const tombSec={...(S.tombSec||{})};
+  for(const k in (R.tombSec||{})){ tombSec[k]=Math.max(tombSec[k]||0,R.tombSec[k]||0); }
   // Preserve THIS device's order (respects manual ordering & keeps just-added items
   // on top), update each item's content to the newer copy, and place items that are
   // new on another device at the TOP (they're the most recent additions).
@@ -2148,15 +2164,25 @@ function _mergeRemoteData(remote){
   }
   const remoteOnly=(R.items||[]).filter(it=>!lById[it.id]);
   const items=[...remoteOnly, ...kept].filter(it=>!(tomb[it.id] && tomb[it.id]>=(it.mod||it.at||0)));
-  // sections: union by id (keep local-only sections too)
-  const secById={};
-  for(const s of (R.sections||[])) secById[s.id]=s;
-  for(const s of (S.sections||[])) if(!secById[s.id]) secById[s.id]=s;
+  // sections: same newer-mod-wins union as items, tombstones respected so a
+  // delSec() on one device actually stays deleted instead of being re-merged back.
+  const rSecById={}; for(const s of (R.sections||[])) rSecById[s.id]=s;
+  const lSecById={}; for(const s of (S.sections||[])) lSecById[s.id]=s;
+  const keptSec=[];
+  for(const s of (S.sections||[])){
+    const r=rSecById[s.id];
+    if(r){ const lm=s.mod||0, rm=r.mod||0; keptSec.push(rm>lm?r:s); }
+    else keptSec.push(s);
+  }
+  const remoteOnlySec=(R.sections||[]).filter(s=>!lSecById[s.id]);
+  const sections=[...keptSec, ...remoteOnlySec].filter(s=>!(tombSec[s.id] && tombSec[s.id]>=(s.mod||0)));
   // trim tombstones to the last 500 to keep the row small
   const tks=Object.keys(tomb); if(tks.length>500){ tks.sort((a,b)=>tomb[a]-tomb[b]).slice(0,tks.length-500).forEach(k=>delete tomb[k]); }
+  const tksSec=Object.keys(tombSec); if(tksSec.length>500){ tksSec.sort((a,b)=>tombSec[a]-tombSec[b]).slice(0,tksSec.length-500).forEach(k=>delete tombSec[k]); }
   S.items=items;
-  S.sections=Object.values(secById).length?Object.values(secById):S.sections;
+  S.sections=sections.length?sections:S.sections;
   S.tomb=tomb;
+  S.tombSec=tombSec;
   S.onboardingDone=S.onboardingDone||R.onboardingDone;
   if((!S.profile||!S.profile.name)&&R.profile&&R.profile.name) S.profile=R.profile;
 }
@@ -2179,7 +2205,11 @@ function _showSyncDot(state){
 }
 
 function save(){
-  try{localStorage.setItem(vaultKey(),JSON.stringify(S));}catch(e){}
+  try{localStorage.setItem(vaultKey(),JSON.stringify(S));}catch(e){
+    // Guests have no cloud fallback — a silent write failure (e.g. quota exceeded
+    // from large embedded images) would otherwise lose data with zero warning.
+    if(!_sb||!_sbUser) showToast(_lbl({it:'⚠ Salvataggio non riuscito — spazio esaurito?',en:'⚠ Save failed — storage full?',es:'⚠ Error al guardar — ¿sin espacio?',fr:'⚠ Échec de la sauvegarde — espace insuffisant ?',de:'⚠ Speichern fehlgeschlagen — Speicher voll?',pt:'⚠ Falha ao salvar — sem espaço?',nl:'⚠ Opslaan mislukt — geen ruimte?'}));
+  }
   _sbPush();
 }
 
@@ -3436,9 +3466,9 @@ function saveSec(){
   const name=document.getElementById('secN').value.trim();if(!name)return;
   if(editSecId){
     const idx=S.sections.findIndex(s=>s.id===editSecId);
-    if(idx!==-1) S.sections[idx]={...S.sections[idx],name,cat:selSecCat,accent:selSecColor,icon:selSecIcon};
+    if(idx!==-1) S.sections[idx]={...S.sections[idx],name,cat:selSecCat,accent:selSecColor,icon:selSecIcon,mod:Date.now()};
   } else {
-    S.sections.push({id:uid(),name,cat:selSecCat,accent:selSecColor,icon:selSecIcon||'tag'});
+    S.sections.push({id:uid(),name,cat:selSecCat,accent:selSecColor,icon:selSecIcon||'tag',mod:Date.now()});
   }
   save();closeSecMo();renderSidebar();render();
 }
@@ -3572,6 +3602,8 @@ function editSec(id){
 }
 function delSec(id){
   if(!confirm(t('confirmSec'))) return;
+  if(!S.tombSec) S.tombSec={};
+  S.tombSec[id]=Date.now(); // tombstone so the deletion propagates across devices (merge respects it)
   S.sections=S.sections.filter(s=>s.id!==id);
   if(S.active===id) S.active=null;
   save();renderSidebar();render();
@@ -5216,6 +5248,15 @@ function importVault(input){
 }
 function resetVault(){
   if(!confirm('Delete ALL items and sections? This cannot be undone.'))return;
+  // Tombstone everything that existed BEFORE clearing, so a sync merge can tell
+  // "device just emptied on purpose" apart from "brand-new device with 0 items"
+  // and doesn't silently restore the wiped data from the cloud (see _mergeRemoteData).
+  if(!S.tomb) S.tomb={};
+  if(!S.tombSec) S.tombSec={};
+  const _now=Date.now();
+  (S.items||[]).forEach(it=>{ S.tomb[it.id]=_now; });
+  const _defaultSecIds=new Set(DEFAULT_SECTIONS.map(s=>s.id));
+  (S.sections||[]).forEach(s=>{ if(!_defaultSecIds.has(s.id)) S.tombSec[s.id]=_now; });
   S.items=[];S.sections=[...DEFAULT_SECTIONS];S.profile.joined=null;
   save();renderSidebar();render();closeProfileMo();
 }
