@@ -1907,7 +1907,7 @@ let extraImages=[];
 function load(){
   // Always start from a clean default so a new/empty account never inherits
   // the previously loaded account's in-memory data (data-isolation fix).
-  const DEF=()=>({sections:[],items:[],active:null,view:'grid',chip:'tutti',currency:'EUR',lang:'en',theme:'dark',statusColors:{},onboardingDone:false,profile:{name:'',emoji:'🔐',joined:null},tomb:{},tombSec:{},sort:'date-desc'});
+  const DEF=()=>({sections:[],items:[],active:null,view:'grid',chip:'tutti',currency:'EUR',lang:'en',theme:'dark',statusColors:{},onboardingDone:false,profile:{name:'',emoji:'🔐',joined:null},tomb:{},tombSec:{},sort:'date-desc',insightsOptIn:true});
   try{
     const d=localStorage.getItem(vaultKey());
     S = d ? {...DEF(),...JSON.parse(d)} : DEF();
@@ -1945,7 +1945,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.07.14-sync9';
+const APP_BUILD='2026.07.14-biz1';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 (function(){
@@ -2199,7 +2199,7 @@ async function _sbPullRetry(tries=6, base=600){
 }
 
 function _normalizeState(remote){
-  const def={sections:[],items:[],active:null,view:'grid',chip:'tutti',currency:'EUR',lang:'en',theme:'dark',statusColors:{},onboardingDone:false,profile:{name:'',emoji:'🔐',joined:null},tomb:{},tombSec:{}};
+  const def={sections:[],items:[],active:null,view:'grid',chip:'tutti',currency:'EUR',lang:'en',theme:'dark',statusColors:{},onboardingDone:false,profile:{name:'',emoji:'🔐',joined:null},tomb:{},tombSec:{},insightsOptIn:true};
   const st={...def,...remote};
   st.items=(st.items||[]).map(it=>{
     if(!it.images) it.images=it.img?[it.img]:[];
@@ -2845,7 +2845,7 @@ function cardHTML(item){
     </div>
     <div class="c-acts">
       <button class="ca del" onclick="event.stopPropagation();del('${item.id}')" title="${t('ttDelete')}">✕</button>
-      <a class="ca" href="${safeUrl(item.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="${t('ttOpen')}">↗</a>
+      <a class="ca" href="${safeUrl(item.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation();_biTrackClick('${item.id}')" title="${t('ttOpen')}">↗</a>
     </div>
     <div class="c-body">
       ${sec?`<div class="c-tag">${secIcon(sec,11)} ${esc(sec.name)}</div>`:''}
@@ -2996,7 +2996,7 @@ function openDetMo(id){
     ${item.archived?`<button class="btn-s" style="flex:1" onclick="unarchiveItem('${item.id}');closeDetMo()">${ico('upload',13)} ${t('unarchive')}</button>`:`<button class="btn-s" style="flex:1" onclick="archiveItem('${item.id}');closeDetMo()">${ico('archive',13)} ${t('archive')}</button>`}
   </div>`;
   document.getElementById('detIn').innerHTML=h;
-  document.getElementById('detLink').href=safeUrl(item.url);
+  {const _dl=document.getElementById('detLink'); _dl.href=safeUrl(item.url); _dl.onclick=()=>_biTrackClick(item.id);} // Vault Business: outbound click
   document.getElementById('detOv').classList.add('open');
 }
 
@@ -3486,6 +3486,7 @@ function saveItem(){
     if(activeCount>=30){closeAddMo();showPlusModal('itemLimit');return;}
   }
 
+  const _biIsEdit=!!editingItemId; let _biItem=null; // Vault Business: track new saves vs edits
   if(editingItemId){
     const idx=S.items.findIndex(i=>i.id===editingItemId);
     if(idx!==-1){
@@ -3504,6 +3505,7 @@ function saveItem(){
           priceRange:fetched.priceRange,phone:fetched.phone,
           cuisine:fetched.cuisine,hours:fetched.hours,menu:fetched.menu,reviews:fetched.reviews}:{})
       };
+      _biItem=S.items[idx];
     }
     editingItemId=null;
   } else {
@@ -3523,8 +3525,10 @@ function saveItem(){
       hours:fetched?.hours||null,menu:fetched?.menu||[],reviews:fetched?.reviews||[],
       at:Date.now(),mod:Date.now()
     });
+    _biItem=S.items[0];
   }
   save();closeAddMo();renderSidebar();render();
+  if(_biItem) _biTrackSave(_biItem, 'manual', !_biIsEdit); // Vault Business: anonymized insight (consent-gated, fire-and-forget)
 }
 
 // ── SECTION MODAL ──
@@ -4379,6 +4383,7 @@ let _deletedItem=null,_toastTimer=null;
 function del(id){
   const idx=S.items.findIndex(i=>i.id===id);if(idx<0)return;
   _deletedItem={item:S.items[idx],idx};
+  _biTrackRemove(S.items[idx]); // Vault Business: mark the anonymized save inactive
   S.items.splice(idx,1);
   if(!S.tomb)S.tomb={}; S.tomb[id]=Date.now(); // tombstone so the deletion propagates across devices (merge respects it)
   save();render();renderSidebar();
@@ -4394,6 +4399,7 @@ function showToast(msg){
 function undoDelete(){
   if(!_deletedItem)return;
   const it=_deletedItem.item; if(it){ it.mod=Date.now(); if(S.tomb)delete S.tomb[it.id]; } // un-tombstone so the restore sticks through sync
+  if(it) _biTrackSave(it,'manual',false); // Vault Business: re-activate the anonymized save
   S.items.splice(_deletedItem.idx,0,it);
   _deletedItem=null;
   clearTimeout(_toastTimer);
@@ -4540,6 +4546,56 @@ function openCompare(){
 
 // ── UTILS ──
 function getDomain(url){try{return new URL(url).hostname.replace(/^www\./,'');}catch(e){return url;}}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// VAULT BUSINESS — anonymized product-insight writer (consumer side).
+// Only runs for logged-in users who left the "anonymous insights" preference ON.
+// Writes ONLY domain + a stable product identity + coarse facts to the bi_*
+// tables. NEVER writes wishlist contents, other items, or anything a merchant
+// could tie to a person (merchant reads happen exclusively via aggregate RPCs).
+// URL/identity normalization mirrors vault-business/test/normalize.js (unit-tested).
+// ═══════════════════════════════════════════════════════════════════════════
+const BI_TRACKING_PARAMS=new Set(['utm_source','utm_medium','utm_campaign','utm_term','utm_content','utm_id','utm_name','utm_reader','utm_social','utm_brand','fbclid','gclid','gbraid','wbraid','dclid','msclkid','yclid','twclid','ttclid','scid','mc_cid','mc_eid','igshid','igsh','ref','ref_src','referrer','referral','aff','affid','affiliate','affiliate_id','cmpid','campaignid','adgroupid','adid','_ga','_gl','spm','_branch_match_id','vero_id','oly_anon_id','oly_enc_id','pk_campaign','pk_kwd','piwik_campaign','s_kwcid','gclsrc','irclickid','cjevent']);
+function biNormDomain(input){try{return new URL(input).hostname.toLowerCase().replace(/^www\./,'');}catch(e){return String(input||'').toLowerCase().replace(/^https?:\/\//,'').replace(/^www\./,'').split('/')[0];}}
+function biNormUrl(input){try{const u=new URL(input);const keep=new URLSearchParams();for(const [k,v] of u.searchParams){if(!BI_TRACKING_PARAMS.has(k.toLowerCase()))keep.append(k,v);}const sorted=[...keep.entries()].sort((a,b)=>a[0]<b[0]?-1:a[0]>b[0]?1:(a[1]<b[1]?-1:1));u.search=new URLSearchParams(sorted).toString();u.hash='';u.hostname=u.hostname.toLowerCase().replace(/^www\./,'');if(u.pathname.length>1)u.pathname=u.pathname.replace(/\/+$/,'');return u.toString();}catch(e){return String(input||'');}}
+function biProductKey(item){const domain=biNormDomain(item.canonical||item.url||'');const id=item.gtin||item.sku||item.mpn||item.productId||item.variantId;if(id)return 'd:'+domain+'|id:'+String(id).trim().toLowerCase();const canonical=item.canonical?biNormUrl(item.canonical):null;const base=canonical||biNormUrl(item.url||'');try{const u=new URL(base);return 'd:'+domain+'|p:'+u.pathname+(u.search||'');}catch(e){return 'd:'+domain+'|u:'+base;}}
+// Consent gate: needs a Supabase account (stable user id) + opt-in preference.
+// NOTE(legal): the opt-in copy + default must be reviewed by legal before launch.
+function _biEnabled(){ return !!(_sb && _sbUser && S && S.insightsOptIn!==false && window.navigator.onLine!==false); }
+async function _biTrackSave(item, source, isNew){
+  if(!_biEnabled()||!item||!item.url) return;
+  try{
+    const domain=biNormDomain(item.url); if(!domain||domain.indexOf('.')<0) return; // skip non-web (manual/no-url items)
+    const key=biProductKey(item);
+    await _sb.from('bi_product_saves').upsert({
+      user_id:_sbUser.id, product_key:key, domain, url:biNormUrl(item.url),
+      title:(item.title||'').slice(0,300), price:(item.price>0?item.price:null),
+      image:(item.images&&item.images[0])||null, variant:(item.variant||null),
+      source:source||'manual', active:true, removed_at:null, updated_at:new Date().toISOString()
+    },{onConflict:'user_id,product_key'});
+    if(isNew) await _sb.from('bi_events').insert({user_id:_sbUser.id,domain,product_key:key,type:'save_add',price:(item.price>0?item.price:null),source:source||'manual'});
+  }catch(e){}
+}
+async function _biTrackRemove(item){
+  if(!_biEnabled()||!item||!item.url) return;
+  try{
+    const domain=biNormDomain(item.url); if(!domain||domain.indexOf('.')<0) return;
+    const key=biProductKey(item);
+    await _sb.from('bi_product_saves').update({active:false,removed_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('user_id',_sbUser.id).eq('product_key',key);
+    await _sb.from('bi_events').insert({user_id:_sbUser.id,domain,product_key:key,type:'save_remove'});
+  }catch(e){}
+}
+async function _biTrackClick(itemId){
+  if(!_biEnabled()) return;
+  try{
+    const item=(S.items||[]).find(i=>i.id===itemId); if(!item||!item.url) return;
+    const domain=biNormDomain(item.url); if(!domain||domain.indexOf('.')<0) return;
+    // Only log a click whose destination host actually belongs to the product's
+    // domain (guards against logging clicks to an unrelated/redirected host).
+    const dest=biNormDomain(item.url); if(dest!==domain) return;
+    await _sb.from('bi_events').insert({user_id:_sbUser.id,domain,product_key:biProductKey(item),type:'click'});
+  }catch(e){}
+}
 function validUrl(url){try{new URL(url);return true;}catch(e){return false;}}
 function titleFromUrl(url){
   try{
@@ -4923,8 +4979,71 @@ function openSettings(btn){
       <span class="lang-opt-icon">${ico('tag',17)}</span>
       <span class="lang-opt-name">${t('settingsColors')}</span>
       <span style="color:var(--t3);font-size:12px;margin-left:auto">›</span>
+    </div>
+    <div class="lang-opt" onclick="openPrivacyPanel()">
+      <span class="lang-opt-icon">${ico('lock',17)}</span>
+      <span class="lang-opt-name">${_biPrivLbl('title')}</span>
+      <span style="color:var(--t3);font-size:12px;margin-left:auto">${S.insightsOptIn!==false?'●':'○'} ›</span>
     </div>`;
   _positionPopup(popup, _settingsBtn);
+}
+
+// Vault Business — anonymous-insights consent panel.
+// NOTE(legal): this user-facing copy is provisional and MUST be reviewed by legal
+// before launch (GDPR lawful basis / wording of consent).
+function _biPrivLbl(k){
+  const L={
+    it:{title:'Privacy',head:'Contribuisci agli insight anonimi sui prodotti',
+        body:'Vault può usare i tuoi salvataggi per creare statistiche aggregate sui prodotti più desiderati. I negozi non vedranno mai la tua identità, la tua email o la tua wishlist privata.',
+        on:'Attivo',off:'Disattivato',note:'Separato dalle notifiche promozionali. Puoi cambiare idea quando vuoi.'},
+    en:{title:'Privacy',head:'Contribute to anonymous product insights',
+        body:'Vault can use your saves to build aggregate stats on the most-wanted products. Shops will never see your identity, your email, or your private wishlist.',
+        on:'On',off:'Off',note:'Separate from promotional notifications. You can change your mind anytime.'}
+  };
+  return (L[S.lang]||L.en)[k];
+}
+function openPrivacyPanel(){
+  const popup=document.getElementById('langPopup');
+  popup.dataset.mode='settings';
+  const on=S.insightsOptIn!==false;
+  popup.innerHTML=`<div class="lang-popup-nav">
+      <button class="lang-popup-nav-back" onclick="openSettings()">${t('back')}</button>
+      <span class="lang-popup-nav-title">${_biPrivLbl('title')}</span>
+      <div style="width:60px"></div>
+    </div>
+    <div style="padding:12px 14px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:var(--t1);line-height:1.35">${_biPrivLbl('head')}</div>
+        </div>
+        <button id="biOptToggle" onclick="toggleInsightsOptIn()" role="switch" aria-checked="${on}"
+          style="flex-shrink:0;width:44px;height:26px;border-radius:14px;border:none;cursor:pointer;position:relative;transition:background .2s;background:${on?'var(--accent,#c9a227)':'var(--b2,#333)'}">
+          <span style="position:absolute;top:3px;left:${on?'21px':'3px'};width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.4)"></span>
+        </button>
+      </div>
+      <div style="font-size:11.5px;color:var(--t2);line-height:1.55;margin-top:10px">${_biPrivLbl('body')}</div>
+      <div style="font-size:10.5px;color:var(--t3);line-height:1.5;margin-top:8px">${_biPrivLbl('note')}</div>
+    </div>`;
+  requestAnimationFrame(()=>{const r=_settingsBtn.getBoundingClientRect();popup.style.top=(r.top-popup.offsetHeight-8)+'px';});
+}
+function toggleInsightsOptIn(){
+  S.insightsOptIn = (S.insightsOptIn===false); // flip
+  save();
+  // If the user just opted OUT, stop contributing AND remove their existing
+  // anonymized rows from future aggregations (privacy: honour the withdrawal).
+  if(S.insightsOptIn===false){ _biPurgeMyInsights(); }
+  else { _biBackfillMyInsights(); } // opted back in → re-seed current wishlist
+  openPrivacyPanel();
+}
+// Remove this device's user from all future aggregates when they opt out.
+async function _biPurgeMyInsights(){
+  if(!_sb||!_sbUser) return;
+  try{ await _sb.from('bi_product_saves').delete().eq('user_id',_sbUser.id); }catch(e){}
+}
+// Seed the current wishlist into insights when the user (re-)opts in.
+async function _biBackfillMyInsights(){
+  if(!_biEnabled()) return;
+  try{ for(const it of (S.items||[])){ if(it&&it.url&&!it.archived) await _biTrackSave(it,'manual',false); } }catch(e){}
 }
 
 function openLangPanel(){

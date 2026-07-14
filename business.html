@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vault Business — Insights</title>
+<meta name="robots" content="noindex">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+:root{
+  --bg:#070707; --s1:#0d0d0d; --s2:#141414; --s3:#1b1b1b;
+  --bd:#232323; --bd2:#2e2e2e;
+  --t1:#f2f2f2; --t2:#8a8a8a; --t3:#565656;
+  --gold:#c9a227; --gold-dim:rgba(201,162,39,.14); --gold-bd:rgba(201,162,39,.35);
+  --green:#4ade80; --red:#ef4444; --up:#4ade80; --down:#ef4444;
+  --r:12px; --r2:16px;
+  --fs: 'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f4f4f6; --s1:#ffffff; --s2:#ffffff; --s3:#f0f0f2;
+    --bd:#e3e3e6; --bd2:#d5d5d9; --t1:#141414; --t2:#5a5a5a; --t3:#9a9a9a;
+    --gold-dim:rgba(201,162,39,.12);
+  }
+}
+:root[data-theme="light"]{
+  --bg:#f4f4f6; --s1:#ffffff; --s2:#ffffff; --s3:#f0f0f2;
+  --bd:#e3e3e6; --bd2:#d5d5d9; --t1:#141414; --t2:#5a5a5a; --t3:#9a9a9a;
+  --gold-dim:rgba(201,162,39,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--t1);font-family:var(--fs);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:6px}
+a{color:inherit}
+button{font-family:inherit;cursor:pointer}
+.hidden{display:none!important}
+.muted{color:var(--t2)}
+.mono{font-variant-numeric:tabular-nums}
+
+/* ---- login ---- */
+#auth{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:100;padding:24px}
+.auth-card{width:100%;max-width:380px;background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);padding:32px 28px}
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.brand-mark{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#e9c34a,#a9821a);display:flex;align-items:center;justify-content:center;font-weight:800;color:#1a1500;font-size:20px;box-shadow:0 4px 14px rgba(201,162,39,.3)}
+.brand h1{font-size:19px;font-weight:800;letter-spacing:-.3px}
+.brand .sub{font-size:11px;color:var(--gold);font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.auth-card p.lead{color:var(--t2);font-size:13px;margin:14px 0 20px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:11px;color:var(--t2);font-weight:600;margin-bottom:5px}
+.inp{width:100%;background:var(--s3);border:1px solid var(--bd);border-radius:10px;padding:11px 13px;color:var(--t1);font-size:14px;outline:none;transition:border .15s}
+.inp:focus{border-color:var(--gold-bd)}
+.btn{width:100%;border:none;border-radius:10px;padding:12px;font-weight:700;font-size:14px;background:var(--gold);color:#1a1500;transition:filter .15s,opacity .15s}
+.btn:hover{filter:brightness(1.06)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn-ghost{background:transparent;border:1px solid var(--bd);color:var(--t1)}
+.btn-sm{width:auto;padding:8px 14px;font-size:12.5px;border-radius:9px}
+.err{color:var(--red);font-size:12px;margin-top:10px;min-height:16px}
+
+/* ---- shell ---- */
+#app{display:none;min-height:100vh;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--bd);padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.topbar .brand h1{font-size:15px}
+.topbar .brand-mark{width:30px;height:30px;font-size:15px;border-radius:8px}
+.spacer{flex:1}
+.select{background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:8px 12px;color:var(--t1);font-size:13px;font-weight:600;outline:none}
+.seg{display:inline-flex;background:var(--s2);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.seg button{background:transparent;border:none;color:var(--t2);padding:7px 12px;font-size:12.5px;font-weight:600}
+.seg button.on{background:var(--gold-dim);color:var(--gold)}
+.tabs{display:flex;gap:4px;padding:0 20px;border-bottom:1px solid var(--bd);background:var(--bg);position:sticky;top:57px;z-index:19}
+.tab{background:transparent;border:none;border-bottom:2px solid transparent;color:var(--t2);padding:12px 14px;font-size:13px;font-weight:600;margin-bottom:-1px}
+.tab.on{color:var(--t1);border-bottom-color:var(--gold)}
+.wrap{max-width:1100px;margin:0 auto;padding:22px 20px 60px;width:100%}
+.pagehd{font-size:13px;color:var(--t2);margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pagehd b{color:var(--t1);font-weight:700}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block}
+
+/* ---- cards ---- */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);padding:18px}
+.kpi .lbl{font-size:11.5px;color:var(--t2);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.kpi .val{font-size:28px;font-weight:800;margin-top:8px;letter-spacing:-.5px}
+.kpi .delta{font-size:12px;font-weight:700;margin-top:6px}
+.up{color:var(--up)} .down{color:var(--down)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+@media(max-width:640px){.two{grid-template-columns:1fr}}
+.mini-hd{font-size:12px;color:var(--t2);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:12px}
+.prodline{display:flex;align-items:center;gap:12px}
+.thumb{width:46px;height:46px;border-radius:9px;object-fit:cover;background:var(--s3);border:1px solid var(--bd);flex-shrink:0}
+.thumb.ph{display:flex;align-items:center;justify-content:center;color:var(--t3);font-size:18px}
+
+/* ---- table ---- */
+.toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.search{flex:1;min-width:180px;position:relative}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--bd);border-radius:var(--r2);background:var(--s1)}
+table{width:100%;border-collapse:collapse;min-width:720px}
+th{text-align:left;font-size:11px;color:var(--t2);font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:12px 14px;border-bottom:1px solid var(--bd);white-space:nowrap;cursor:pointer;user-select:none}
+th.num,td.num{text-align:right}
+td{padding:12px 14px;border-bottom:1px solid var(--bd);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr{transition:background .12s}
+tbody tr:hover{background:var(--s2)}
+.pill{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--s3);color:var(--t2)}
+.pill.lt{background:var(--gold-dim);color:var(--gold)}
+.pager{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:13px;color:var(--t2)}
+.link{color:var(--gold);font-weight:600;text-decoration:none;cursor:pointer}
+.state{text-align:center;padding:56px 20px;color:var(--t2)}
+.spin{width:26px;height:26px;border:3px solid var(--bd);border-top-color:var(--gold);border-radius:50%;animation:sp 0.8s linear infinite;margin:0 auto 14px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ---- domains ---- */
+.domrow{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--bd)}
+.badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
+.badge.ok{background:rgba(74,222,128,.14);color:var(--green)}
+.badge.pending{background:var(--gold-dim);color:var(--gold)}
+.code{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:var(--s3);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;word-break:break-all;color:var(--t1)}
+
+/* ---- modal ---- */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:60;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}
+.ov.open{display:flex}
+.modal{width:100%;max-width:640px;background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);padding:24px}
+.modal .x{float:right;background:transparent;border:none;color:var(--t2);font-size:20px}
+.trend{display:flex;align-items:flex-end;gap:3px;height:90px;margin-top:10px}
+.bar{flex:1;background:var(--gold-dim);border-top:2px solid var(--gold);border-radius:3px 3px 0 0;min-height:2px}
+.note{font-size:11.5px;color:var(--t3);line-height:1.5;margin-top:8px}
+</style>
+</head>
+<body>
+
+<!-- ========== LOGIN ========== -->
+<div id="auth">
+  <div class="auth-card">
+    <div class="brand"><div class="brand-mark">V</div><div><h1>Vault Business</h1><div class="sub">Merchant insights</div></div></div>
+    <p class="lead">Accedi con il tuo account Vault per vedere gli insight aggregati sui prodotti del tuo dominio.</p>
+    <div class="field"><label>Email</label><input class="inp" id="email" type="email" autocomplete="email" placeholder="tu@negozio.com"></div>
+    <div class="field"><label>Password</label><input class="inp" id="pw" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+    <button class="btn" id="loginBtn" onclick="doLogin()">Accedi</button>
+    <div class="err" id="authErr"></div>
+    <p class="note" style="margin-top:14px">Non hai un account? Creane uno gratis su <a class="link" href="https://vaultwishlist.com" target="_blank" rel="noopener">vaultwishlist.com</a>, poi torna qui.</p>
+  </div>
+</div>
+
+<!-- ========== APP ========== -->
+<div id="app">
+  <div class="topbar">
+    <div class="brand"><div class="brand-mark">V</div><h1>Vault Business</h1></div>
+    <div class="spacer"></div>
+    <select class="select" id="domSel" onchange="onDomainChange()"></select>
+    <div class="seg" id="rangeSeg">
+      <button data-r="7" onclick="setRange(7)">7g</button>
+      <button data-r="30" class="on" onclick="setRange(30)">30g</button>
+      <button data-r="90" onclick="setRange(90)">90g</button>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="logout()">Esci</button>
+  </div>
+  <div class="tabs">
+    <button class="tab on" data-v="overview" onclick="showView('overview')">Panoramica</button>
+    <button class="tab" data-v="products" onclick="showView('products')">Prodotti</button>
+    <button class="tab" data-v="domains" onclick="showView('domains')">Domini</button>
+  </div>
+
+  <div class="wrap">
+    <!-- OVERVIEW -->
+    <div id="v-overview" class="view">
+      <div class="pagehd" id="ovHd"></div>
+      <div id="ovBody"></div>
+    </div>
+    <!-- PRODUCTS -->
+    <div id="v-products" class="view hidden">
+      <div class="toolbar">
+        <div class="search"><input class="inp" id="prodSearch" placeholder="Cerca prodotto…" oninput="debouncedProducts()"></div>
+        <select class="select" id="prodSort" onchange="loadProducts(0)">
+          <option value="saves">Più salvati</option>
+          <option value="growth">In crescita</option>
+          <option value="clicks">Più clic</option>
+        </select>
+      </div>
+      <div id="prodBody"></div>
+    </div>
+    <!-- DOMAINS -->
+    <div id="v-domains" class="view hidden">
+      <div class="card" style="margin-bottom:16px">
+        <div class="mini-hd">Aggiungi un dominio</div>
+        <div class="toolbar" style="margin:0">
+          <div class="search"><input class="inp" id="newDom" placeholder="es. ilmionegozio.com"></div>
+          <button class="btn btn-sm" onclick="addDomain()">Aggiungi</button>
+        </div>
+        <div class="err" id="domErr"></div>
+      </div>
+      <div id="domList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- product detail modal -->
+<div class="ov" id="detOv" onclick="if(event.target===this)closeDet()">
+  <div class="modal" id="detModal"></div>
+</div>
+
+<script>
+const SUPABASE_URL='https://ottgafbrcogkmflnisbh.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90dGdhZmJyY29na21mbG5pc2JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3Nzc4NDEsImV4cCI6MjA5ODM1Mzg0MX0.002lqUQ2LpAqQYHdje-3L9aD19MwzyMUjCvOKG1xifU';
+const _sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
+
+let STATE={ domain:null, domains:[], range:30, view:'overview', prodOffset:0, prodLimit:25 };
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>n==null?'—':new Intl.NumberFormat('it-IT').format(n);
+const money=n=>n==null?'':'€'+new Intl.NumberFormat('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
+function pct(cur,prev){ if(!prev) return cur>0?{v:'+100%',c:'up'}:{v:'—',c:''}; const d=Math.round((cur-prev)/prev*100); return {v:(d>=0?'+':'')+d+'%', c:d>=0?'up':'down'}; }
+
+// ---------- auth ----------
+async function doLogin(){
+  const btn=$('loginBtn'); btn.disabled=true; $('authErr').textContent='';
+  const {error}=await _sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('pw').value});
+  btn.disabled=false;
+  if(error){ $('authErr').textContent='Accesso non riuscito. Controlla email e password.'; return; }
+  boot();
+}
+async function logout(){ await _sb.auth.signOut(); location.reload(); }
+
+async function init(){
+  const {data:{session}}=await _sb.auth.getSession();
+  if(session?.user) boot(); // already logged in
+}
+async function boot(){
+  $('auth').style.display='none'; $('app').style.display='flex';
+  await loadDomains();
+}
+
+// ---------- domains ----------
+async function loadDomains(){
+  const {data,error}=await _sb.from('bi_merchant_domains').select('*').eq('revoked',false).order('created_at',{ascending:true});
+  STATE.domains=data||[];
+  const verified=STATE.domains.filter(d=>d.verified);
+  const sel=$('domSel');
+  if(!verified.length){
+    sel.innerHTML='<option>Nessun dominio verificato</option>'; sel.disabled=true;
+    STATE.domain=null;
+  } else {
+    sel.disabled=false;
+    sel.innerHTML=verified.map(d=>`<option value="${esc(d.normalized_domain)}">${esc(d.normalized_domain)}</option>`).join('');
+    if(!STATE.domain||!verified.find(d=>d.normalized_domain===STATE.domain)) STATE.domain=verified[0].normalized_domain;
+    sel.value=STATE.domain;
+  }
+  renderDomains();
+  if(STATE.view==='overview') loadOverview();
+  else if(STATE.view==='products') loadProducts(0);
+}
+function renderDomains(){
+  const el=$('domList');
+  if(!STATE.domains.length){ el.innerHTML='<div class="state">Nessun dominio ancora. Aggiungine uno sopra.</div>'; return; }
+  el.innerHTML='<div class="card">'+STATE.domains.map(d=>{
+    const token=`vault-site-verification=${esc(d.verify_token)}`;
+    return `<div class="domrow">
+      <div style="flex:1">
+        <div style="font-weight:700">${esc(d.normalized_domain)}
+          ${d.verified?'<span class="badge ok">Verificato</span>':'<span class="badge pending">In attesa</span>'}</div>
+        ${d.verified?`<div class="muted" style="font-size:12px;margin-top:3px">Metodo: ${esc(d.verify_method||'—')} · ${d.verified_at?new Date(d.verified_at).toLocaleDateString('it-IT'):''}</div>`
+        :`<div style="margin-top:10px">
+            <div class="muted" style="font-size:12px;margin-bottom:6px">Dimostra la proprietà con <b>uno</b> di questi metodi, poi premi Verifica:</div>
+            <div class="note" style="margin:2px 0 4px"><b>DNS TXT</b> su <code style="color:var(--t1)">_vault-verify.${esc(d.normalized_domain)}</code>:</div>
+            <div class="code">${token}</div>
+            <div class="note">…oppure file <code style="color:var(--t1)">/.well-known/vault-verify.txt</code> contenente il token, o meta tag <code style="color:var(--t1)">&lt;meta name="vault-site-verification" content="${esc(d.verify_token)}"&gt;</code></div>
+          </div>`}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${d.verified?'':`<button class="btn btn-sm" onclick="verifyDomain('${esc(d.normalized_domain)}',this)">Verifica</button>`}
+        <button class="btn btn-ghost btn-sm" onclick="revokeDomain('${esc(d.normalized_domain)}')">Rimuovi</button>
+      </div>
+    </div>`;
+  }).join('')+'</div>';
+}
+async function addDomain(){
+  $('domErr').textContent='';
+  const v=$('newDom').value.trim(); if(!v) return;
+  const {error}=await _sb.rpc('bi_domain_add',{p_domain:v});
+  if(error){ $('domErr').textContent=error.message.includes('another account')?'Questo dominio è già verificato da un altro account.':'Impossibile aggiungere il dominio.'; return; }
+  $('newDom').value=''; await loadDomains(); showView('domains');
+}
+async function verifyDomain(dom,btn){
+  btn.disabled=true; btn.textContent='Verifico…';
+  const {data,error}=await _sb.rpc('bi_domain_verify',{p_domain:dom});
+  if(error||!data||!data.verified){
+    btn.disabled=false; btn.textContent='Verifica';
+    alert(data&&data.error==='token not found on domain yet'
+      ? 'Token non ancora trovato sul dominio. La propagazione DNS può richiedere qualche minuto; riprova tra poco.'
+      : 'Verifica non riuscita. Controlla di aver pubblicato il token.');
+    return;
+  }
+  await loadDomains();
+}
+async function revokeDomain(dom){
+  if(!confirm('Rimuovere '+dom+'? Perderai l’accesso agli insight di questo dominio.')) return;
+  await _sb.rpc('bi_domain_revoke',{p_domain:dom});
+  await loadDomains();
+}
+
+// ---------- nav ----------
+function setRange(r){ STATE.range=r; [...$('rangeSeg').children].forEach(b=>b.classList.toggle('on',+b.dataset.r===r)); refresh(); }
+function onDomainChange(){ STATE.domain=$('domSel').value; refresh(); }
+function showView(v){
+  STATE.view=v;
+  ['overview','products','domains'].forEach(x=>{ $('v-'+x).classList.toggle('hidden',x!==v); });
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===v));
+  refresh();
+}
+function refresh(){
+  if(STATE.view==='overview') loadOverview();
+  else if(STATE.view==='products') loadProducts(0);
+  else renderDomains();
+}
+function needDomain(elId){
+  if(STATE.domain) return true;
+  $(elId).innerHTML='<div class="state">Verifica un dominio nella scheda <b>Domini</b> per vedere gli insight.</div>';
+  return false;
+}
+
+// ---------- overview ----------
+async function loadOverview(){
+  $('ovHd').innerHTML='';
+  if(!needDomain('ovBody')) return;
+  $('ovBody').innerHTML='<div class="state"><div class="spin"></div>Carico…</div>';
+  const {data,error}=await _sb.rpc('bi_overview',{p_domain:STATE.domain,p_range:STATE.range});
+  if(error){ $('ovBody').innerHTML='<div class="state">Errore nel caricamento.</div>'; return; }
+  $('ovHd').innerHTML=`<span class="dot"></span> <b>${esc(STATE.domain)}</b> · ultimi ${STATE.range} giorni`;
+  if(data.below_threshold){
+    $('ovBody').innerHTML=`<div class="state">Ancora pochi dati.<br><span class="muted">Servono almeno ${data.unique_savers_lt} utenti distinti che salvano prodotti del tuo dominio prima di mostrare gli insight (protezione anti-identificazione).</span></div>`;
+    return;
+  }
+  const g=pct(data.saves_added,data.saves_added_prev);
+  const top=data.top_product, grow=data.top_growth_product;
+  $('ovBody').innerHTML=`
+    <div class="grid">
+      ${kpi('Salvataggi attivi',fmt(data.active_saves))}
+      ${kpi('Utenti distinti',fmt(data.unique_savers))}
+      ${kpi('Prodotti salvati',fmt(data.distinct_products))}
+      ${kpi('Nuovi salvataggi',fmt(data.saves_added),`<span class="${g.c}">${g.v}</span> vs periodo prec.`)}
+      ${kpi('Rimozioni',fmt(data.saves_removed))}
+      ${kpi('Clic verso il sito',fmt(data.outbound_clicks))}
+    </div>
+    <div class="two">
+      <div class="card"><div class="mini-hd">Prodotto più salvato</div>${top?prodLine(top.title,top.image,fmt(top.saves)+' salvataggi'):'<div class="muted">—</div>'}</div>
+      <div class="card"><div class="mini-hd">Maggiore crescita</div>${grow?prodLine(grow.product_key.split('|').pop(),null,fmt(grow.added)+' nuovi'):'<div class="muted">—</div>'}</div>
+    </div>
+    <div class="note" style="margin-top:16px">Vault mostra <b>domanda</b> (salvataggi, interesse), non le vendite del tuo sito. Visite, acquisti, fatturato e conversion rate non sono visibili senza un’integrazione. Tutti i dati sono aggregati e anonimi.</div>`;
+}
+function kpi(lbl,val,delta){ return `<div class="card kpi"><div class="lbl">${lbl}</div><div class="val mono">${val}</div>${delta?`<div class="delta">${delta}</div>`:''}</div>`; }
+function prodLine(title,img,sub){
+  const t=(img)?`<img class="thumb" src="${esc(img)}" onerror="this.style.display='none'">`:`<div class="thumb ph">▦</div>`;
+  return `<div class="prodline">${t}<div style="min-width:0"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(title||'—')}</div><div class="muted" style="font-size:12px">${sub}</div></div></div>`;
+}
+
+// ---------- products ----------
+let _pt=null;
+function debouncedProducts(){ clearTimeout(_pt); _pt=setTimeout(()=>loadProducts(0),320); }
+async function loadProducts(offset){
+  if(!needDomain('prodBody')) return;
+  STATE.prodOffset=offset;
+  $('prodBody').innerHTML='<div class="state"><div class="spin"></div>Carico…</div>';
+  const {data,error}=await _sb.rpc('bi_products',{p_domain:STATE.domain,p_range:STATE.range,
+    p_search:$('prodSearch').value.trim(),p_sort:$('prodSort').value,p_limit:STATE.prodLimit,p_offset:offset});
+  if(error){ $('prodBody').innerHTML='<div class="state">Errore nel caricamento.</div>'; return; }
+  if(!data.rows.length){ $('prodBody').innerHTML='<div class="state">Nessun prodotto trovato per questo dominio nel periodo selezionato.</div>'; return; }
+  const rows=data.rows.map(r=>{
+    const lt=r.below_threshold;
+    const cells=lt
+      ? `<td class="num" colspan="5"><span class="pill lt">Meno di 10 utenti</span></td>`
+      : `<td class="num mono">${fmt(r.unique_savers)}</td><td class="num mono">${fmt(r.active_saves)}</td><td class="num mono">${fmt(r.added)}</td><td class="num mono">${fmt(r.clicks)}</td><td class="num mono">${fmt((r.price_drop_interest||0)+(r.restock_interest||0))}</td>`;
+    const title=lt?`<span>${esc(r.title||'—')}</span>`:`<span class="link" onclick="openDet('${esc(r.product_key)}')">${esc(r.title||'—')}</span>`;
+    const img=r.image?`<img class="thumb" src="${esc(r.image)}" onerror="this.style.display='none'">`:`<div class="thumb ph">▦</div>`;
+    return `<tr><td><div class="prodline">${img}<div style="min-width:0"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px">${title}</div><div class="muted" style="font-size:11.5px">${r.price?money(r.price):''}</div></div></div></td>${cells}</tr>`;
+  }).join('');
+  const totPages=Math.ceil(data.total/STATE.prodLimit), curPage=Math.floor(offset/STATE.prodLimit)+1;
+  $('prodBody').innerHTML=`
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Prodotto</th><th class="num">Utenti</th><th class="num">Salvataggi</th><th class="num">Nuovi</th><th class="num">Clic</th><th class="num">Interesse</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+    <div class="pager">
+      <span>${data.total} prodotti · pagina ${curPage}/${totPages||1}</span>
+      <span>
+        <button class="btn btn-ghost btn-sm" ${offset<=0?'disabled':''} onclick="loadProducts(${Math.max(0,offset-STATE.prodLimit)})">‹ Prec.</button>
+        <button class="btn btn-ghost btn-sm" ${curPage>=totPages?'disabled':''} onclick="loadProducts(${offset+STATE.prodLimit})">Succ. ›</button>
+      </span>
+    </div>`;
+}
+
+// ---------- product detail ----------
+async function openDet(key){
+  $('detOv').classList.add('open');
+  $('detModal').innerHTML='<div class="state"><div class="spin"></div>Carico…</div>';
+  const {data,error}=await _sb.rpc('bi_product_detail',{p_domain:STATE.domain,p_key:key,p_range:STATE.range});
+  if(error){ $('detModal').innerHTML='<button class="x" onclick="closeDet()">✕</button><div class="state">Errore.</div>'; return; }
+  if(data.below_threshold){ $('detModal').innerHTML='<button class="x" onclick="closeDet()">✕</button><div class="state">Meno di 10 utenti distinti — dettaglio non disponibile (protezione privacy).</div>'; return; }
+  const trend=data.trend||[]; const max=Math.max(1,...trend.map(t=>t.added||0));
+  const bars=trend.map(t=>`<div class="bar" title="${t.day}: +${t.added}" style="height:${Math.round((t.added||0)/max*100)}%"></div>`).join('')||'<div class="muted">Nessun dato nel periodo</div>';
+  const src=data.sources?Object.entries(data.sources).map(([k,v])=>`<span class="pill">${esc(k)}: ${v}</span>`).join(' '):'';
+  $('detModal').innerHTML=`
+    <button class="x" onclick="closeDet()">✕</button>
+    <div class="prodline" style="margin-bottom:16px">${data.image?`<img class="thumb" style="width:60px;height:60px" src="${esc(data.image)}" onerror="this.style.display='none'">`:'<div class="thumb ph" style="width:60px;height:60px">▦</div>'}
+      <div><div style="font-weight:800;font-size:16px">${esc(data.title||'—')}</div>
+      <div class="muted" style="font-size:12px">${data.price?money(data.price):''} · <a class="link" href="${esc(data.url||'#')}" target="_blank" rel="noopener">apri ↗</a></div></div></div>
+    <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr))">
+      ${kpi('Utenti distinti',fmt(data.unique_savers))}
+      ${kpi('Salvataggi attivi',fmt(data.active_saves))}
+      ${kpi('Clic verso il sito',fmt(data.outbound_clicks))}
+      ${kpi('Interesse calo prezzo',fmt(data.price_drop_interest))}
+      ${kpi('Interesse restock',fmt(data.restock_interest))}
+    </div>
+    <div class="card" style="margin-top:14px"><div class="mini-hd">Nuovi salvataggi · ${STATE.range}g</div><div class="trend">${bars}</div></div>
+    ${src?`<div style="margin-top:14px"><div class="mini-hd">Fonte dei salvataggi</div>${src}</div>`:''}
+    <div class="note" style="margin-top:14px">Nessun dato personale: mai nomi, email o wishlist individuali. Solo conteggi aggregati.</div>`;
+}
+function closeDet(){ $('detOv').classList.remove('open'); }
+
+init();
+</script>
+</body>
+</html>
