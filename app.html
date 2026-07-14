@@ -1945,7 +1945,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.07.14-sync7';
+const APP_BUILD='2026.07.14-sync9';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 (function(){
@@ -1982,7 +1982,7 @@ async function _sbPushNow(){
     // otherwise this defeats the whole point of the read-merge-write pattern above.
     if(rerr && rerr.code!=='PGRST116'){ _showSyncDot('err'); return; }
     if(!rerr && cur && cur.data) _mergeRemoteData(cur.data);
-    if((S.items||[]).length!==beforeN){ try{localStorage.setItem(vaultKey(),JSON.stringify(S));renderSidebar();render();}catch(e){} }
+    if((S.items||[]).length!==beforeN){ _cacheLocal(); try{renderSidebar();render();}catch(e){} }
     const payload=JSON.stringify(S);
     if(payload===_lastPushedJSON) return; // nothing new to write
     const {error}=await _sb.from('vault_data').upsert({id:_sbUser.id,data:S,updated_at:new Date().toISOString()});
@@ -2006,7 +2006,7 @@ function _sbFlush(){
   // Persist to localStorage FIRST (synchronous): if iOS kills the app right after
   // backgrounding, the async cloud push may never finish, but the local snapshot
   // is at least current — so the next cold start doesn't boot from stale data.
-  try{localStorage.setItem(vaultKey(),JSON.stringify(S));}catch(e){}
+  _cacheLocal();
   if(_sbPushTimer){clearTimeout(_sbPushTimer);_sbPushTimer=null;} _sbPushNow();
 }
 
@@ -2119,6 +2119,26 @@ try{
   }
 }catch(e){}
 
+// Persist S to localStorage without ever throwing. iOS WKWebView has a small
+// localStorage quota; a vault with many embedded (base64) images blows past it and
+// setItem throws "quota exceeded". If the full write fails we save a LIGHT copy —
+// base64 data-URL images and voice memos dropped (they live in memory + the cloud
+// anyway) — so a cold start still boots with the correct items/count/order instead
+// of reverting to an older snapshot that still fits. Returns true if anything stuck.
+function _cacheLocal(){
+  try{ localStorage.setItem(vaultKey(),JSON.stringify(S)); return true; }
+  catch(e){
+    try{
+      const light={...S, items:(S.items||[]).map(it=>({
+        ...it,
+        images:(it.images||[]).filter(u=>typeof u==='string' && /^https?:\/\//i.test(u)), // keep URL images, drop base64
+        voiceMemo:null
+      }))};
+      localStorage.setItem(vaultKey(),JSON.stringify(light));
+      return true;
+    }catch(e2){ return false; }
+  }
+}
 // Cloud pull — overwrites local with remote, returns true if data found
 async function _sbPull(){
   if(!_sb||!_sbUser) return false;
@@ -2144,7 +2164,13 @@ async function _sbPull(){
       }
       if(remote){
         _mergeRemoteData(remote);                    // MERGE, never overwrite — local additions survive
-        localStorage.setItem(vaultKey(),JSON.stringify(S));
+        // Best-effort local cache. If localStorage is full ("quota exceeded" —
+        // which iOS WKWebView hits with large image data) this MUST NOT throw and
+        // abort the pull: the merge already succeeded in memory (S is the truth),
+        // and a thrown setItem here made _sbPull return false → the post-sync
+        // render never ran → the screen stayed frozen on the stale local copy
+        // (ghost/deleted items, wrong count). Cloud is the source of truth anyway.
+        _cacheLocal();
         _syncReady=true;
         // If the merge kept local-only items the cloud didn't have, push the union up.
         if((S.items||[]).length!==remoteItems){ _lastPushedJSON=''; await _sbPushNow(); }
@@ -2268,10 +2294,10 @@ function _showSyncDot(state){
 }
 
 function save(){
-  try{localStorage.setItem(vaultKey(),JSON.stringify(S));}catch(e){
-    // Guests have no cloud fallback — a silent write failure (e.g. quota exceeded
-    // from large embedded images) would otherwise lose data with zero warning.
-    if(!_sb||!_sbUser) showToast(_lbl({it:'⚠ Salvataggio non riuscito — spazio esaurito?',en:'⚠ Save failed — storage full?',es:'⚠ Error al guardar — ¿sin espacio?',fr:'⚠ Échec de la sauvegarde — espace insuffisant ?',de:'⚠ Speichern fehlgeschlagen — Speicher voll?',pt:'⚠ Falha ao salvar — sem espaço?',nl:'⚠ Opslaan mislukt — geen ruimte?'}));
+  // _cacheLocal() already falls back to a trimmed (image-light) copy on quota
+  // overflow. Only warn if even that failed AND there's no cloud to fall back on.
+  if(!_cacheLocal() && (!_sb||!_sbUser)){
+    showToast(_lbl({it:'⚠ Salvataggio non riuscito — spazio esaurito?',en:'⚠ Save failed — storage full?',es:'⚠ Error al guardar — ¿sin espacio?',fr:'⚠ Échec de la sauvegarde — espace insuffisant ?',de:'⚠ Speichern fehlgeschlagen — Speicher voll?',pt:'⚠ Falha ao salvar — sem espaço?',nl:'⚠ Opslaan mislukt — geen ruimte?'}));
   }
   _sbPush();
 }
