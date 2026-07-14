@@ -1945,7 +1945,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.07.14-sync5';
+const APP_BUILD='2026.07.14-sync6';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 (function(){
@@ -2016,7 +2016,7 @@ async function _sbSyncNow(){
   try{
     if(_sbPushTimer){ clearTimeout(_sbPushTimer); _sbPushTimer=null; await _sbPushNow(); }
     else if(JSON.stringify(S)!==_lastPushedJSON){ await _sbPushNow(); }
-    const ok=await _sbPull();
+    const ok=await _sbPullRetry(4,500);
     if(ok){ renderSidebar(); render(); _updatePlusSideBtn(); _forceRepaint(); } // ALWAYS repaint after a resume/sync — the webview can otherwise hold a stale screen (deleted items still showing, wrong count) until the user taps something
   }catch(e){}finally{ _sbSyncing=false; }
 }
@@ -2101,6 +2101,10 @@ document.addEventListener('visibilitychange',()=>{
 // _resumeRefresh → instant repaint of local state, then cloud pull + repaint.
 window.addEventListener('pageshow',()=>{try{_resumeRefresh();}catch(e){}});
 document.addEventListener('resume',()=>{try{_resumeRefresh();}catch(e){}});
+// iOS cold start often has no network for the first moment (that was the red
+// "Offline" chip): the moment connectivity returns, resync so stale local data
+// (ghost/deleted items, wrong count, missing images) gets reconciled immediately.
+window.addEventListener('online',()=>{try{_resumeRefresh();}catch(e){}});
 try{
   const _cap=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;
   if(_cap&&_cap.addListener){
@@ -2146,6 +2150,20 @@ async function _sbPull(){
     }
   }catch(e){}
   return false; // network/other error → _syncReady stays false, no risky writes
+}
+// Resilient pull. On iOS the FIRST request after a cold launch often fails because
+// the network stack / auth token isn't ready yet — that single failure used to
+// strand the device on stale localStorage (ghost/deleted items, wrong count,
+// unloaded images) and flash the red "Offline" chip, and nothing retried until the
+// user manually backgrounded+reopened the app. Now we retry with backoff so a cold
+// start reconciles with the cloud on its own.
+async function _sbPullRetry(tries=6, base=600){
+  for(let i=0;i<tries;i++){
+    const ok=await _sbPull();
+    if(ok) return true;
+    if(i<tries-1) await new Promise(r=>setTimeout(r, base*(i+1))); // 0.6s,1.2s,1.8s,…
+  }
+  return false;
 }
 
 function _normalizeState(remote){
@@ -2235,19 +2253,12 @@ function _mergeRemoteData(remote){
 
 // Sync dot indicator (top-right corner, fades out)
 function _showSyncDot(state){
-  if(state==='ok')return; // success is silent — no "Synced" toast for users
-  let dot=document.getElementById('syncDot');
-  if(!dot){
-    dot=document.createElement('div');
-    dot.id='syncDot';
-    dot.style.cssText='position:fixed;top:10px;right:10px;z-index:99999;font-size:10px;padding:3px 8px;border-radius:20px;pointer-events:none;transition:opacity .5s;font-family:Inter,sans-serif;font-weight:600;letter-spacing:.5px';
-    document.body.appendChild(dot);
-  }
-  clearTimeout(dot._t);
-  if(state==='ok'){dot.style.cssText+=';background:rgba(74,222,128,.18);color:#4ade80;border:1px solid rgba(74,222,128,.3)';dot.textContent='☁ Synced';}
-  else{dot.style.cssText+=';background:rgba(248,113,113,.18);color:#f87171;border:1px solid rgba(248,113,113,.3)';dot.textContent='☁ Offline';}
-  dot.style.opacity='1';
-  dot._t=setTimeout(()=>{dot.style.opacity='0';},2000);
+  // Intentionally silent. The old red "☁ Offline" chip fired on every transient
+  // first-attempt failure at cold start (network/token not ready yet on iOS) and
+  // read as an error to users. Sync robustness is now handled by _sbPullRetry +
+  // the 'online' event, so there's nothing to alarm the user with. Kept as a
+  // no-op so the many existing call sites stay valid.
+  return;
 }
 
 function save(){
@@ -6519,9 +6530,9 @@ setTimeout(_hideBootLoader, 2000);
             // safety net can compare local-vs-cloud and recover if the cloud is empty
     renderSidebar();render();
     const prevPlan=_sbPlan;
-    const synced=await _sbPull();
+    const synced=await _sbPullRetry(); // cold start: retry until the network is ready, so ghosts/wrong count self-heal
     if(synced){
-      renderSidebar();render();_updatePlusSideBtn();_forceRepaint();_showSyncDot('ok');
+      renderSidebar();render();_updatePlusSideBtn();_forceRepaint();
       // Tutorial only shown via Realtime (new upgrade), not on page load
     }
     // A returning user may have flashed the welcome/onboarding from the stale
