@@ -71,6 +71,16 @@
   .btn-line:hover{border-color:var(--silver);background:var(--s1)}
   .btn-gold{background:var(--gold);color:#0a0a0a;border-color:var(--gold)}
   .btn-gold:hover{background:var(--gold2);transform:translateY(-1px)}
+  /* Vault Business section */
+  .biz-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:44px}
+  @media(max-width:820px){.biz-steps{grid-template-columns:1fr}}
+  .biz-step{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:24px}
+  .biz-ic{width:42px;height:42px;border-radius:11px;background:var(--gold-soft,rgba(201,162,39,.12));color:var(--gold);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+  .biz-ic .ico{width:20px;height:20px}
+  .biz-step h3{font-size:16px;font-weight:700;margin-bottom:8px}
+  .biz-step p{font-size:13.5px;color:var(--t2);line-height:1.6}
+  .biz-priv{max-width:680px;margin:26px auto 0;text-align:center;font-size:13px;color:var(--t2);line-height:1.65;border:1px solid var(--bd);border-radius:14px;padding:16px 20px;background:var(--s1)}
+  .biz-priv b{color:var(--gold)}
 
   /* ── NAV ── */
   nav{position:fixed;top:0;left:0;right:0;z-index:200;transition:background .3s,border-color .3s;border-bottom:1px solid transparent}
@@ -338,6 +348,7 @@
       <a href="#features">Features</a>
       <a href="#plus">Plus</a>
       <a href="#pricing">Pricing</a>
+      <a href="#business">Business</a>
       <a href="#download">Download</a>
     </div>
     <a class="btn btn-line nav-open" href="app.html">Open Vault <svg class="ico"><use href="#ic-external"/></svg></a>
@@ -628,11 +639,47 @@
   </div>
 </section>
 
+<!-- ═══ VAULT BUSINESS ═══ -->
+<section class="band" id="business">
+  <div class="wrap">
+    <div class="eyebrow reveal" style="justify-content:center"><span class="num">07</span> For merchants</div>
+    <h2 class="big reveal" style="text-align:center;margin-top:20px">Vault Business.</h2>
+    <p class="lead reveal" style="text-align:center;max-width:620px;margin:14px auto 0">Own an online store? See the <b>real demand</b> for your products — how many people saved them, what's trending, interest in price drops &amp; restocks, and click-throughs to your site. All <b>aggregated and anonymous</b>, with nothing to install on your website.</p>
+
+    <div class="biz-steps reveal">
+      <div class="biz-step">
+        <div class="biz-ic"><svg class="ico"><use href="#ic-link"/></svg></div>
+        <h3>Shoppers save your products</h3>
+        <p>When someone saves a product from your domain to their Vault, it's attributed to your site automatically — even if you've never heard of Vault.</p>
+      </div>
+      <div class="biz-step">
+        <div class="biz-ic"><svg class="ico"><use href="#ic-check-circle"/></svg></div>
+        <h3>You verify your domain</h3>
+        <p>Prove ownership with a DNS record, a file, or a meta tag. It takes a minute and unlocks the dashboard for that domain only.</p>
+      </div>
+      <div class="biz-step">
+        <div class="biz-ic"><svg class="ico"><use href="#ic-line-chart"/></svg></div>
+        <h3>You see the demand</h3>
+        <p>Most-wanted products, growth and decline, price-drop &amp; restock interest, outbound clicks — never a name, email or personal wishlist.</p>
+      </div>
+    </div>
+
+    <div class="biz-priv reveal">
+      <b>Privacy by design.</b> Merchants only ever see aggregated numbers, and only above a minimum audience — so no individual shopper is ever identifiable. Vault never sells personal data.
+    </div>
+
+    <div style="text-align:center;margin-top:34px" class="reveal">
+      <a class="btn btn-gold btn-lg" href="business.html">Open Vault Business <svg class="ico"><use href="#ic-external"/></svg></a>
+      <div style="font-size:12px;color:var(--t3);margin-top:12px">From €49.99/month · verify your domain · aggregate insights only</div>
+    </div>
+  </div>
+</section>
+
 <!-- ═══ FAQ ═══ -->
 <section class="band" id="faq">
   <div class="wrap">
     <div style="text-align:center">
-      <div class="eyebrow reveal" style="justify-content:center"><span class="num">07</span> Questions</div>
+      <div class="eyebrow reveal" style="justify-content:center"><span class="num">08</span> Questions</div>
       <h2 class="big reveal" style="margin-top:20px">Good to know.</h2>
     </div>
     <div class="faq">

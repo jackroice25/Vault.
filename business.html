@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Vault Business — Insights</title>
 <meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 :root{
@@ -57,6 +60,35 @@ button{font-family:inherit;cursor:pointer}
 .btn-ghost{background:transparent;border:1px solid var(--bd);color:var(--t1)}
 .btn-sm{width:auto;padding:8px 14px;font-size:12.5px;border-radius:9px}
 .err{color:var(--red);font-size:12px;margin-top:10px;min-height:16px}
+
+/* ---- vault. business logo lockup ---- */
+.vb-brand{display:inline-flex;align-items:baseline;gap:8px;line-height:1}
+.vb-logo{height:30px;width:auto;display:block}
+.vb-tag{font-weight:800;font-size:19px;color:var(--gold);letter-spacing:.3px}
+.vb-sub{font-size:11px;color:var(--gold);font-weight:700;letter-spacing:.6px;text-transform:uppercase;margin-top:8px}
+.topbar .vb-logo{height:21px}
+.topbar .vb-tag{font-size:13.5px}
+
+/* ---- paywall ---- */
+.pw-ov{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);z-index:80;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}
+.pw-ov.open{display:flex}
+.pw{width:100%;max-width:760px;background:var(--s1);border:1px solid var(--bd);border-radius:20px;padding:30px 28px;position:relative}
+.pw h2{font-size:23px;font-weight:800;letter-spacing:-.4px;margin-top:14px}
+.pw .plead{color:var(--t2);font-size:13.5px;margin:8px 0 22px;max-width:520px}
+.pw-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:560px){.pw-grid{grid-template-columns:1fr}}
+.pw-card{border:1px solid var(--bd);border-radius:14px;padding:20px;background:var(--s2);position:relative}
+.pw-card.best{border-color:var(--gold-bd);box-shadow:0 0 0 1px var(--gold-bd) inset}
+.pw-badge{position:absolute;top:-10px;right:16px;background:var(--gold);color:#1a1500;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:.4px}
+.pw-name{font-size:13px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px}
+.pw-price{font-size:32px;font-weight:800;margin:8px 0 2px;letter-spacing:-.5px}
+.pw-price span{font-size:14px;font-weight:600;color:var(--t2)}
+.pw-sub{font-size:12px;color:var(--gold);font-weight:600;min-height:16px}
+.pw-list{list-style:none;margin:16px 0 18px}
+.pw-list li{font-size:12.5px;color:var(--t1);padding:5px 0 5px 22px;position:relative}
+.pw-list li:before{content:"✓";position:absolute;left:0;color:var(--gold);font-weight:800}
+.pw-x{position:absolute;top:16px;right:18px;background:transparent;border:none;color:var(--t2);font-size:20px}
+.pw-foot{font-size:11px;color:var(--t3);margin-top:16px;line-height:1.5;text-align:center}
 
 /* ---- shell ---- */
 #app{display:none;min-height:100vh;flex-direction:column}
@@ -131,7 +163,8 @@ tbody tr:hover{background:var(--s2)}
 <!-- ========== LOGIN ========== -->
 <div id="auth">
   <div class="auth-card">
-    <div class="brand"><div class="brand-mark">V</div><div><h1>Vault Business</h1><div class="sub">Merchant insights</div></div></div>
+    <div id="loginBrand" class="vb-brand"></div>
+    <div class="vb-sub">Merchant insights</div>
     <p class="lead">Accedi con il tuo account Vault per vedere gli insight aggregati sui prodotti del tuo dominio.</p>
     <div class="field"><label>Email</label><input class="inp" id="email" type="email" autocomplete="email" placeholder="tu@negozio.com"></div>
     <div class="field"><label>Password</label><input class="inp" id="pw" type="password" autocomplete="current-password" placeholder="••••••••"></div>
@@ -144,7 +177,7 @@ tbody tr:hover{background:var(--s2)}
 <!-- ========== APP ========== -->
 <div id="app">
   <div class="topbar">
-    <div class="brand"><div class="brand-mark">V</div><h1>Vault Business</h1></div>
+    <div id="barBrand" class="vb-brand"></div>
     <div class="spacer"></div>
     <select class="select" id="domSel" onchange="onDomainChange()"></select>
     <div class="seg" id="rangeSeg">
@@ -193,6 +226,44 @@ tbody tr:hover{background:var(--s2)}
   </div>
 </div>
 
+<!-- paywall -->
+<div class="pw-ov" id="pwOv">
+  <div class="pw">
+    <button class="pw-x" onclick="closePaywall()">✕</button>
+    <div class="vb-brand" id="pwBrand"></div>
+    <h2>Sblocca gli insight del tuo negozio</h2>
+    <p class="plead">Vault Business ti mostra la <b>domanda reale</b> sui tuoi prodotti — salvataggi, trend, interesse per cali di prezzo e restock, clic verso il sito — in forma <b>100% aggregata e anonima</b>. Nessun dato personale, nessun plugin da installare sul sito.</p>
+    <div class="pw-grid">
+      <div class="pw-card">
+        <div class="pw-name">Mensile</div>
+        <div class="pw-price">€49,99 <span>/ mese</span></div>
+        <div class="pw-sub">&nbsp;</div>
+        <ul class="pw-list">
+          <li>Dashboard completa per i tuoi domini verificati</li>
+          <li>Prodotti più salvati e in crescita</li>
+          <li>Clic verso il sito · interesse prezzo &amp; restock</li>
+          <li>Intervalli 7 / 30 / 90 giorni</li>
+        </ul>
+        <button class="btn" onclick="goCheckout('monthly')">Abbonati — €49,99/mese</button>
+      </div>
+      <div class="pw-card best">
+        <span class="pw-badge">2 MESI GRATIS</span>
+        <div class="pw-name">Annuale</div>
+        <div class="pw-price">€499 <span>/ anno</span></div>
+        <div class="pw-sub">≈ €41,58 / mese</div>
+        <ul class="pw-list">
+          <li>Tutto del piano mensile</li>
+          <li>Due mesi gratis rispetto al mensile</li>
+          <li>Storico esteso</li>
+          <li>Priorità sulle nuove integrazioni</li>
+        </ul>
+        <button class="btn" onclick="goCheckout('annual')">Abbonati — €499/anno</button>
+      </div>
+    </div>
+    <div class="pw-foot">Pagamento sicuro tramite Stripe · Fatturazione aziendale · Disdici quando vuoi</div>
+  </div>
+</div>
+
 <!-- product detail modal -->
 <div class="ov" id="detOv" onclick="if(event.target===this)closeDet()">
   <div class="modal" id="detModal"></div>
@@ -204,6 +275,27 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 const _sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
 
 let STATE={ domain:null, domains:[], range:30, view:'overview', prodOffset:0, prodLimit:25 };
+let _userId='', _userEmail='';
+
+// ---- Stripe Business checkout links (create these two Payment Links in Stripe,
+//      €49,99/mese and €499/anno, then paste the URLs here) ----
+const BIZ_STRIPE_MONTHLY=''; // TODO: incolla il Payment Link Stripe — €49,99/mese
+const BIZ_STRIPE_ANNUAL ='';  // TODO: incolla il Payment Link Stripe — €499/anno
+
+// vault. chrome wordmark + gold "Business" tag — reused in login, topbar, paywall.
+const VB_LOGO=`<svg class="vb-logo" viewBox="118 32 445 132" xmlns="http://www.w3.org/2000/svg" style="overflow:visible" role="img" aria-label="vault.">
+<defs>
+<linearGradient id="vChrB" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f8f8f8"/><stop offset="8%" stop-color="#c0c0c0"/><stop offset="20%" stop-color="#f2f2f2"/><stop offset="33%" stop-color="#606060"/><stop offset="46%" stop-color="#383838"/><stop offset="58%" stop-color="#b8b8b8"/><stop offset="70%" stop-color="#ffffff"/><stop offset="82%" stop-color="#909090"/><stop offset="92%" stop-color="#d8d8d8"/><stop offset="100%" stop-color="#282828"/></linearGradient>
+<linearGradient id="vSideB" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#484848"/><stop offset="50%" stop-color="#282828"/><stop offset="100%" stop-color="#101010"/></linearGradient>
+</defs>
+<text x="349" y="148" font-family="'Arial Black','Impact','Helvetica Neue',sans-serif" font-weight="900" font-size="138" text-anchor="middle" fill="url(#vSideB)">vault.</text>
+<text x="345" y="144" font-family="'Arial Black','Impact','Helvetica Neue',sans-serif" font-weight="900" font-size="138" text-anchor="middle" fill="#303030">vault.</text>
+<text x="342" y="141" font-family="'Arial Black','Impact','Helvetica Neue',sans-serif" font-weight="900" font-size="138" text-anchor="middle" fill="#4e4e4e">vault.</text>
+<text x="340" y="139" font-family="'Arial Black','Impact','Helvetica Neue',sans-serif" font-weight="900" font-size="138" text-anchor="middle" fill="url(#vChrB)">vault.</text>
+<text x="340" y="139" font-family="'Arial Black','Impact','Helvetica Neue',sans-serif" font-weight="900" font-size="138" text-anchor="middle" fill="none" stroke="#ffffff" stroke-width="0.5" stroke-opacity="0.15">vault.</text>
+</svg><span class="vb-tag">Business</span>`;
+function injectLogos(){ ['loginBrand','barBrand','pwBrand'].forEach(id=>{const el=document.getElementById(id); if(el&&!el.dataset.done){el.innerHTML=VB_LOGO; el.dataset.done='1';}}); }
+
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=n=>n==null?'—':new Intl.NumberFormat('it-IT').format(n);
@@ -221,12 +313,31 @@ async function doLogin(){
 async function logout(){ await _sb.auth.signOut(); location.reload(); }
 
 async function init(){
+  injectLogos();
   const {data:{session}}=await _sb.auth.getSession();
   if(session?.user) boot(); // already logged in
 }
 async function boot(){
   $('auth').style.display='none'; $('app').style.display='flex';
+  injectLogos();
+  const {data:{user}}=await _sb.auth.getUser(); _userId=user?.id||''; _userEmail=user?.email||'';
   await loadDomains();
+  // Ask for payment on arrival unless this account already has a paid plan.
+  try{
+    const {data:prof}=await _sb.from('bi_business_profiles').select('plan').eq('id',_userId).maybeSingle();
+    if(!prof||!prof.plan||prof.plan==='free') openPaywall();
+  }catch(e){ openPaywall(); }
+}
+
+// ---- paywall ----
+function openPaywall(){ injectLogos(); $('pwOv').classList.add('open'); }
+function closePaywall(){ $('pwOv').classList.remove('open'); }
+function goCheckout(plan){
+  const url = plan==='annual' ? BIZ_STRIPE_ANNUAL : BIZ_STRIPE_MONTHLY;
+  if(!url){ alert('Checkout in configurazione.\n\nAggiungi il link di pagamento Stripe per il piano '+(plan==='annual'?'annuale (€499/anno)':'mensile (€49,99/mese)')+' nel codice (BIZ_STRIPE_*).'); return; }
+  const sep = url.includes('?') ? '&' : '?';
+  // client_reference_id lets the Stripe webhook match the payment to this account
+  location.href = url + sep + 'client_reference_id=' + encodeURIComponent(_userId) + '&prefilled_email=' + encodeURIComponent(_userEmail);
 }
 
 // ---------- domains ----------
