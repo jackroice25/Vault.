@@ -1945,7 +1945,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.07.14-sync4';
+const APP_BUILD='2026.07.14-sync5';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 (function(){
@@ -2017,8 +2017,39 @@ async function _sbSyncNow(){
     if(_sbPushTimer){ clearTimeout(_sbPushTimer); _sbPushTimer=null; await _sbPushNow(); }
     else if(JSON.stringify(S)!==_lastPushedJSON){ await _sbPushNow(); }
     const ok=await _sbPull();
-    if(ok){ renderSidebar(); render(); _updatePlusSideBtn(); } // ALWAYS repaint after a resume/sync — the webview can otherwise hold a stale screen (deleted items still showing, wrong count) until the user taps something
+    if(ok){ renderSidebar(); render(); _updatePlusSideBtn(); _forceRepaint(); } // ALWAYS repaint after a resume/sync — the webview can otherwise hold a stale screen (deleted items still showing, wrong count) until the user taps something
   }catch(e){}finally{ _sbSyncing=false; }
+}
+// iOS WKWebView keeps the last COMPOSITED frame when the app is suspended. On resume,
+// JS updates the DOM but the screen isn't repainted until a layout change happens
+// (that's why navigating to another section and back "fixed" the ghost items). Force
+// the compositor to invalidate its cached layer and redraw the real DOM.
+function _forceRepaint(){
+  try{
+    const el=document.documentElement;
+    const sc=document.scrollingElement||el;
+    const y=sc?sc.scrollTop:0;
+    // Toggling a transform creates/removes a compositing layer → hard invalidation.
+    el.style.transform='translateZ(0)';
+    void el.offsetHeight;            // synchronous reflow
+    requestAnimationFrame(()=>{
+      el.style.transform='';
+      void el.offsetHeight;
+      // Fallback for stubborn frames: a 1px scroll nudge forces a fresh composite.
+      try{ if(sc){ sc.scrollTop=y+1; sc.scrollTop=y; } }catch(e){}
+    });
+  }catch(e){}
+}
+// Single entry point for "the app came back to the foreground". Repaint the CURRENT
+// local state immediately (drops the frozen snapshot without waiting for the network),
+// then pull+merge from the cloud and repaint again with the reconciled data.
+let _resumeBusy=false;
+async function _resumeRefresh(){
+  if(_resumeBusy) return; _resumeBusy=true;
+  try{ renderSidebar(); render(); _updatePlusSideBtn(); _forceRepaint(); }catch(e){}
+  try{ await _sbSyncNow(); }catch(e){}
+  try{ _forceRepaint(); }catch(e){}
+  _resumeBusy=false;
 }
 // Explicit "pull now" for the manual refresh pill (user tapped Aggiorna).
 async function _forcePull(){
@@ -2059,21 +2090,22 @@ async function _checkAppVersion(){
 }
 
 window.addEventListener('beforeunload',()=>{try{_sbFlush();}catch(e){}});
-window.addEventListener('focus',()=>{try{_sbSyncNow();}catch(e){}});
+window.addEventListener('focus',()=>{try{_resumeRefresh();}catch(e){}});
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='hidden'){ try{_sbFlush();}catch(e){} }
-  else { try{_sbSyncNow();}catch(e){} try{_checkAppVersion();}catch(e){} }
+  else { try{_resumeRefresh();}catch(e){} try{_checkAppVersion();}catch(e){} }
 });
 // iOS/Capacitor: the webview keeps running across app suspend/resume (no page reload),
 // so visibilitychange/focus can miss the resume. Cover more resume signals so the
-// screen never stays stale after reopening the app.
-window.addEventListener('pageshow',()=>{try{_sbSyncNow();}catch(e){}});
-document.addEventListener('resume',()=>{try{_sbSyncNow();}catch(e){}});
+// screen never stays stale after reopening the app. Every path goes through
+// _resumeRefresh → instant repaint of local state, then cloud pull + repaint.
+window.addEventListener('pageshow',()=>{try{_resumeRefresh();}catch(e){}});
+document.addEventListener('resume',()=>{try{_resumeRefresh();}catch(e){}});
 try{
   const _cap=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;
   if(_cap&&_cap.addListener){
-    _cap.addListener('appStateChange',(s)=>{ if(s&&s.isActive){ try{_sbSyncNow();}catch(e){} } });
-    _cap.addListener('resume',()=>{ try{_sbSyncNow();}catch(e){} });
+    _cap.addListener('appStateChange',(s)=>{ if(s&&s.isActive){ try{_resumeRefresh();}catch(e){} } });
+    _cap.addListener('resume',()=>{ try{_resumeRefresh();}catch(e){} });
   }
 }catch(e){}
 
@@ -6489,7 +6521,7 @@ setTimeout(_hideBootLoader, 2000);
     const prevPlan=_sbPlan;
     const synced=await _sbPull();
     if(synced){
-      renderSidebar();render();_updatePlusSideBtn();_showSyncDot('ok');
+      renderSidebar();render();_updatePlusSideBtn();_forceRepaint();_showSyncDot('ok');
       // Tutorial only shown via Realtime (new upgrade), not on page load
     }
     // A returning user may have flashed the welcome/onboarding from the stale
