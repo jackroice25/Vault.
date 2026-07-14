@@ -1907,7 +1907,7 @@ let extraImages=[];
 function load(){
   // Always start from a clean default so a new/empty account never inherits
   // the previously loaded account's in-memory data (data-isolation fix).
-  const DEF=()=>({sections:[],items:[],active:null,view:'grid',chip:'tutti',currency:'EUR',lang:'en',theme:'dark',statusColors:{},onboardingDone:false,profile:{name:'',emoji:'🔐',joined:null}});
+  const DEF=()=>({sections:[],items:[],active:null,view:'grid',chip:'tutti',currency:'EUR',lang:'en',theme:'dark',statusColors:{},onboardingDone:false,profile:{name:'',emoji:'🔐',joined:null},tomb:{},tombSec:{}});
   try{
     const d=localStorage.getItem(vaultKey());
     S = d ? {...DEF(),...JSON.parse(d)} : DEF();
@@ -1945,7 +1945,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.07.11-sync2';
+const APP_BUILD='2026.07.14-sync3';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 (function(){
@@ -1964,9 +1964,11 @@ const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 // Cloud push — fire-and-forget after every local save
 // Immediate write of the whole vault to Supabase. Skips the write when nothing
 // actually changed since the last push (avoids redundant Disk IO).
-let _sbPushTimer=null, _lastPushedJSON='', _syncReady=false;
+let _sbPushTimer=null, _lastPushedJSON='', _syncReady=false, _sbPushing=false, _sbPushDirty=false;
 async function _sbPushNow(){
   if(!_sb||!_sbUser) return;
+  if(_sbPushing){ _sbPushDirty=true; return; } // reentrancy guard: coalesce overlapping read-merge-write pushes
+  _sbPushing=true;
   try{
     // READ-MERGE-WRITE: fold the current cloud row into local first, THEN write the
     // union. A push can therefore never wipe items another device added, and we no
@@ -1988,6 +1990,7 @@ async function _sbPushNow(){
     _lastPushedJSON=payload; _syncReady=true;
     _showSyncDot('ok');
   }catch(e){_showSyncDot('err');}
+  finally{ _sbPushing=false; if(_sbPushDirty){ _sbPushDirty=false; _sbPushNow(); } } // a change arrived mid-push → flush it
 }
 // Debounced push: bursts of edits (typing, dragging, toggling) collapse into a
 // SINGLE write ~3.5s after the last change. This is what protects the free-tier
@@ -4131,6 +4134,7 @@ function openLinkPick(id){
 function saveLinkPick(){
   const item=S.items.find(i=>i.id===linkPickTargetId);if(!item)return;
   item.relatedIds=Array.from(document.querySelectorAll('#linkPickList input:checked')).map(cb=>cb.value);
+  item.mod=Date.now(); // bump so this edit wins a future sync merge (see _mergeRemoteData)
   save();document.getElementById('linkPickOv').classList.remove('open');
   if(document.getElementById('detOv').classList.contains('open'))openDetMo(linkPickTargetId);
 }
@@ -4206,6 +4210,7 @@ function saveMoodCaption(id,text){
   const item=S.items.find(i=>i.id===id);
   if(!item) return;
   item.moodCaption=text.trim()||undefined;
+  item.mod=Date.now(); // bump so this edit wins a future sync merge (see _mergeRemoteData)
   save();
   if(_sbUser) _sbPush();
 }
@@ -4521,6 +4526,7 @@ function rSet(itemId, val, containerId){
   if(item){
     if(item.userRating===val) val=0;
     item.userRating=val;
+    item.mod=Date.now(); // bump so this edit wins a future sync merge (see _mergeRemoteData)
     save();
     render();
   }
@@ -5237,7 +5243,15 @@ function importVault(input){
     try{
       const data=JSON.parse(e.target.result);
       if(!data.items||!Array.isArray(data.items))throw new Error();
+      const prevTomb=S.tomb||{}, prevTombSec=S.tombSec||{};
       S={...S,...data};
+      // Union tombstones (newest wins) and drop restored items/sections you've deleted
+      // since this backup was taken — so importing an old backup can't silently
+      // resurrect data you removed on another device.
+      const _mt=(a,b)=>{const o={...(a||{})};for(const k in (b||{}))o[k]=Math.max(o[k]||0,b[k]||0);return o;};
+      S.tomb=_mt(prevTomb,data.tomb); S.tombSec=_mt(prevTombSec,data.tombSec);
+      S.items=(S.items||[]).filter(it=>!(S.tomb[it.id] && S.tomb[it.id]>=(it.mod||it.at||0)));
+      S.sections=(S.sections||[]).filter(s=>!(S.tombSec[s.id] && S.tombSec[s.id]>=(s.mod||0)));
       if(!S.profile)S.profile={name:'',emoji:'🔐',joined:null};
       save();applyTheme();applyStatusColors();applyLang();renderSidebar();render();
       alert('✓ Backup restored successfully!');
@@ -5997,6 +6011,7 @@ function svAdd(id,amt){
     const item=S.items.find(i=>i.id===id); if(!item||!(item.price>0)) return;
     const goal=item.price*(item.qty||1);
     item.saved=Math.min(goal,Math.max(0,(item.saved||0)+amt));
+    item.mod=Date.now(); // bump so this edit wins a future sync merge (see _mergeRemoteData)
     save();render();openDetMo(id);
     if(item.saved>=goal) showToast(t('svToastDone'));
   });
@@ -6014,6 +6029,7 @@ function svReset(id){
   const item=S.items.find(i=>i.id===id); if(!item) return;
   if(!confirm(t('svConfirmReset'))) return;
   item.saved=0;
+  item.mod=Date.now(); // bump so this edit wins a future sync merge (see _mergeRemoteData)
   save();render();openDetMo(id);
 }
 
@@ -6063,6 +6079,7 @@ function remSet(id,kind){
     }
     d.setHours(9,0,0,0);
     item.remindAt=d.getTime();
+    item.mod=Date.now(); // bump so this edit wins a future sync merge (see _mergeRemoteData)
     save();render();openDetMo(id);
     showToast(t('remSetFor')+' '+_remFmtDate(item.remindAt));
   });
@@ -6070,6 +6087,7 @@ function remSet(id,kind){
 function remClear(id){
   const item=S.items.find(i=>i.id===id); if(!item) return;
   item.remindAt=null;
+  item.mod=Date.now(); // bump so this edit wins a future sync merge (see _mergeRemoteData)
   save();render();renderRemBanner();
   if(document.getElementById('detOv').classList.contains('open')) openDetMo(id);
 }
