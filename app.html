@@ -1945,7 +1945,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.07.14-sync6';
+const APP_BUILD='2026.07.14-sync7';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 (function(){
@@ -2002,7 +2002,13 @@ function _sbPush(){
 }
 // Force any pending write out now (used when the app is backgrounded/closed so
 // the last edits aren't lost inside the debounce window).
-function _sbFlush(){ if(_sbPushTimer){clearTimeout(_sbPushTimer);_sbPushTimer=null;} _sbPushNow(); }
+function _sbFlush(){
+  // Persist to localStorage FIRST (synchronous): if iOS kills the app right after
+  // backgrounding, the async cloud push may never finish, but the local snapshot
+  // is at least current — so the next cold start doesn't boot from stale data.
+  try{localStorage.setItem(vaultKey(),JSON.stringify(S));}catch(e){}
+  if(_sbPushTimer){clearTimeout(_sbPushTimer);_sbPushTimer=null;} _sbPushNow();
+}
 
 // ── CROSS-DEVICE SYNC ────────────────────────────────────────────────────────
 // Push our pending edits, THEN pull the latest cloud copy. Runs when this device
@@ -6489,8 +6495,15 @@ function _hideBootLoader(){
   bl.style.opacity='0';
   setTimeout(()=>bl.remove(),280);
 }
-// Max fallback: hide loader after 2s even if Supabase is slow
-setTimeout(_hideBootLoader, 2000);
+// Max fallback: hide the loader even if Supabase is slow — BUT when a logged-in
+// session is about to pull the cloud copy (cold start), keep the loader up until
+// that first pull lands. On iOS the network stack takes ~3.5s to come up after a
+// cold launch; with the old fixed 2s the loader dropped BEFORE the pull, exposing
+// the stale local snapshot (ghost deleted items, old count) for a few seconds.
+// _sbRestoreSession hides the loader as soon as the pull+render completes; the 5s
+// hard cap stays under the 6s inline boot-failsafe (which would flash the auth
+// screen) and still covers the truly-offline case by falling back to local data.
+setTimeout(_hideBootLoader, (_sb && _hasSession && !_wasGuest) ? 5000 : 2000);
 
 // Restore Supabase session in background (handles page refresh while logged in via Supabase)
 (async function _sbRestoreSession(){
