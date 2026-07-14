@@ -1907,7 +1907,7 @@ let extraImages=[];
 function load(){
   // Always start from a clean default so a new/empty account never inherits
   // the previously loaded account's in-memory data (data-isolation fix).
-  const DEF=()=>({sections:[],items:[],active:null,view:'grid',chip:'tutti',currency:'EUR',lang:'en',theme:'dark',statusColors:{},onboardingDone:false,profile:{name:'',emoji:'🔐',joined:null},tomb:{},tombSec:{}});
+  const DEF=()=>({sections:[],items:[],active:null,view:'grid',chip:'tutti',currency:'EUR',lang:'en',theme:'dark',statusColors:{},onboardingDone:false,profile:{name:'',emoji:'🔐',joined:null},tomb:{},tombSec:{},sort:'date-desc'});
   try{
     const d=localStorage.getItem(vaultKey());
     S = d ? {...DEF(),...JSON.parse(d)} : DEF();
@@ -1945,7 +1945,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.07.14-sync3';
+const APP_BUILD='2026.07.14-sync4';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 (function(){
@@ -2016,9 +2016,8 @@ async function _sbSyncNow(){
   try{
     if(_sbPushTimer){ clearTimeout(_sbPushTimer); _sbPushTimer=null; await _sbPushNow(); }
     else if(JSON.stringify(S)!==_lastPushedJSON){ await _sbPushNow(); }
-    const before=_lastPushedJSON;
     const ok=await _sbPull();
-    if(ok && _lastPushedJSON!==before){ renderSidebar(); render(); _updatePlusSideBtn(); }
+    if(ok){ renderSidebar(); render(); _updatePlusSideBtn(); } // ALWAYS repaint after a resume/sync — the webview can otherwise hold a stale screen (deleted items still showing, wrong count) until the user taps something
   }catch(e){}finally{ _sbSyncing=false; }
 }
 // Explicit "pull now" for the manual refresh pill (user tapped Aggiorna).
@@ -2065,6 +2064,18 @@ document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='hidden'){ try{_sbFlush();}catch(e){} }
   else { try{_sbSyncNow();}catch(e){} try{_checkAppVersion();}catch(e){} }
 });
+// iOS/Capacitor: the webview keeps running across app suspend/resume (no page reload),
+// so visibilitychange/focus can miss the resume. Cover more resume signals so the
+// screen never stays stale after reopening the app.
+window.addEventListener('pageshow',()=>{try{_sbSyncNow();}catch(e){}});
+document.addEventListener('resume',()=>{try{_sbSyncNow();}catch(e){}});
+try{
+  const _cap=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;
+  if(_cap&&_cap.addListener){
+    _cap.addListener('appStateChange',(s)=>{ if(s&&s.isActive){ try{_sbSyncNow();}catch(e){} } });
+    _cap.addListener('resume',()=>{ try{_sbSyncNow();}catch(e){} });
+  }
+}catch(e){}
 
 // Cloud pull — overwrites local with remote, returns true if data found
 async function _sbPull(){
@@ -4271,7 +4282,7 @@ setTimeout(_moodUpdateToolbar,0);
 function setSort(v){S.sort=v;save();render();}
 
 function sortedItems(items){
-  const v=S.sort||'manual';
+  const v=S.sort||'date-desc';
   const arr=[...items];
   if(v==='date-desc') arr.sort((a,b)=>(b.at||0)-(a.at||0));
   else if(v==='date-asc') arr.sort((a,b)=>(a.at||0)-(b.at||0));
