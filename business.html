@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Vault Business — Insights</title>
+<title>Vault Business, Insights</title>
 <meta name="robots" content="noindex">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
@@ -258,7 +258,7 @@ code.ct,.ct{color:var(--t1)}
     <button class="pw-x" id="pwX" onclick="closePaywall()">✕</button>
     <div class="vb-brand" id="pwBrand"></div>
     <h2 data-i18n="pw_title">Unlock your store's insights</h2>
-    <p class="plead" data-i18n-html="pw_lead">Vault Business shows you the <b>real demand</b> for your products — saves, trends, price-drop &amp; restock interest, click-throughs to your site — <b>100% aggregated and anonymous</b>. No personal data, nothing to install on your site.</p>
+    <p class="plead" data-i18n-html="pw_lead">Vault Business shows you the <b>real demand</b> for your products, saves, trends, price-drop &amp; restock interest, click-throughs to your site, <b>100% aggregated and anonymous</b>. No personal data, nothing to install on your site.</p>
     <div class="pw-grid">
       <div class="pw-card">
         <div class="pw-name" data-i18n="pw_monthly">Monthly</div>
@@ -270,7 +270,7 @@ code.ct,.ct{color:var(--t1)}
           <li data-i18n="pw_m3">Clicks to site · price &amp; restock interest</li>
           <li data-i18n="pw_m4">7 / 30 / 90-day ranges</li>
         </ul>
-        <button class="btn" onclick="goCheckout('monthly')" data-i18n="pw_cta_m">Subscribe — €49.99/mo</button>
+        <button class="btn" onclick="goCheckout('monthly')" data-i18n="pw_cta_m">Subscribe, €49.99/mo</button>
       </div>
       <div class="pw-card best">
         <span class="pw-badge" data-i18n="pw_badge">2 MONTHS FREE</span>
@@ -283,7 +283,7 @@ code.ct,.ct{color:var(--t1)}
           <li data-i18n="pw_y3">Extended history</li>
           <li data-i18n="pw_y4">Priority on new integrations</li>
         </ul>
-        <button class="btn" onclick="goCheckout('annual')" data-i18n="pw_cta_y">Subscribe — €499/yr</button>
+        <button class="btn" onclick="goCheckout('annual')" data-i18n="pw_cta_y">Subscribe, €499/yr</button>
       </div>
     </div>
     <div class="pw-foot" data-i18n="pw_foot">Secure payment via Stripe · Business invoicing · Cancel anytime</div>
@@ -306,10 +306,10 @@ let _userId='', _userEmail='';
 
 // ---- Stripe Business checkout links (create these two Payment Links in Stripe,
 //      €49.99/mo and €499/yr, then paste the URLs here) ----
-const BIZ_STRIPE_MONTHLY=''; // TODO: paste the Stripe Payment Link — €49.99/mo
-const BIZ_STRIPE_ANNUAL ='';  // TODO: paste the Stripe Payment Link — €499/yr
+const BIZ_STRIPE_MONTHLY=''; // TODO: paste the Stripe Payment Link, €49.99/mo
+const BIZ_STRIPE_ANNUAL ='';  // TODO: paste the Stripe Payment Link, €499/yr
 
-// ═══ i18n — English is the native/default language; Italian is an option ═══
+// ═══ i18n, English is the native/default language; Italian is an option ═══
 const I18N={
   en:{
     login_sub:'Merchant insights',
@@ -332,7 +332,7 @@ const I18N={
     btn_verify:'Verify', btn_verifying:'Verifying…', btn_remove:'Remove',
     err_dom_other:'This domain is already verified by another account.',
     err_dom_generic:'Could not add the domain.',
-    alert_token_pending:'Token not found on the domain yet. DNS propagation can take a few minutes — try again shortly.',
+    alert_token_pending:'Token not found on the domain yet. DNS propagation can take a few minutes, try again shortly.',
     alert_verify_fail:'Verification failed. Make sure you published the token.',
     confirm_revoke:'Remove {d}? You will lose access to this domain’s insights.',
     ov_last_days:'last {n} days', loading:'Loading…', err_load:'Loading error.',
@@ -341,20 +341,20 @@ const I18N={
     vs_prev:'vs prev. period', kpi_removed:'Removals', kpi_clicks:'Clicks to site',
     top_saved:'Most saved product', unit_saves:'saves', top_growth:'Top growth', unit_new:'new',
     ov_note:'Vault shows <b>demand</b> (saves, interest), not your site’s sales. Visits, purchases, revenue and conversion rate are not visible without an integration. All data is aggregated and anonymous.',
-    det_below:'Fewer than 10 distinct users — detail unavailable (privacy protection).',
+    det_below:'Fewer than 10 distinct users, detail unavailable (privacy protection).',
     kpi_pricedrop:'Price-drop interest', kpi_restock:'Restock interest',
     det_newsaves:'New saves · {n}d', det_sources:'Save source', det_open:'open ↗',
     det_note:'No personal data: never names, emails or individual wishlists. Aggregate counts only.',
     det_nodata:'No data in the selected range',
     pw_title:"Unlock your store's insights",
-    pw_lead:'Vault Business shows you the <b>real demand</b> for your products — saves, trends, price-drop &amp; restock interest, click-throughs to your site — <b>100% aggregated and anonymous</b>. No personal data, nothing to install on your site.',
+    pw_lead:'Vault Business shows you the <b>real demand</b> for your products, saves, trends, price-drop &amp; restock interest, click-throughs to your site, <b>100% aggregated and anonymous</b>. No personal data, nothing to install on your site.',
     pw_monthly:'Monthly', pw_price_m:'€49.99', pw_per_m:'/ month',
     pw_m1:'Full dashboard for your verified domains', pw_m2:'Most-saved and trending products',
     pw_m3:'Clicks to site · price & restock interest', pw_m4:'7 / 30 / 90-day ranges',
-    pw_cta_m:'Subscribe — €49.99/mo',
+    pw_cta_m:'Subscribe, €49.99/mo',
     pw_badge:'2 MONTHS FREE', pw_annual:'Annual', pw_price_y:'€499', pw_per_y:'/ year', pw_permo:'≈ €41.58 / month',
     pw_y1:'Everything in Monthly', pw_y2:'Two months free vs monthly', pw_y3:'Extended history', pw_y4:'Priority on new integrations',
-    pw_cta_y:'Subscribe — €499/yr',
+    pw_cta_y:'Subscribe, €499/yr',
     pw_foot:'Secure payment via Stripe · Business invoicing · Cancel anytime',
     checkout_alert:'Checkout not configured yet.\n\nAdd the Stripe payment link for the {p} plan in the code (BIZ_STRIPE_*).',
     plan_monthly:'monthly (€49.99/mo)', plan_annual:'annual (€499/yr)',
@@ -393,20 +393,20 @@ const I18N={
     vs_prev:'vs periodo prec.', kpi_removed:'Rimozioni', kpi_clicks:'Clic verso il sito',
     top_saved:'Prodotto più salvato', unit_saves:'salvataggi', top_growth:'Maggiore crescita', unit_new:'nuovi',
     ov_note:'Vault mostra <b>domanda</b> (salvataggi, interesse), non le vendite del tuo sito. Visite, acquisti, fatturato e conversion rate non sono visibili senza un’integrazione. Tutti i dati sono aggregati e anonimi.',
-    det_below:'Meno di 10 utenti distinti — dettaglio non disponibile (protezione privacy).',
+    det_below:'Meno di 10 utenti distinti, dettaglio non disponibile (protezione privacy).',
     kpi_pricedrop:'Interesse calo prezzo', kpi_restock:'Interesse restock',
     det_newsaves:'Nuovi salvataggi · {n}g', det_sources:'Fonte dei salvataggi', det_open:'apri ↗',
     det_note:'Nessun dato personale: mai nomi, email o wishlist individuali. Solo conteggi aggregati.',
     det_nodata:'Nessun dato nel periodo',
     pw_title:'Sblocca gli insight del tuo negozio',
-    pw_lead:'Vault Business ti mostra la <b>domanda reale</b> sui tuoi prodotti — salvataggi, trend, interesse per cali di prezzo e restock, clic verso il sito — in forma <b>100% aggregata e anonima</b>. Nessun dato personale, nessun plugin da installare sul sito.',
+    pw_lead:'Vault Business ti mostra la <b>domanda reale</b> sui tuoi prodotti, salvataggi, trend, interesse per cali di prezzo e restock, clic verso il sito, in forma <b>100% aggregata e anonima</b>. Nessun dato personale, nessun plugin da installare sul sito.',
     pw_monthly:'Mensile', pw_price_m:'€49,99', pw_per_m:'/ mese',
     pw_m1:'Dashboard completa per i tuoi domini verificati', pw_m2:'Prodotti più salvati e in crescita',
     pw_m3:'Clic verso il sito · interesse prezzo & restock', pw_m4:'Intervalli 7 / 30 / 90 giorni',
-    pw_cta_m:'Abbonati — €49,99/mese',
+    pw_cta_m:'Abbonati, €49,99/mese',
     pw_badge:'2 MESI GRATIS', pw_annual:'Annuale', pw_price_y:'€499', pw_per_y:'/ anno', pw_permo:'≈ €41,58 / mese',
     pw_y1:'Tutto del piano mensile', pw_y2:'Due mesi gratis rispetto al mensile', pw_y3:'Storico esteso', pw_y4:'Priorità sulle nuove integrazioni',
-    pw_cta_y:'Abbonati — €499/anno',
+    pw_cta_y:'Abbonati, €499/anno',
     pw_foot:'Pagamento sicuro tramite Stripe · Fatturazione aziendale · Disdici quando vuoi',
     checkout_alert:'Checkout in configurazione.\n\nAggiungi il link di pagamento Stripe per il piano {p} nel codice (BIZ_STRIPE_*).',
     plan_monthly:'mensile (€49,99/mese)', plan_annual:'annuale (€499/anno)',
@@ -441,16 +441,16 @@ const I18N={
     vs_prev:'vs periodo ant.', kpi_removed:'Eliminados', kpi_clicks:'Clics al sitio',
     top_saved:'Producto más guardado', unit_saves:'guardados', top_growth:'Mayor crecimiento', unit_new:'nuevos',
     ov_note:'Vault muestra la <b>demanda</b> (guardados, interés), no las ventas de tu sitio. Visitas, compras, ingresos y conversión no son visibles sin una integración. Todos los datos son agregados y anónimos.',
-    det_below:'Menos de 10 usuarios distintos — detalle no disponible (protección de privacidad).',
+    det_below:'Menos de 10 usuarios distintos, detalle no disponible (protección de privacidad).',
     kpi_pricedrop:'Interés en bajada de precio', kpi_restock:'Interés en reposición',
     det_newsaves:'Nuevos guardados · {n}d', det_sources:'Origen del guardado', det_open:'abrir ↗',
     det_note:'Sin datos personales: nunca nombres, emails ni listas individuales. Solo recuentos agregados.', det_nodata:'Sin datos en el periodo',
     pw_title:'Desbloquea los insights de tu tienda',
-    pw_lead:'Vault Business te muestra la <b>demanda real</b> de tus productos — guardados, tendencias, interés en bajadas de precio y reposición, clics a tu sitio — <b>100% agregado y anónimo</b>. Sin datos personales, sin instalar nada.',
+    pw_lead:'Vault Business te muestra la <b>demanda real</b> de tus productos, guardados, tendencias, interés en bajadas de precio y reposición, clics a tu sitio, <b>100% agregado y anónimo</b>. Sin datos personales, sin instalar nada.',
     pw_monthly:'Mensual', pw_price_m:'49,99 €', pw_per_m:'/ mes',
-    pw_m1:'Panel completo para tus dominios verificados', pw_m2:'Productos más guardados y en tendencia', pw_m3:'Clics al sitio · interés precio y reposición', pw_m4:'Rangos de 7 / 30 / 90 días', pw_cta_m:'Suscribirse — 49,99 €/mes',
+    pw_m1:'Panel completo para tus dominios verificados', pw_m2:'Productos más guardados y en tendencia', pw_m3:'Clics al sitio · interés precio y reposición', pw_m4:'Rangos de 7 / 30 / 90 días', pw_cta_m:'Suscribirse, 49,99 €/mes',
     pw_badge:'2 MESES GRATIS', pw_annual:'Anual', pw_price_y:'499 €', pw_per_y:'/ año', pw_permo:'≈ 41,58 € / mes',
-    pw_y1:'Todo lo del plan mensual', pw_y2:'Dos meses gratis frente al mensual', pw_y3:'Histórico ampliado', pw_y4:'Prioridad en nuevas integraciones', pw_cta_y:'Suscribirse — 499 €/año',
+    pw_y1:'Todo lo del plan mensual', pw_y2:'Dos meses gratis frente al mensual', pw_y3:'Histórico ampliado', pw_y4:'Prioridad en nuevas integraciones', pw_cta_y:'Suscribirse, 499 €/año',
     pw_foot:'Pago seguro con Stripe · Facturación para empresas · Cancela cuando quieras',
     checkout_alert:'Pago aún no configurado.\n\nAñade el enlace de pago de Stripe para el plan {p} en el código (BIZ_STRIPE_*).',
     plan_monthly:'mensual (49,99 €/mes)', plan_annual:'anual (499 €/año)',
@@ -484,16 +484,16 @@ const I18N={
     vs_prev:'vs période préc.', kpi_removed:'Suppressions', kpi_clicks:'Clics vers le site',
     top_saved:'Produit le plus enregistré', unit_saves:'enreg.', top_growth:'Plus forte hausse', unit_new:'nouveaux',
     ov_note:'Vault montre la <b>demande</b> (enregistrements, intérêt), pas les ventes de ton site. Visites, achats, chiffre d’affaires et taux de conversion ne sont pas visibles sans intégration. Toutes les données sont agrégées et anonymes.',
-    det_below:'Moins de 10 utilisateurs distincts — détail indisponible (protection de la vie privée).',
+    det_below:'Moins de 10 utilisateurs distincts, détail indisponible (protection de la vie privée).',
     kpi_pricedrop:'Intérêt baisse de prix', kpi_restock:'Intérêt réassort',
     det_newsaves:'Nouveaux enregistrements · {n}j', det_sources:'Source des enregistrements', det_open:'ouvrir ↗',
     det_note:'Aucune donnée personnelle : jamais de noms, emails ou listes individuelles. Uniquement des totaux agrégés.', det_nodata:'Aucune donnée sur la période',
     pw_title:'Débloque les insights de ta boutique',
-    pw_lead:'Vault Business te montre la <b>demande réelle</b> pour tes produits — enregistrements, tendances, intérêt baisse de prix &amp; réassort, clics vers ton site — <b>100% agrégé et anonyme</b>. Aucune donnée personnelle, rien à installer.',
+    pw_lead:'Vault Business te montre la <b>demande réelle</b> pour tes produits, enregistrements, tendances, intérêt baisse de prix &amp; réassort, clics vers ton site, <b>100% agrégé et anonyme</b>. Aucune donnée personnelle, rien à installer.',
     pw_monthly:'Mensuel', pw_price_m:'49,99 €', pw_per_m:'/ mois',
-    pw_m1:'Tableau de bord complet pour tes domaines vérifiés', pw_m2:'Produits les plus enregistrés et en hausse', pw_m3:'Clics vers le site · intérêt prix &amp; réassort', pw_m4:'Plages 7 / 30 / 90 jours', pw_cta_m:'S’abonner — 49,99 €/mois',
+    pw_m1:'Tableau de bord complet pour tes domaines vérifiés', pw_m2:'Produits les plus enregistrés et en hausse', pw_m3:'Clics vers le site · intérêt prix &amp; réassort', pw_m4:'Plages 7 / 30 / 90 jours', pw_cta_m:'S’abonner, 49,99 €/mois',
     pw_badge:'2 MOIS OFFERTS', pw_annual:'Annuel', pw_price_y:'499 €', pw_per_y:'/ an', pw_permo:'≈ 41,58 € / mois',
-    pw_y1:'Tout le plan mensuel', pw_y2:'Deux mois offerts vs mensuel', pw_y3:'Historique étendu', pw_y4:'Priorité sur les nouvelles intégrations', pw_cta_y:'S’abonner — 499 €/an',
+    pw_y1:'Tout le plan mensuel', pw_y2:'Deux mois offerts vs mensuel', pw_y3:'Historique étendu', pw_y4:'Priorité sur les nouvelles intégrations', pw_cta_y:'S’abonner, 499 €/an',
     pw_foot:'Paiement sécurisé via Stripe · Facturation entreprise · Annulable à tout moment',
     checkout_alert:'Paiement non configuré.\n\nAjoute le lien de paiement Stripe pour le plan {p} dans le code (BIZ_STRIPE_*).',
     plan_monthly:'mensuel (49,99 €/mois)', plan_annual:'annuel (499 €/an)',
@@ -527,16 +527,16 @@ const I18N={
     vs_prev:'vs. Vorperiode', kpi_removed:'Entfernungen', kpi_clicks:'Klicks zur Website',
     top_saved:'Meist gespeichertes Produkt', unit_saves:'Speicher.', top_growth:'Stärkstes Wachstum', unit_new:'neu',
     ov_note:'Vault zeigt <b>Nachfrage</b> (Speicherungen, Interesse), nicht die Verkäufe deiner Website. Besuche, Käufe, Umsatz und Conversion Rate sind ohne Integration nicht sichtbar. Alle Daten sind aggregiert und anonym.',
-    det_below:'Weniger als 10 verschiedene Nutzer — Detail nicht verfügbar (Datenschutz).',
+    det_below:'Weniger als 10 verschiedene Nutzer, Detail nicht verfügbar (Datenschutz).',
     kpi_pricedrop:'Interesse Preissenkung', kpi_restock:'Interesse Wiederverfügbarkeit',
     det_newsaves:'Neue Speicherungen · {n}T', det_sources:'Speicher-Quelle', det_open:'öffnen ↗',
     det_note:'Keine personenbezogenen Daten: nie Namen, E-Mails oder einzelne Listen. Nur aggregierte Zahlen.', det_nodata:'Keine Daten im Zeitraum',
     pw_title:'Schalte die Insights deines Shops frei',
-    pw_lead:'Vault Business zeigt dir die <b>echte Nachfrage</b> nach deinen Produkten — Speicherungen, Trends, Interesse an Preissenkungen &amp; Wiederverfügbarkeit, Klicks zur Website — <b>100% aggregiert und anonym</b>. Keine personenbezogenen Daten, nichts zu installieren.',
+    pw_lead:'Vault Business zeigt dir die <b>echte Nachfrage</b> nach deinen Produkten, Speicherungen, Trends, Interesse an Preissenkungen &amp; Wiederverfügbarkeit, Klicks zur Website, <b>100% aggregiert und anonym</b>. Keine personenbezogenen Daten, nichts zu installieren.',
     pw_monthly:'Monatlich', pw_price_m:'49,99 €', pw_per_m:'/ Monat',
-    pw_m1:'Volles Dashboard für deine verifizierten Domains', pw_m2:'Meist gespeicherte und Trend-Produkte', pw_m3:'Klicks zur Website · Preis- &amp; Restock-Interesse', pw_m4:'Zeiträume 7 / 30 / 90 Tage', pw_cta_m:'Abonnieren — 49,99 €/Monat',
+    pw_m1:'Volles Dashboard für deine verifizierten Domains', pw_m2:'Meist gespeicherte und Trend-Produkte', pw_m3:'Klicks zur Website · Preis- &amp; Restock-Interesse', pw_m4:'Zeiträume 7 / 30 / 90 Tage', pw_cta_m:'Abonnieren, 49,99 €/Monat',
     pw_badge:'2 MONATE GRATIS', pw_annual:'Jährlich', pw_price_y:'499 €', pw_per_y:'/ Jahr', pw_permo:'≈ 41,58 € / Monat',
-    pw_y1:'Alles aus Monatlich', pw_y2:'Zwei Monate gratis ggü. monatlich', pw_y3:'Erweiterte Historie', pw_y4:'Priorität bei neuen Integrationen', pw_cta_y:'Abonnieren — 499 €/Jahr',
+    pw_y1:'Alles aus Monatlich', pw_y2:'Zwei Monate gratis ggü. monatlich', pw_y3:'Erweiterte Historie', pw_y4:'Priorität bei neuen Integrationen', pw_cta_y:'Abonnieren, 499 €/Jahr',
     pw_foot:'Sichere Zahlung via Stripe · Geschäftsrechnung · Jederzeit kündbar',
     checkout_alert:'Checkout noch nicht konfiguriert.\n\nFüge den Stripe-Zahlungslink für den {p}-Plan im Code hinzu (BIZ_STRIPE_*).',
     plan_monthly:'monatlich (49,99 €/Monat)', plan_annual:'jährlich (499 €/Jahr)',
@@ -570,16 +570,16 @@ const I18N={
     vs_prev:'vs poprz. okres', kpi_removed:'Usunięcia', kpi_clicks:'Kliknięcia w stronę',
     top_saved:'Najczęściej zapisywany produkt', unit_saves:'zapisów', top_growth:'Największy wzrost', unit_new:'nowych',
     ov_note:'Vault pokazuje <b>popyt</b> (zapisy, zainteresowanie), nie sprzedaż Twojej strony. Wizyty, zakupy, przychód i konwersja nie są widoczne bez integracji. Wszystkie dane są zbiorcze i anonimowe.',
-    det_below:'Mniej niż 10 różnych użytkowników — szczegóły niedostępne (ochrona prywatności).',
+    det_below:'Mniej niż 10 różnych użytkowników, szczegóły niedostępne (ochrona prywatności).',
     kpi_pricedrop:'Zainteresowanie obniżką', kpi_restock:'Zainteresowanie wznowieniem',
     det_newsaves:'Nowe zapisy · {n}d', det_sources:'Źródło zapisu', det_open:'otwórz ↗',
     det_note:'Bez danych osobowych: nigdy imion, e-maili ani list. Tylko zbiorcze liczby.', det_nodata:'Brak danych w okresie',
     pw_title:'Odblokuj statystyki swojego sklepu',
-    pw_lead:'Vault Business pokazuje <b>realny popyt</b> na Twoje produkty — zapisy, trendy, zainteresowanie obniżkami i wznowieniami, kliknięcia w stronę — <b>w 100% zbiorczo i anonimowo</b>. Bez danych osobowych, bez instalacji.',
+    pw_lead:'Vault Business pokazuje <b>realny popyt</b> na Twoje produkty, zapisy, trendy, zainteresowanie obniżkami i wznowieniami, kliknięcia w stronę, <b>w 100% zbiorczo i anonimowo</b>. Bez danych osobowych, bez instalacji.',
     pw_monthly:'Miesięcznie', pw_price_m:'49,99 €', pw_per_m:'/ mies.',
-    pw_m1:'Pełny panel dla zweryfikowanych domen', pw_m2:'Najczęściej zapisywane i rosnące produkty', pw_m3:'Kliknięcia w stronę · zainteresowanie ceną i wznowieniem', pw_m4:'Zakresy 7 / 30 / 90 dni', pw_cta_m:'Subskrybuj — 49,99 €/mies.',
+    pw_m1:'Pełny panel dla zweryfikowanych domen', pw_m2:'Najczęściej zapisywane i rosnące produkty', pw_m3:'Kliknięcia w stronę · zainteresowanie ceną i wznowieniem', pw_m4:'Zakresy 7 / 30 / 90 dni', pw_cta_m:'Subskrybuj, 49,99 €/mies.',
     pw_badge:'2 MIESIĄCE GRATIS', pw_annual:'Rocznie', pw_price_y:'499 €', pw_per_y:'/ rok', pw_permo:'≈ 41,58 € / mies.',
-    pw_y1:'Wszystko z planu miesięcznego', pw_y2:'Dwa miesiące gratis vs miesięczny', pw_y3:'Rozszerzona historia', pw_y4:'Priorytet w nowych integracjach', pw_cta_y:'Subskrybuj — 499 €/rok',
+    pw_y1:'Wszystko z planu miesięcznego', pw_y2:'Dwa miesiące gratis vs miesięczny', pw_y3:'Rozszerzona historia', pw_y4:'Priorytet w nowych integracjach', pw_cta_y:'Subskrybuj, 499 €/rok',
     pw_foot:'Bezpieczna płatność przez Stripe · Faktura firmowa · Anuluj w każdej chwili',
     checkout_alert:'Płatność nie skonfigurowana.\n\nDodaj link płatności Stripe dla planu {p} w kodzie (BIZ_STRIPE_*).',
     plan_monthly:'miesięczny (49,99 €/mies.)', plan_annual:'roczny (499 €/rok)',
@@ -613,16 +613,16 @@ const I18N={
     vs_prev:'к пред. периоду', kpi_removed:'Удаления', kpi_clicks:'Клики на сайт',
     top_saved:'Самый сохраняемый товар', unit_saves:'сохр.', top_growth:'Наибольший рост', unit_new:'новых',
     ov_note:'Vault показывает <b>спрос</b> (сохранения, интерес), а не продажи вашего сайта. Визиты, покупки, выручка и конверсия недоступны без интеграции. Все данные агрегированы и анонимны.',
-    det_below:'Менее 10 разных пользователей — детали недоступны (защита приватности).',
+    det_below:'Менее 10 разных пользователей, детали недоступны (защита приватности).',
     kpi_pricedrop:'Интерес к снижению цены', kpi_restock:'Интерес к возврату в наличие',
     det_newsaves:'Новые сохранения · {n}д', det_sources:'Источник сохранения', det_open:'открыть ↗',
     det_note:'Никаких персональных данных: никогда имён, email или списков. Только агрегированные числа.', det_nodata:'Нет данных за период',
     pw_title:'Откройте аналитику вашего магазина',
-    pw_lead:'Vault Business показывает <b>реальный спрос</b> на ваши товары — сохранения, тренды, интерес к снижению цены и возврату в наличие, клики на сайт — <b>100% агрегировано и анонимно</b>. Без персональных данных, ничего не нужно устанавливать.',
+    pw_lead:'Vault Business показывает <b>реальный спрос</b> на ваши товары, сохранения, тренды, интерес к снижению цены и возврату в наличие, клики на сайт, <b>100% агрегировано и анонимно</b>. Без персональных данных, ничего не нужно устанавливать.',
     pw_monthly:'Ежемесячно', pw_price_m:'49,99 €', pw_per_m:'/ мес.',
-    pw_m1:'Полная панель для подтверждённых доменов', pw_m2:'Самые сохраняемые и трендовые товары', pw_m3:'Клики на сайт · интерес к цене и наличию', pw_m4:'Периоды 7 / 30 / 90 дней', pw_cta_m:'Оформить — 49,99 €/мес.',
+    pw_m1:'Полная панель для подтверждённых доменов', pw_m2:'Самые сохраняемые и трендовые товары', pw_m3:'Клики на сайт · интерес к цене и наличию', pw_m4:'Периоды 7 / 30 / 90 дней', pw_cta_m:'Оформить, 49,99 €/мес.',
     pw_badge:'2 МЕСЯЦА БЕСПЛАТНО', pw_annual:'Ежегодно', pw_price_y:'499 €', pw_per_y:'/ год', pw_permo:'≈ 41,58 € / мес.',
-    pw_y1:'Всё из месячного плана', pw_y2:'Два месяца бесплатно против месячного', pw_y3:'Расширенная история', pw_y4:'Приоритет в новых интеграциях', pw_cta_y:'Оформить — 499 €/год',
+    pw_y1:'Всё из месячного плана', pw_y2:'Два месяца бесплатно против месячного', pw_y3:'Расширенная история', pw_y4:'Приоритет в новых интеграциях', pw_cta_y:'Оформить, 499 €/год',
     pw_foot:'Безопасная оплата через Stripe · Счёт для бизнеса · Отмена в любой момент',
     checkout_alert:'Оплата ещё не настроена.\n\nДобавьте ссылку оплаты Stripe для плана {p} в код (BIZ_STRIPE_*).',
     plan_monthly:'месячный (49,99 €/мес.)', plan_annual:'годовой (499 €/год)',
@@ -663,9 +663,9 @@ const I18N={
     pw_title:'解锁你店铺的洞察',
     pw_lead:'Vault Business 向你展示产品的<b>真实需求</b>——收藏、趋势、降价与补货兴趣、到网站的点击——<b>100% 聚合且匿名</b>。无个人数据，无需安装任何东西。',
     pw_monthly:'月付', pw_price_m:'€49.99', pw_per_m:'/ 月',
-    pw_m1:'已验证域名的完整仪表板', pw_m2:'最多收藏与趋势产品', pw_m3:'到网站点击 · 价格与补货兴趣', pw_m4:'7 / 30 / 90 天范围', pw_cta_m:'订阅 — €49.99/月',
+    pw_m1:'已验证域名的完整仪表板', pw_m2:'最多收藏与趋势产品', pw_m3:'到网站点击 · 价格与补货兴趣', pw_m4:'7 / 30 / 90 天范围', pw_cta_m:'订阅, €49.99/月',
     pw_badge:'免费 2 个月', pw_annual:'年付', pw_price_y:'€499', pw_per_y:'/ 年', pw_permo:'≈ €41.58 / 月',
-    pw_y1:'包含月付的全部', pw_y2:'比月付免费两个月', pw_y3:'更长历史', pw_y4:'新集成优先', pw_cta_y:'订阅 — €499/年',
+    pw_y1:'包含月付的全部', pw_y2:'比月付免费两个月', pw_y3:'更长历史', pw_y4:'新集成优先', pw_cta_y:'订阅, €499/年',
     pw_foot:'通过 Stripe 安全支付 · 企业开票 · 随时取消',
     checkout_alert:'结账尚未配置。\n\n请在代码中为 {p} 计划添加 Stripe 支付链接（BIZ_STRIPE_*）。',
     plan_monthly:'月付（€49.99/月）', plan_annual:'年付（€499/年）',
@@ -699,16 +699,16 @@ const I18N={
     vs_prev:'前期間比', kpi_removed:'削除', kpi_clicks:'サイトへのクリック',
     top_saved:'最も保存された商品', unit_saves:'保存', top_growth:'最大の伸び', unit_new:'新規',
     ov_note:'Vault は<b>需要</b>（保存・関心）を示し、サイトの売上ではありません。訪問数・購入・売上・コンバージョン率は連携なしでは見えません。すべてのデータは集計・匿名です。',
-    det_below:'異なるユーザーが10人未満 — 詳細は利用できません（プライバシー保護）。',
+    det_below:'異なるユーザーが10人未満, 詳細は利用できません（プライバシー保護）。',
     kpi_pricedrop:'値下げへの関心', kpi_restock:'再入荷への関心',
     det_newsaves:'新規保存 · {n}日', det_sources:'保存の経路', det_open:'開く ↗',
     det_note:'個人データなし：名前・メール・個別リストは一切なし。集計値のみ。', det_nodata:'期間内のデータなし',
     pw_title:'あなたのショップのインサイトを解放',
-    pw_lead:'Vault Business は商品の<b>実際の需要</b>を表示します — 保存、トレンド、値下げ・再入荷への関心、サイトへのクリック — <b>100% 集計・匿名</b>。個人データなし、インストール不要。',
+    pw_lead:'Vault Business は商品の<b>実際の需要</b>を表示します, 保存、トレンド、値下げ・再入荷への関心、サイトへのクリック, <b>100% 集計・匿名</b>。個人データなし、インストール不要。',
     pw_monthly:'月額', pw_price_m:'€49.99', pw_per_m:'/ 月',
-    pw_m1:'確認済みドメインの完全ダッシュボード', pw_m2:'最も保存・トレンドの商品', pw_m3:'サイトへのクリック・価格＆再入荷の関心', pw_m4:'7 / 30 / 90 日の範囲', pw_cta_m:'登録 — €49.99/月',
+    pw_m1:'確認済みドメインの完全ダッシュボード', pw_m2:'最も保存・トレンドの商品', pw_m3:'サイトへのクリック・価格＆再入荷の関心', pw_m4:'7 / 30 / 90 日の範囲', pw_cta_m:'登録, €49.99/月',
     pw_badge:'2か月無料', pw_annual:'年額', pw_price_y:'€499', pw_per_y:'/ 年', pw_permo:'≈ €41.58 / 月',
-    pw_y1:'月額のすべて', pw_y2:'月額より2か月無料', pw_y3:'拡張された履歴', pw_y4:'新連携の優先', pw_cta_y:'登録 — €499/年',
+    pw_y1:'月額のすべて', pw_y2:'月額より2か月無料', pw_y3:'拡張された履歴', pw_y4:'新連携の優先', pw_cta_y:'登録, €499/年',
     pw_foot:'Stripe で安全に決済 · 法人請求書 · いつでも解約可',
     checkout_alert:'決済が未設定です。\n\n{p} プランの Stripe 支払いリンクをコードに追加してください（BIZ_STRIPE_*）。',
     plan_monthly:'月額（€49.99/月）', plan_annual:'年額（€499/年）',
@@ -734,7 +734,7 @@ function applyI18n(){
 }
 function setLang(l){ if(!I18N[l])return; LANG=l; localStorage.setItem('vb_lang',l); applyI18n(); refresh(); }
 
-// ═══ theme (light / dark) — user choice persisted; default dark ═══
+// ═══ theme (light / dark), user choice persisted; default dark ═══
 function applyTheme(){
   const th=localStorage.getItem('vb_theme')||'dark';
   document.documentElement.dataset.theme=th;
@@ -742,7 +742,7 @@ function applyTheme(){
 }
 function setTheme(th){ localStorage.setItem('vb_theme',th); applyTheme(); }
 
-// ═══ vault. business — one chrome wordmark, both words on the SAME baseline ═══
+// ═══ vault. business, one chrome wordmark, both words on the SAME baseline ═══
 const VB_LOGO=`<svg class="vb-logo" viewBox="0 0 815 150" xmlns="http://www.w3.org/2000/svg" style="overflow:visible" role="img" aria-label="vault. business">
 <defs>
 <linearGradient id="vChrB" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f8f8f8"/><stop offset="8%" stop-color="#c0c0c0"/><stop offset="20%" stop-color="#f2f2f2"/><stop offset="33%" stop-color="#606060"/><stop offset="46%" stop-color="#383838"/><stop offset="58%" stop-color="#b8b8b8"/><stop offset="70%" stop-color="#ffffff"/><stop offset="82%" stop-color="#909090"/><stop offset="92%" stop-color="#d8d8d8"/><stop offset="100%" stop-color="#282828"/></linearGradient>
