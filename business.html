@@ -135,13 +135,23 @@ tbody tr:hover{background:var(--s2)}
 .badge.ok{background:rgba(74,222,128,.14);color:var(--green)}
 .badge.pending{background:var(--gold-dim);color:var(--gold)}
 .code{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:var(--s3);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;word-break:break-all;color:var(--t1)}
+code.ct,.ct{color:var(--t1)}
 
-/* ---- settings ---- */
-.set-row{display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid var(--bd)}
-.set-row:last-child{border-bottom:none}
-.set-row .st{flex:1}
-.set-row .st b{display:block;font-size:14px;font-weight:700}
-.set-row .st span{font-size:12.5px;color:var(--t2)}
+/* ---- bottom-left dock (subscription + settings) ---- */
+#fabDock{position:fixed;left:16px;bottom:16px;z-index:110;display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.fab{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--bd2);background:var(--s1);color:var(--t1);border-radius:12px;padding:10px 14px;font-size:13px;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.35);transition:transform .15s,border-color .15s}
+.fab:hover{transform:translateY(-1px)}
+.fab-plan{background:var(--gold);color:#1a1500;border-color:var(--gold)}
+.fab-plan>span:first-child{font-size:11px}
+.fab-gear{width:44px;height:44px;justify-content:center;padding:0}
+.fab-gear svg{width:19px;height:19px}
+#setPop{display:none;position:absolute;left:0;bottom:56px;width:240px;background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:14px;box-shadow:0 12px 34px rgba(0,0,0,.45)}
+#setPop.open{display:block}
+.sp-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0}
+.sp-row:first-child{padding-top:0}
+.sp-row label{font-size:12.5px;font-weight:700;color:var(--t2)}
+.sp-row .select{padding:6px 10px;font-size:12.5px}
+.sp-row .seg button{padding:6px 10px;font-size:12px}
 
 /* ---- modal ---- */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:60;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}
@@ -186,7 +196,6 @@ tbody tr:hover{background:var(--s2)}
     <button class="tab on" data-v="overview" onclick="showView('overview')" data-i18n="tab_overview">Overview</button>
     <button class="tab" data-v="products" onclick="showView('products')" data-i18n="tab_products">Products</button>
     <button class="tab" data-v="domains" onclick="showView('domains')" data-i18n="tab_domains">Domains</button>
-    <button class="tab" data-v="settings" onclick="showView('settings')" data-i18n="tab_settings">Settings</button>
   </div>
 
   <div class="wrap">
@@ -219,23 +228,25 @@ tbody tr:hover{background:var(--s2)}
       </div>
       <div id="domList"></div>
     </div>
-    <!-- SETTINGS -->
-    <div id="v-settings" class="view hidden">
-      <div class="card">
-        <div class="set-row">
-          <div class="st"><b data-i18n="set_lang">Language</b><span data-i18n="set_lang_note">Interface language for this dashboard.</span></div>
-          <select class="select" id="langSel" onchange="setLang(this.value)">
-            <option value="en">English</option>
-            <option value="it">Italiano</option>
-          </select>
-        </div>
-        <div class="set-row">
-          <div class="st"><b data-i18n="set_theme">Appearance</b><span data-i18n="set_theme_note">Choose a light or dark background.</span></div>
-          <div class="seg" id="themeSeg">
-            <button data-th="dark" onclick="setTheme('dark')" data-i18n="theme_dark">Dark</button>
-            <button data-th="light" onclick="setTheme('light')" data-i18n="theme_light">Light</button>
-          </div>
-        </div>
+  </div>
+</div>
+
+<!-- ===== bottom-left dock: subscription + settings (always reachable) ===== -->
+<div id="fabDock">
+  <button id="planFab" class="fab fab-plan" onclick="openPaywall(false)"><span>◈</span> <span data-i18n="fab_plan">Subscription</span></button>
+  <button id="setFab" class="fab fab-gear" onclick="toggleSetPop()" aria-label="Settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/></svg>
+  </button>
+  <div id="setPop">
+    <div class="sp-row">
+      <label data-i18n="set_lang">Language</label>
+      <select class="select" id="langSel" onchange="setLang(this.value)"></select>
+    </div>
+    <div class="sp-row">
+      <label data-i18n="set_theme">Appearance</label>
+      <div class="seg" id="themeSeg">
+        <button data-th="dark" onclick="setTheme('dark')" data-i18n="theme_dark">Dark</button>
+        <button data-th="light" onclick="setTheme('light')" data-i18n="theme_light">Light</button>
       </div>
     </div>
   </div>
@@ -244,7 +255,7 @@ tbody tr:hover{background:var(--s2)}
 <!-- paywall -->
 <div class="pw-ov" id="pwOv">
   <div class="pw">
-    <button class="pw-x" onclick="closePaywall()">✕</button>
+    <button class="pw-x" id="pwX" onclick="closePaywall()">✕</button>
     <div class="vb-brand" id="pwBrand"></div>
     <h2 data-i18n="pw_title">Unlock your store's insights</h2>
     <p class="plead" data-i18n-html="pw_lead">Vault Business shows you the <b>real demand</b> for your products — saves, trends, price-drop &amp; restock interest, click-throughs to your site — <b>100% aggregated and anonymous</b>. No personal data, nothing to install on your site.</p>
@@ -276,6 +287,7 @@ tbody tr:hover{background:var(--s2)}
       </div>
     </div>
     <div class="pw-foot" data-i18n="pw_foot">Secure payment via Stripe · Business invoicing · Cancel anytime</div>
+    <div class="pw-foot" id="pwLockNote" style="display:none;color:var(--gold);margin-top:6px" data-i18n="pw_locked">An active Vault Business subscription is required to use the dashboard.</div>
   </div>
 </div>
 
@@ -348,7 +360,8 @@ const I18N={
     plan_monthly:'monthly (€49.99/mo)', plan_annual:'annual (€499/yr)',
     set_lang:'Language', set_lang_note:'Interface language for this dashboard.',
     set_theme:'Appearance', set_theme_note:'Choose a light or dark background.', theme_dark:'Dark', theme_light:'Light',
-    need_domain:'Verify a domain in the <b>Domains</b> tab to see insights.'
+    need_domain:'Verify a domain in the <b>Domains</b> tab to see insights.',
+    fab_plan:'Subscription', pw_locked:'An active Vault Business subscription is required to use the dashboard.'
   },
   it:{
     login_sub:'Insight per negozi',
@@ -399,19 +412,325 @@ const I18N={
     plan_monthly:'mensile (€49,99/mese)', plan_annual:'annuale (€499/anno)',
     set_lang:'Lingua', set_lang_note:'Lingua dell’interfaccia di questa dashboard.',
     set_theme:'Aspetto', set_theme_note:'Scegli sfondo chiaro o scuro.', theme_dark:'Scuro', theme_light:'Chiaro',
-    need_domain:'Verifica un dominio nella scheda <b>Domini</b> per vedere gli insight.'
+    need_domain:'Verifica un dominio nella scheda <b>Domini</b> per vedere gli insight.',
+    fab_plan:'Abbonamento', pw_locked:'Serve un abbonamento Vault Business attivo per usare la dashboard.'
+  },
+  es:{
+    login_sub:'Insights para tiendas', login_lead:'Inicia sesión con tu cuenta Vault para ver insights agregados y anónimos de tu dominio.',
+    lbl_email:'Email', lbl_password:'Contraseña', ph_email:'tu@tienda.com', btn_login:'Entrar',
+    err_login:'Error de acceso. Revisa el email y la contraseña.',
+    login_note:'¿No tienes cuenta? Crea una gratis en <a class="link" href="https://vaultwishlist.com" target="_blank" rel="noopener">vaultwishlist.com</a> y vuelve aquí.',
+    btn_logout:'Salir', opt_no_domain:'Ningún dominio verificado', d7:'7d', d30:'30d', d90:'90d',
+    tab_overview:'Resumen', tab_products:'Productos', tab_domains:'Dominios',
+    ph_search_prod:'Buscar producto…', sort_saves:'Más guardados', sort_growth:'En tendencia', sort_clicks:'Más clics',
+    th_product:'Producto', th_users:'Usuarios', th_saves:'Guardados', th_new:'Nuevos', th_clicks:'Clics', th_interest:'Interés',
+    lt_badge:'Menos de 10 usuarios', pager_products:'{n} productos · página {a}/{b}', prev:'‹ Ant.', next:'Sig. ›',
+    empty_products:'No se encontraron productos para este dominio en el periodo seleccionado.',
+    dom_add_title:'Añadir un dominio', ph_new_dom:'ej. mitienda.com', btn_add:'Añadir', dom_empty:'Aún no hay dominios. Añade uno arriba.',
+    badge_verified:'Verificado', badge_pending:'Pendiente', dom_method:'Método:',
+    dom_prove:'Demuestra la propiedad con <b>uno</b> de estos métodos y pulsa Verificar:',
+    dom_dns:'<b>DNS TXT</b> en', dom_or:'…o un archivo <code class="ct">/.well-known/vault-verify.txt</code> con el token, o una etiqueta meta <code class="ct">&lt;meta name="vault-site-verification" content="{tok}"&gt;</code>',
+    btn_verify:'Verificar', btn_verifying:'Verificando…', btn_remove:'Quitar',
+    err_dom_other:'Este dominio ya está verificado por otra cuenta.', err_dom_generic:'No se pudo añadir el dominio.',
+    alert_token_pending:'Token aún no encontrado en el dominio. La propagación DNS puede tardar unos minutos; inténtalo de nuevo.',
+    alert_verify_fail:'Verificación fallida. Asegúrate de haber publicado el token.',
+    confirm_revoke:'¿Quitar {d}? Perderás el acceso a los insights de este dominio.',
+    ov_last_days:'últimos {n} días', loading:'Cargando…', err_load:'Error de carga.',
+    ov_below:'Aún hay pocos datos.|Se necesitan al menos {n} usuarios distintos que guarden productos de tu dominio antes de mostrar insights (protección anti-identificación).',
+    kpi_active:'Guardados activos', kpi_users:'Usuarios únicos', kpi_products:'Productos guardados', kpi_new:'Nuevos guardados',
+    vs_prev:'vs periodo ant.', kpi_removed:'Eliminados', kpi_clicks:'Clics al sitio',
+    top_saved:'Producto más guardado', unit_saves:'guardados', top_growth:'Mayor crecimiento', unit_new:'nuevos',
+    ov_note:'Vault muestra la <b>demanda</b> (guardados, interés), no las ventas de tu sitio. Visitas, compras, ingresos y conversión no son visibles sin una integración. Todos los datos son agregados y anónimos.',
+    det_below:'Menos de 10 usuarios distintos — detalle no disponible (protección de privacidad).',
+    kpi_pricedrop:'Interés en bajada de precio', kpi_restock:'Interés en reposición',
+    det_newsaves:'Nuevos guardados · {n}d', det_sources:'Origen del guardado', det_open:'abrir ↗',
+    det_note:'Sin datos personales: nunca nombres, emails ni listas individuales. Solo recuentos agregados.', det_nodata:'Sin datos en el periodo',
+    pw_title:'Desbloquea los insights de tu tienda',
+    pw_lead:'Vault Business te muestra la <b>demanda real</b> de tus productos — guardados, tendencias, interés en bajadas de precio y reposición, clics a tu sitio — <b>100% agregado y anónimo</b>. Sin datos personales, sin instalar nada.',
+    pw_monthly:'Mensual', pw_price_m:'49,99 €', pw_per_m:'/ mes',
+    pw_m1:'Panel completo para tus dominios verificados', pw_m2:'Productos más guardados y en tendencia', pw_m3:'Clics al sitio · interés precio y reposición', pw_m4:'Rangos de 7 / 30 / 90 días', pw_cta_m:'Suscribirse — 49,99 €/mes',
+    pw_badge:'2 MESES GRATIS', pw_annual:'Anual', pw_price_y:'499 €', pw_per_y:'/ año', pw_permo:'≈ 41,58 € / mes',
+    pw_y1:'Todo lo del plan mensual', pw_y2:'Dos meses gratis frente al mensual', pw_y3:'Histórico ampliado', pw_y4:'Prioridad en nuevas integraciones', pw_cta_y:'Suscribirse — 499 €/año',
+    pw_foot:'Pago seguro con Stripe · Facturación para empresas · Cancela cuando quieras',
+    checkout_alert:'Pago aún no configurado.\n\nAñade el enlace de pago de Stripe para el plan {p} en el código (BIZ_STRIPE_*).',
+    plan_monthly:'mensual (49,99 €/mes)', plan_annual:'anual (499 €/año)',
+    set_lang:'Idioma', set_lang_note:'Idioma de la interfaz.', set_theme:'Apariencia', set_theme_note:'Elige fondo claro u oscuro.', theme_dark:'Oscuro', theme_light:'Claro',
+    need_domain:'Verifica un dominio en la pestaña <b>Dominios</b> para ver insights.',
+    fab_plan:'Suscripción', pw_locked:'Se necesita una suscripción activa de Vault Business para usar el panel.'
+  },
+  fr:{
+    login_sub:'Insights pour marchands', login_lead:'Connecte-toi avec ton compte Vault pour voir des insights agrégés et anonymes sur ton domaine.',
+    lbl_email:'Email', lbl_password:'Mot de passe', ph_email:'toi@boutique.com', btn_login:'Se connecter',
+    err_login:'Échec de connexion. Vérifie l’email et le mot de passe.',
+    login_note:'Pas de compte ? Crées-en un gratuitement sur <a class="link" href="https://vaultwishlist.com" target="_blank" rel="noopener">vaultwishlist.com</a>, puis reviens ici.',
+    btn_logout:'Déconnexion', opt_no_domain:'Aucun domaine vérifié', d7:'7j', d30:'30j', d90:'90j',
+    tab_overview:'Aperçu', tab_products:'Produits', tab_domains:'Domaines',
+    ph_search_prod:'Rechercher un produit…', sort_saves:'Les plus enregistrés', sort_growth:'En hausse', sort_clicks:'Plus de clics',
+    th_product:'Produit', th_users:'Utilisateurs', th_saves:'Enreg.', th_new:'Nouveaux', th_clicks:'Clics', th_interest:'Intérêt',
+    lt_badge:'Moins de 10 utilisateurs', pager_products:'{n} produits · page {a}/{b}', prev:'‹ Préc.', next:'Suiv. ›',
+    empty_products:'Aucun produit trouvé pour ce domaine sur la période sélectionnée.',
+    dom_add_title:'Ajouter un domaine', ph_new_dom:'ex. maboutique.com', btn_add:'Ajouter', dom_empty:'Aucun domaine pour l’instant. Ajoutes-en un ci-dessus.',
+    badge_verified:'Vérifié', badge_pending:'En attente', dom_method:'Méthode :',
+    dom_prove:'Prouve la propriété avec <b>l’une</b> de ces méthodes, puis clique sur Vérifier :',
+    dom_dns:'<b>DNS TXT</b> sur', dom_or:'…ou un fichier <code class="ct">/.well-known/vault-verify.txt</code> contenant le token, ou une balise meta <code class="ct">&lt;meta name="vault-site-verification" content="{tok}"&gt;</code>',
+    btn_verify:'Vérifier', btn_verifying:'Vérification…', btn_remove:'Retirer',
+    err_dom_other:'Ce domaine est déjà vérifié par un autre compte.', err_dom_generic:'Impossible d’ajouter le domaine.',
+    alert_token_pending:'Token pas encore trouvé sur le domaine. La propagation DNS peut prendre quelques minutes ; réessaie bientôt.',
+    alert_verify_fail:'Échec de la vérification. Vérifie que le token est bien publié.',
+    confirm_revoke:'Retirer {d} ? Tu perdras l’accès aux insights de ce domaine.',
+    ov_last_days:'{n} derniers jours', loading:'Chargement…', err_load:'Erreur de chargement.',
+    ov_below:'Encore peu de données.|Il faut au moins {n} utilisateurs distincts qui enregistrent des produits de ton domaine avant d’afficher les insights (protection anti-identification).',
+    kpi_active:'Enregistrements actifs', kpi_users:'Utilisateurs uniques', kpi_products:'Produits enregistrés', kpi_new:'Nouveaux enregistrements',
+    vs_prev:'vs période préc.', kpi_removed:'Suppressions', kpi_clicks:'Clics vers le site',
+    top_saved:'Produit le plus enregistré', unit_saves:'enreg.', top_growth:'Plus forte hausse', unit_new:'nouveaux',
+    ov_note:'Vault montre la <b>demande</b> (enregistrements, intérêt), pas les ventes de ton site. Visites, achats, chiffre d’affaires et taux de conversion ne sont pas visibles sans intégration. Toutes les données sont agrégées et anonymes.',
+    det_below:'Moins de 10 utilisateurs distincts — détail indisponible (protection de la vie privée).',
+    kpi_pricedrop:'Intérêt baisse de prix', kpi_restock:'Intérêt réassort',
+    det_newsaves:'Nouveaux enregistrements · {n}j', det_sources:'Source des enregistrements', det_open:'ouvrir ↗',
+    det_note:'Aucune donnée personnelle : jamais de noms, emails ou listes individuelles. Uniquement des totaux agrégés.', det_nodata:'Aucune donnée sur la période',
+    pw_title:'Débloque les insights de ta boutique',
+    pw_lead:'Vault Business te montre la <b>demande réelle</b> pour tes produits — enregistrements, tendances, intérêt baisse de prix &amp; réassort, clics vers ton site — <b>100% agrégé et anonyme</b>. Aucune donnée personnelle, rien à installer.',
+    pw_monthly:'Mensuel', pw_price_m:'49,99 €', pw_per_m:'/ mois',
+    pw_m1:'Tableau de bord complet pour tes domaines vérifiés', pw_m2:'Produits les plus enregistrés et en hausse', pw_m3:'Clics vers le site · intérêt prix &amp; réassort', pw_m4:'Plages 7 / 30 / 90 jours', pw_cta_m:'S’abonner — 49,99 €/mois',
+    pw_badge:'2 MOIS OFFERTS', pw_annual:'Annuel', pw_price_y:'499 €', pw_per_y:'/ an', pw_permo:'≈ 41,58 € / mois',
+    pw_y1:'Tout le plan mensuel', pw_y2:'Deux mois offerts vs mensuel', pw_y3:'Historique étendu', pw_y4:'Priorité sur les nouvelles intégrations', pw_cta_y:'S’abonner — 499 €/an',
+    pw_foot:'Paiement sécurisé via Stripe · Facturation entreprise · Annulable à tout moment',
+    checkout_alert:'Paiement non configuré.\n\nAjoute le lien de paiement Stripe pour le plan {p} dans le code (BIZ_STRIPE_*).',
+    plan_monthly:'mensuel (49,99 €/mois)', plan_annual:'annuel (499 €/an)',
+    set_lang:'Langue', set_lang_note:'Langue de l’interface.', set_theme:'Apparence', set_theme_note:'Choisis un fond clair ou sombre.', theme_dark:'Sombre', theme_light:'Clair',
+    need_domain:'Vérifie un domaine dans l’onglet <b>Domaines</b> pour voir les insights.',
+    fab_plan:'Abonnement', pw_locked:'Un abonnement Vault Business actif est requis pour utiliser le tableau de bord.'
+  },
+  de:{
+    login_sub:'Insights für Händler', login_lead:'Melde dich mit deinem Vault-Konto an, um aggregierte, anonyme Insights zu deiner Domain zu sehen.',
+    lbl_email:'E-Mail', lbl_password:'Passwort', ph_email:'du@shop.com', btn_login:'Anmelden',
+    err_login:'Anmeldung fehlgeschlagen. Prüfe E-Mail und Passwort.',
+    login_note:'Noch kein Konto? Erstelle eines kostenlos auf <a class="link" href="https://vaultwishlist.com" target="_blank" rel="noopener">vaultwishlist.com</a> und komm zurück.',
+    btn_logout:'Abmelden', opt_no_domain:'Keine verifizierte Domain', d7:'7T', d30:'30T', d90:'90T',
+    tab_overview:'Übersicht', tab_products:'Produkte', tab_domains:'Domains',
+    ph_search_prod:'Produkt suchen…', sort_saves:'Meist gespeichert', sort_growth:'Im Trend', sort_clicks:'Meiste Klicks',
+    th_product:'Produkt', th_users:'Nutzer', th_saves:'Gespeichert', th_new:'Neu', th_clicks:'Klicks', th_interest:'Interesse',
+    lt_badge:'Weniger als 10 Nutzer', pager_products:'{n} Produkte · Seite {a}/{b}', prev:'‹ Zurück', next:'Weiter ›',
+    empty_products:'Keine Produkte für diese Domain im gewählten Zeitraum gefunden.',
+    dom_add_title:'Domain hinzufügen', ph_new_dom:'z. B. meinshop.com', btn_add:'Hinzufügen', dom_empty:'Noch keine Domains. Füge oben eine hinzu.',
+    badge_verified:'Verifiziert', badge_pending:'Ausstehend', dom_method:'Methode:',
+    dom_prove:'Weise den Besitz mit <b>einer</b> dieser Methoden nach und klicke auf Verifizieren:',
+    dom_dns:'<b>DNS TXT</b> auf', dom_or:'…oder eine Datei <code class="ct">/.well-known/vault-verify.txt</code> mit dem Token, oder ein Meta-Tag <code class="ct">&lt;meta name="vault-site-verification" content="{tok}"&gt;</code>',
+    btn_verify:'Verifizieren', btn_verifying:'Verifiziere…', btn_remove:'Entfernen',
+    err_dom_other:'Diese Domain ist bereits von einem anderen Konto verifiziert.', err_dom_generic:'Domain konnte nicht hinzugefügt werden.',
+    alert_token_pending:'Token noch nicht auf der Domain gefunden. DNS-Propagierung kann einige Minuten dauern; bitte erneut versuchen.',
+    alert_verify_fail:'Verifizierung fehlgeschlagen. Stelle sicher, dass der Token veröffentlicht ist.',
+    confirm_revoke:'{d} entfernen? Du verlierst den Zugriff auf die Insights dieser Domain.',
+    ov_last_days:'letzte {n} Tage', loading:'Lädt…', err_load:'Ladefehler.',
+    ov_below:'Noch zu wenige Daten.|Es müssen mindestens {n} verschiedene Nutzer Produkte deiner Domain speichern, bevor Insights angezeigt werden (Schutz vor Identifizierung).',
+    kpi_active:'Aktive Speicherungen', kpi_users:'Eindeutige Nutzer', kpi_products:'Gespeicherte Produkte', kpi_new:'Neue Speicherungen',
+    vs_prev:'vs. Vorperiode', kpi_removed:'Entfernungen', kpi_clicks:'Klicks zur Website',
+    top_saved:'Meist gespeichertes Produkt', unit_saves:'Speicher.', top_growth:'Stärkstes Wachstum', unit_new:'neu',
+    ov_note:'Vault zeigt <b>Nachfrage</b> (Speicherungen, Interesse), nicht die Verkäufe deiner Website. Besuche, Käufe, Umsatz und Conversion Rate sind ohne Integration nicht sichtbar. Alle Daten sind aggregiert und anonym.',
+    det_below:'Weniger als 10 verschiedene Nutzer — Detail nicht verfügbar (Datenschutz).',
+    kpi_pricedrop:'Interesse Preissenkung', kpi_restock:'Interesse Wiederverfügbarkeit',
+    det_newsaves:'Neue Speicherungen · {n}T', det_sources:'Speicher-Quelle', det_open:'öffnen ↗',
+    det_note:'Keine personenbezogenen Daten: nie Namen, E-Mails oder einzelne Listen. Nur aggregierte Zahlen.', det_nodata:'Keine Daten im Zeitraum',
+    pw_title:'Schalte die Insights deines Shops frei',
+    pw_lead:'Vault Business zeigt dir die <b>echte Nachfrage</b> nach deinen Produkten — Speicherungen, Trends, Interesse an Preissenkungen &amp; Wiederverfügbarkeit, Klicks zur Website — <b>100% aggregiert und anonym</b>. Keine personenbezogenen Daten, nichts zu installieren.',
+    pw_monthly:'Monatlich', pw_price_m:'49,99 €', pw_per_m:'/ Monat',
+    pw_m1:'Volles Dashboard für deine verifizierten Domains', pw_m2:'Meist gespeicherte und Trend-Produkte', pw_m3:'Klicks zur Website · Preis- &amp; Restock-Interesse', pw_m4:'Zeiträume 7 / 30 / 90 Tage', pw_cta_m:'Abonnieren — 49,99 €/Monat',
+    pw_badge:'2 MONATE GRATIS', pw_annual:'Jährlich', pw_price_y:'499 €', pw_per_y:'/ Jahr', pw_permo:'≈ 41,58 € / Monat',
+    pw_y1:'Alles aus Monatlich', pw_y2:'Zwei Monate gratis ggü. monatlich', pw_y3:'Erweiterte Historie', pw_y4:'Priorität bei neuen Integrationen', pw_cta_y:'Abonnieren — 499 €/Jahr',
+    pw_foot:'Sichere Zahlung via Stripe · Geschäftsrechnung · Jederzeit kündbar',
+    checkout_alert:'Checkout noch nicht konfiguriert.\n\nFüge den Stripe-Zahlungslink für den {p}-Plan im Code hinzu (BIZ_STRIPE_*).',
+    plan_monthly:'monatlich (49,99 €/Monat)', plan_annual:'jährlich (499 €/Jahr)',
+    set_lang:'Sprache', set_lang_note:'Sprache der Oberfläche.', set_theme:'Darstellung', set_theme_note:'Wähle hellen oder dunklen Hintergrund.', theme_dark:'Dunkel', theme_light:'Hell',
+    need_domain:'Verifiziere eine Domain im Tab <b>Domains</b>, um Insights zu sehen.',
+    fab_plan:'Abo', pw_locked:'Für die Nutzung des Dashboards ist ein aktives Vault-Business-Abo erforderlich.'
+  },
+  pl:{
+    login_sub:'Statystyki dla sklepów', login_lead:'Zaloguj się kontem Vault, aby zobaczyć zbiorcze, anonimowe statystyki swojej domeny.',
+    lbl_email:'Email', lbl_password:'Hasło', ph_email:'ty@sklep.com', btn_login:'Zaloguj',
+    err_login:'Logowanie nie powiodło się. Sprawdź email i hasło.',
+    login_note:'Nie masz konta? Załóż darmowe na <a class="link" href="https://vaultwishlist.com" target="_blank" rel="noopener">vaultwishlist.com</a> i wróć tutaj.',
+    btn_logout:'Wyloguj', opt_no_domain:'Brak zweryfikowanej domeny', d7:'7d', d30:'30d', d90:'90d',
+    tab_overview:'Przegląd', tab_products:'Produkty', tab_domains:'Domeny',
+    ph_search_prod:'Szukaj produktu…', sort_saves:'Najczęściej zapisywane', sort_growth:'Rosnące', sort_clicks:'Najwięcej kliknięć',
+    th_product:'Produkt', th_users:'Użytkownicy', th_saves:'Zapisy', th_new:'Nowe', th_clicks:'Kliknięcia', th_interest:'Zainteresowanie',
+    lt_badge:'Mniej niż 10 użytkowników', pager_products:'{n} produktów · strona {a}/{b}', prev:'‹ Wstecz', next:'Dalej ›',
+    empty_products:'Brak produktów dla tej domeny w wybranym okresie.',
+    dom_add_title:'Dodaj domenę', ph_new_dom:'np. mojsklep.com', btn_add:'Dodaj', dom_empty:'Brak domen. Dodaj jedną powyżej.',
+    badge_verified:'Zweryfikowana', badge_pending:'Oczekuje', dom_method:'Metoda:',
+    dom_prove:'Udowodnij własność <b>jedną</b> z tych metod, następnie kliknij Weryfikuj:',
+    dom_dns:'<b>DNS TXT</b> na', dom_or:'…lub plik <code class="ct">/.well-known/vault-verify.txt</code> z tokenem, albo meta tag <code class="ct">&lt;meta name="vault-site-verification" content="{tok}"&gt;</code>',
+    btn_verify:'Weryfikuj', btn_verifying:'Weryfikuję…', btn_remove:'Usuń',
+    err_dom_other:'Ta domena jest już zweryfikowana przez inne konto.', err_dom_generic:'Nie udało się dodać domeny.',
+    alert_token_pending:'Nie znaleziono jeszcze tokenu na domenie. Propagacja DNS może potrwać kilka minut; spróbuj ponownie.',
+    alert_verify_fail:'Weryfikacja nie powiodła się. Upewnij się, że token został opublikowany.',
+    confirm_revoke:'Usunąć {d}? Stracisz dostęp do statystyk tej domeny.',
+    ov_last_days:'ostatnie {n} dni', loading:'Ładowanie…', err_load:'Błąd ładowania.',
+    ov_below:'Za mało danych.|Potrzeba co najmniej {n} różnych użytkowników zapisujących produkty z Twojej domeny, zanim pokażemy statystyki (ochrona przed identyfikacją).',
+    kpi_active:'Aktywne zapisy', kpi_users:'Unikalni użytkownicy', kpi_products:'Zapisane produkty', kpi_new:'Nowe zapisy',
+    vs_prev:'vs poprz. okres', kpi_removed:'Usunięcia', kpi_clicks:'Kliknięcia w stronę',
+    top_saved:'Najczęściej zapisywany produkt', unit_saves:'zapisów', top_growth:'Największy wzrost', unit_new:'nowych',
+    ov_note:'Vault pokazuje <b>popyt</b> (zapisy, zainteresowanie), nie sprzedaż Twojej strony. Wizyty, zakupy, przychód i konwersja nie są widoczne bez integracji. Wszystkie dane są zbiorcze i anonimowe.',
+    det_below:'Mniej niż 10 różnych użytkowników — szczegóły niedostępne (ochrona prywatności).',
+    kpi_pricedrop:'Zainteresowanie obniżką', kpi_restock:'Zainteresowanie wznowieniem',
+    det_newsaves:'Nowe zapisy · {n}d', det_sources:'Źródło zapisu', det_open:'otwórz ↗',
+    det_note:'Bez danych osobowych: nigdy imion, e-maili ani list. Tylko zbiorcze liczby.', det_nodata:'Brak danych w okresie',
+    pw_title:'Odblokuj statystyki swojego sklepu',
+    pw_lead:'Vault Business pokazuje <b>realny popyt</b> na Twoje produkty — zapisy, trendy, zainteresowanie obniżkami i wznowieniami, kliknięcia w stronę — <b>w 100% zbiorczo i anonimowo</b>. Bez danych osobowych, bez instalacji.',
+    pw_monthly:'Miesięcznie', pw_price_m:'49,99 €', pw_per_m:'/ mies.',
+    pw_m1:'Pełny panel dla zweryfikowanych domen', pw_m2:'Najczęściej zapisywane i rosnące produkty', pw_m3:'Kliknięcia w stronę · zainteresowanie ceną i wznowieniem', pw_m4:'Zakresy 7 / 30 / 90 dni', pw_cta_m:'Subskrybuj — 49,99 €/mies.',
+    pw_badge:'2 MIESIĄCE GRATIS', pw_annual:'Rocznie', pw_price_y:'499 €', pw_per_y:'/ rok', pw_permo:'≈ 41,58 € / mies.',
+    pw_y1:'Wszystko z planu miesięcznego', pw_y2:'Dwa miesiące gratis vs miesięczny', pw_y3:'Rozszerzona historia', pw_y4:'Priorytet w nowych integracjach', pw_cta_y:'Subskrybuj — 499 €/rok',
+    pw_foot:'Bezpieczna płatność przez Stripe · Faktura firmowa · Anuluj w każdej chwili',
+    checkout_alert:'Płatność nie skonfigurowana.\n\nDodaj link płatności Stripe dla planu {p} w kodzie (BIZ_STRIPE_*).',
+    plan_monthly:'miesięczny (49,99 €/mies.)', plan_annual:'roczny (499 €/rok)',
+    set_lang:'Język', set_lang_note:'Język interfejsu.', set_theme:'Wygląd', set_theme_note:'Wybierz jasne lub ciemne tło.', theme_dark:'Ciemny', theme_light:'Jasny',
+    need_domain:'Zweryfikuj domenę w zakładce <b>Domeny</b>, aby zobaczyć statystyki.',
+    fab_plan:'Subskrypcja', pw_locked:'Aby korzystać z panelu, wymagana jest aktywna subskrypcja Vault Business.'
+  },
+  ru:{
+    login_sub:'Аналитика для магазинов', login_lead:'Войдите в аккаунт Vault, чтобы видеть агрегированную анонимную аналитику по вашему домену.',
+    lbl_email:'Email', lbl_password:'Пароль', ph_email:'you@shop.com', btn_login:'Войти',
+    err_login:'Ошибка входа. Проверьте email и пароль.',
+    login_note:'Нет аккаунта? Создайте бесплатно на <a class="link" href="https://vaultwishlist.com" target="_blank" rel="noopener">vaultwishlist.com</a> и вернитесь сюда.',
+    btn_logout:'Выйти', opt_no_domain:'Нет подтверждённого домена', d7:'7д', d30:'30д', d90:'90д',
+    tab_overview:'Обзор', tab_products:'Товары', tab_domains:'Домены',
+    ph_search_prod:'Поиск товара…', sort_saves:'Чаще всего сохраняют', sort_growth:'В тренде', sort_clicks:'Больше кликов',
+    th_product:'Товар', th_users:'Польз.', th_saves:'Сохран.', th_new:'Новые', th_clicks:'Клики', th_interest:'Интерес',
+    lt_badge:'Менее 10 пользователей', pager_products:'{n} товаров · стр. {a}/{b}', prev:'‹ Назад', next:'Далее ›',
+    empty_products:'Товары для этого домена за выбранный период не найдены.',
+    dom_add_title:'Добавить домен', ph_new_dom:'напр. myshop.com', btn_add:'Добавить', dom_empty:'Пока нет доменов. Добавьте выше.',
+    badge_verified:'Подтверждён', badge_pending:'Ожидает', dom_method:'Способ:',
+    dom_prove:'Подтвердите владение <b>одним</b> из способов, затем нажмите Проверить:',
+    dom_dns:'<b>DNS TXT</b> на', dom_or:'…или файл <code class="ct">/.well-known/vault-verify.txt</code> с токеном, либо мета-тег <code class="ct">&lt;meta name="vault-site-verification" content="{tok}"&gt;</code>',
+    btn_verify:'Проверить', btn_verifying:'Проверка…', btn_remove:'Удалить',
+    err_dom_other:'Этот домен уже подтверждён другим аккаунтом.', err_dom_generic:'Не удалось добавить домен.',
+    alert_token_pending:'Токен на домене пока не найден. Распространение DNS может занять несколько минут; повторите позже.',
+    alert_verify_fail:'Проверка не удалась. Убедитесь, что токен опубликован.',
+    confirm_revoke:'Удалить {d}? Вы потеряете доступ к аналитике этого домена.',
+    ov_last_days:'последние {n} дн.', loading:'Загрузка…', err_load:'Ошибка загрузки.',
+    ov_below:'Пока мало данных.|Нужно минимум {n} разных пользователей, сохранивших товары вашего домена, прежде чем показывать аналитику (защита от идентификации).',
+    kpi_active:'Активные сохранения', kpi_users:'Уник. пользователи', kpi_products:'Сохранённые товары', kpi_new:'Новые сохранения',
+    vs_prev:'к пред. периоду', kpi_removed:'Удаления', kpi_clicks:'Клики на сайт',
+    top_saved:'Самый сохраняемый товар', unit_saves:'сохр.', top_growth:'Наибольший рост', unit_new:'новых',
+    ov_note:'Vault показывает <b>спрос</b> (сохранения, интерес), а не продажи вашего сайта. Визиты, покупки, выручка и конверсия недоступны без интеграции. Все данные агрегированы и анонимны.',
+    det_below:'Менее 10 разных пользователей — детали недоступны (защита приватности).',
+    kpi_pricedrop:'Интерес к снижению цены', kpi_restock:'Интерес к возврату в наличие',
+    det_newsaves:'Новые сохранения · {n}д', det_sources:'Источник сохранения', det_open:'открыть ↗',
+    det_note:'Никаких персональных данных: никогда имён, email или списков. Только агрегированные числа.', det_nodata:'Нет данных за период',
+    pw_title:'Откройте аналитику вашего магазина',
+    pw_lead:'Vault Business показывает <b>реальный спрос</b> на ваши товары — сохранения, тренды, интерес к снижению цены и возврату в наличие, клики на сайт — <b>100% агрегировано и анонимно</b>. Без персональных данных, ничего не нужно устанавливать.',
+    pw_monthly:'Ежемесячно', pw_price_m:'49,99 €', pw_per_m:'/ мес.',
+    pw_m1:'Полная панель для подтверждённых доменов', pw_m2:'Самые сохраняемые и трендовые товары', pw_m3:'Клики на сайт · интерес к цене и наличию', pw_m4:'Периоды 7 / 30 / 90 дней', pw_cta_m:'Оформить — 49,99 €/мес.',
+    pw_badge:'2 МЕСЯЦА БЕСПЛАТНО', pw_annual:'Ежегодно', pw_price_y:'499 €', pw_per_y:'/ год', pw_permo:'≈ 41,58 € / мес.',
+    pw_y1:'Всё из месячного плана', pw_y2:'Два месяца бесплатно против месячного', pw_y3:'Расширенная история', pw_y4:'Приоритет в новых интеграциях', pw_cta_y:'Оформить — 499 €/год',
+    pw_foot:'Безопасная оплата через Stripe · Счёт для бизнеса · Отмена в любой момент',
+    checkout_alert:'Оплата ещё не настроена.\n\nДобавьте ссылку оплаты Stripe для плана {p} в код (BIZ_STRIPE_*).',
+    plan_monthly:'месячный (49,99 €/мес.)', plan_annual:'годовой (499 €/год)',
+    set_lang:'Язык', set_lang_note:'Язык интерфейса.', set_theme:'Оформление', set_theme_note:'Выберите светлый или тёмный фон.', theme_dark:'Тёмная', theme_light:'Светлая',
+    need_domain:'Подтвердите домен во вкладке <b>Домены</b>, чтобы видеть аналитику.',
+    fab_plan:'Подписка', pw_locked:'Для использования панели нужна активная подписка Vault Business.'
+  },
+  zh:{
+    login_sub:'商家洞察', login_lead:'使用你的 Vault 账户登录，查看你域名的聚合匿名洞察。',
+    lbl_email:'邮箱', lbl_password:'密码', ph_email:'you@store.com', btn_login:'登录',
+    err_login:'登录失败。请检查邮箱和密码。',
+    login_note:'还没有账户？在 <a class="link" href="https://vaultwishlist.com" target="_blank" rel="noopener">vaultwishlist.com</a> 免费创建，然后回到这里。',
+    btn_logout:'退出', opt_no_domain:'没有已验证的域名', d7:'7天', d30:'30天', d90:'90天',
+    tab_overview:'概览', tab_products:'产品', tab_domains:'域名',
+    ph_search_prod:'搜索产品…', sort_saves:'最多收藏', sort_growth:'趋势上升', sort_clicks:'最多点击',
+    th_product:'产品', th_users:'用户', th_saves:'收藏', th_new:'新增', th_clicks:'点击', th_interest:'兴趣',
+    lt_badge:'少于 10 位用户', pager_products:'{n} 个产品 · 第 {a}/{b} 页', prev:'‹ 上一页', next:'下一页 ›',
+    empty_products:'所选时间段内未找到该域名的产品。',
+    dom_add_title:'添加域名', ph_new_dom:'例如 mystore.com', btn_add:'添加', dom_empty:'还没有域名。请在上方添加。',
+    badge_verified:'已验证', badge_pending:'待验证', dom_method:'方式：',
+    dom_prove:'用<b>以下任一</b>方式证明所有权，然后点击验证：',
+    dom_dns:'<b>DNS TXT</b> 于', dom_or:'…或包含令牌的文件 <code class="ct">/.well-known/vault-verify.txt</code>，或元标签 <code class="ct">&lt;meta name="vault-site-verification" content="{tok}"&gt;</code>',
+    btn_verify:'验证', btn_verifying:'验证中…', btn_remove:'移除',
+    err_dom_other:'该域名已被其他账户验证。', err_dom_generic:'无法添加域名。',
+    alert_token_pending:'域名上尚未找到令牌。DNS 传播可能需要几分钟，请稍后重试。',
+    alert_verify_fail:'验证失败。请确认已发布令牌。',
+    confirm_revoke:'移除 {d}？你将失去该域名洞察的访问权限。',
+    ov_last_days:'最近 {n} 天', loading:'加载中…', err_load:'加载错误。',
+    ov_below:'数据还太少。|需要至少 {n} 位不同用户收藏你域名的产品，才会显示洞察（防识别保护）。',
+    kpi_active:'活跃收藏', kpi_users:'独立用户', kpi_products:'已收藏产品', kpi_new:'新增收藏',
+    vs_prev:'较上一周期', kpi_removed:'移除', kpi_clicks:'点击到网站',
+    top_saved:'最多收藏的产品', unit_saves:'次收藏', top_growth:'增长最快', unit_new:'新增',
+    ov_note:'Vault 显示<b>需求</b>（收藏、兴趣），而非你网站的销售。没有集成时，访问量、购买、收入和转化率不可见。所有数据均为聚合且匿名。',
+    det_below:'少于 10 位不同用户——详情不可用（隐私保护）。',
+    kpi_pricedrop:'降价兴趣', kpi_restock:'补货兴趣',
+    det_newsaves:'新增收藏 · {n}天', det_sources:'收藏来源', det_open:'打开 ↗',
+    det_note:'无个人数据：绝不含姓名、邮箱或个人清单。仅聚合计数。', det_nodata:'该时间段无数据',
+    pw_title:'解锁你店铺的洞察',
+    pw_lead:'Vault Business 向你展示产品的<b>真实需求</b>——收藏、趋势、降价与补货兴趣、到网站的点击——<b>100% 聚合且匿名</b>。无个人数据，无需安装任何东西。',
+    pw_monthly:'月付', pw_price_m:'€49.99', pw_per_m:'/ 月',
+    pw_m1:'已验证域名的完整仪表板', pw_m2:'最多收藏与趋势产品', pw_m3:'到网站点击 · 价格与补货兴趣', pw_m4:'7 / 30 / 90 天范围', pw_cta_m:'订阅 — €49.99/月',
+    pw_badge:'免费 2 个月', pw_annual:'年付', pw_price_y:'€499', pw_per_y:'/ 年', pw_permo:'≈ €41.58 / 月',
+    pw_y1:'包含月付的全部', pw_y2:'比月付免费两个月', pw_y3:'更长历史', pw_y4:'新集成优先', pw_cta_y:'订阅 — €499/年',
+    pw_foot:'通过 Stripe 安全支付 · 企业开票 · 随时取消',
+    checkout_alert:'结账尚未配置。\n\n请在代码中为 {p} 计划添加 Stripe 支付链接（BIZ_STRIPE_*）。',
+    plan_monthly:'月付（€49.99/月）', plan_annual:'年付（€499/年）',
+    set_lang:'语言', set_lang_note:'界面语言。', set_theme:'外观', set_theme_note:'选择浅色或深色背景。', theme_dark:'深色', theme_light:'浅色',
+    need_domain:'在<b>域名</b>标签中验证一个域名以查看洞察。',
+    fab_plan:'订阅', pw_locked:'使用仪表板需要有效的 Vault Business 订阅。'
+  },
+  ja:{
+    login_sub:'ショップ向けインサイト', login_lead:'Vault アカウントでログインして、あなたのドメインの集計・匿名インサイトを確認しましょう。',
+    lbl_email:'メール', lbl_password:'パスワード', ph_email:'you@store.com', btn_login:'ログイン',
+    err_login:'ログインに失敗しました。メールとパスワードを確認してください。',
+    login_note:'アカウントがない場合は <a class="link" href="https://vaultwishlist.com" target="_blank" rel="noopener">vaultwishlist.com</a> で無料作成し、ここに戻ってください。',
+    btn_logout:'ログアウト', opt_no_domain:'確認済みドメインなし', d7:'7日', d30:'30日', d90:'90日',
+    tab_overview:'概要', tab_products:'商品', tab_domains:'ドメイン',
+    ph_search_prod:'商品を検索…', sort_saves:'保存が多い順', sort_growth:'上昇中', sort_clicks:'クリックが多い順',
+    th_product:'商品', th_users:'ユーザー', th_saves:'保存', th_new:'新規', th_clicks:'クリック', th_interest:'関心',
+    lt_badge:'ユーザー10人未満', pager_products:'{n} 件 · ページ {a}/{b}', prev:'‹ 前へ', next:'次へ ›',
+    empty_products:'選択期間にこのドメインの商品は見つかりませんでした。',
+    dom_add_title:'ドメインを追加', ph_new_dom:'例: mystore.com', btn_add:'追加', dom_empty:'ドメインがありません。上で追加してください。',
+    badge_verified:'確認済み', badge_pending:'保留中', dom_method:'方法:',
+    dom_prove:'<b>いずれか</b>の方法で所有権を証明し、確認を押してください:',
+    dom_dns:'<b>DNS TXT</b>：', dom_or:'…またはトークンを含むファイル <code class="ct">/.well-known/vault-verify.txt</code>、あるいはメタタグ <code class="ct">&lt;meta name="vault-site-verification" content="{tok}"&gt;</code>',
+    btn_verify:'確認', btn_verifying:'確認中…', btn_remove:'削除',
+    err_dom_other:'このドメインは別のアカウントで確認済みです。', err_dom_generic:'ドメインを追加できませんでした。',
+    alert_token_pending:'ドメインにトークンがまだ見つかりません。DNS の反映に数分かかることがあります。後で再試行してください。',
+    alert_verify_fail:'確認に失敗しました。トークンが公開されているか確認してください。',
+    confirm_revoke:'{d} を削除しますか？このドメインのインサイトにアクセスできなくなります。',
+    ov_last_days:'直近 {n} 日', loading:'読み込み中…', err_load:'読み込みエラー。',
+    ov_below:'データがまだ不足しています。|インサイトを表示するには、あなたのドメインの商品を保存した異なるユーザーが最低 {n} 人必要です（識別防止保護）。',
+    kpi_active:'有効な保存', kpi_users:'ユニークユーザー', kpi_products:'保存された商品', kpi_new:'新規保存',
+    vs_prev:'前期間比', kpi_removed:'削除', kpi_clicks:'サイトへのクリック',
+    top_saved:'最も保存された商品', unit_saves:'保存', top_growth:'最大の伸び', unit_new:'新規',
+    ov_note:'Vault は<b>需要</b>（保存・関心）を示し、サイトの売上ではありません。訪問数・購入・売上・コンバージョン率は連携なしでは見えません。すべてのデータは集計・匿名です。',
+    det_below:'異なるユーザーが10人未満 — 詳細は利用できません（プライバシー保護）。',
+    kpi_pricedrop:'値下げへの関心', kpi_restock:'再入荷への関心',
+    det_newsaves:'新規保存 · {n}日', det_sources:'保存の経路', det_open:'開く ↗',
+    det_note:'個人データなし：名前・メール・個別リストは一切なし。集計値のみ。', det_nodata:'期間内のデータなし',
+    pw_title:'あなたのショップのインサイトを解放',
+    pw_lead:'Vault Business は商品の<b>実際の需要</b>を表示します — 保存、トレンド、値下げ・再入荷への関心、サイトへのクリック — <b>100% 集計・匿名</b>。個人データなし、インストール不要。',
+    pw_monthly:'月額', pw_price_m:'€49.99', pw_per_m:'/ 月',
+    pw_m1:'確認済みドメインの完全ダッシュボード', pw_m2:'最も保存・トレンドの商品', pw_m3:'サイトへのクリック・価格＆再入荷の関心', pw_m4:'7 / 30 / 90 日の範囲', pw_cta_m:'登録 — €49.99/月',
+    pw_badge:'2か月無料', pw_annual:'年額', pw_price_y:'€499', pw_per_y:'/ 年', pw_permo:'≈ €41.58 / 月',
+    pw_y1:'月額のすべて', pw_y2:'月額より2か月無料', pw_y3:'拡張された履歴', pw_y4:'新連携の優先', pw_cta_y:'登録 — €499/年',
+    pw_foot:'Stripe で安全に決済 · 法人請求書 · いつでも解約可',
+    checkout_alert:'決済が未設定です。\n\n{p} プランの Stripe 支払いリンクをコードに追加してください（BIZ_STRIPE_*）。',
+    plan_monthly:'月額（€49.99/月）', plan_annual:'年額（€499/年）',
+    set_lang:'言語', set_lang_note:'インターフェースの言語。', set_theme:'外観', set_theme_note:'明るい／暗い背景を選択。', theme_dark:'ダーク', theme_light:'ライト',
+    need_domain:'<b>ドメイン</b>タブでドメインを確認するとインサイトが表示されます。',
+    fab_plan:'サブスク', pw_locked:'ダッシュボードの利用には有効な Vault Business のサブスクリプションが必要です。'
   }
 };
+// Same languages as the main Vault app.
+const LANGS=[['en','English'],['it','Italiano'],['es','Español'],['fr','Français'],['de','Deutsch'],['pl','Polski'],['ru','Русский'],['zh','中文'],['ja','日本語']];
 let LANG = localStorage.getItem('vb_lang') || 'en';
 if(!I18N[LANG]) LANG='en';
 function T(k){ return (I18N[LANG] && I18N[LANG][k]!=null) ? I18N[LANG][k] : (I18N.en[k]!=null?I18N.en[k]:k); }
 function tf(k,vars){ let s=T(k); for(const kk in (vars||{})) s=s.split('{'+kk+'}').join(vars[kk]); return s; }
 function applyI18n(){
   document.documentElement.lang=LANG;
+  const ls=document.getElementById('langSel');
+  if(ls && !ls.options.length){ ls.innerHTML=LANGS.map(([c,n])=>`<option value="${c}">${n}</option>`).join(''); }
   document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent=T(el.dataset.i18n); });
   document.querySelectorAll('[data-i18n-html]').forEach(el=>{ el.innerHTML=T(el.dataset.i18nHtml); });
   document.querySelectorAll('[data-i18n-ph]').forEach(el=>{ el.setAttribute('placeholder',T(el.dataset.i18nPh)); });
-  const ls=$('langSel'); if(ls) ls.value=LANG;
+  if(ls) ls.value=LANG;
 }
 function setLang(l){ if(!I18N[l])return; LANG=l; localStorage.setItem('vb_lang',l); applyI18n(); refresh(); }
 
@@ -461,21 +780,35 @@ async function init(){
   const {data:{session}}=await _sb.auth.getSession();
   if(session?.user) boot(); // already logged in
 }
+let _paid=false, _pwHard=false;
 async function boot(){
   $('auth').style.display='none'; $('app').style.display='flex';
   applyTheme(); applyI18n(); injectLogos();
   const {data:{user}}=await _sb.auth.getUser(); _userId=user?.id||''; _userEmail=user?.email||'';
   await loadDomains();
-  // Ask for payment on arrival unless this account already has a paid plan.
+  // HARD GATE: Vault Business is paid-only. No active plan → the whole dashboard
+  // stays locked behind a non-dismissable paywall.
   try{
     const {data:prof}=await _sb.from('bi_business_profiles').select('plan').eq('id',_userId).maybeSingle();
-    if(!prof||!prof.plan||prof.plan==='free') openPaywall();
-  }catch(e){ openPaywall(); }
+    _paid = !!(prof && prof.plan && prof.plan!=='free');
+  }catch(e){ _paid=false; }
+  updateFabs();
+  if(!_paid) openPaywall(true); else closePaywall();
 }
 
-// ---- paywall ----
-function openPaywall(){ injectLogos(); $('pwOv').classList.add('open'); }
-function closePaywall(){ $('pwOv').classList.remove('open'); }
+// ---- bottom-left dock ----
+function updateFabs(){ const p=document.getElementById('planFab'); if(p) p.style.display=_paid?'inline-flex':'none'; }
+function toggleSetPop(){ document.getElementById('setPop').classList.toggle('open'); }
+document.addEventListener('click',e=>{ const pop=document.getElementById('setPop'), dock=document.getElementById('fabDock'); if(pop&&pop.classList.contains('open')&&dock&&!dock.contains(e.target)) pop.classList.remove('open'); });
+
+// ---- paywall (hard-locked until subscribed) ----
+function openPaywall(hard){
+  _pwHard=!!hard; injectLogos();
+  const x=document.getElementById('pwX'); if(x) x.style.display=_pwHard?'none':'block';
+  const note=document.getElementById('pwLockNote'); if(note) note.style.display=_pwHard?'block':'none';
+  $('pwOv').classList.add('open');
+}
+function closePaywall(){ if(_pwHard) return; $('pwOv').classList.remove('open'); }
 function goCheckout(plan){
   const url = plan==='annual' ? BIZ_STRIPE_ANNUAL : BIZ_STRIPE_MONTHLY;
   if(!url){ alert(tf('checkout_alert',{p:T(plan==='annual'?'plan_annual':'plan_monthly')})); return; }
@@ -554,7 +887,7 @@ function setRange(r){ STATE.range=r; [...$('rangeSeg').children].forEach(b=>b.cl
 function onDomainChange(){ STATE.domain=$('domSel').value; refresh(); }
 function showView(v){
   STATE.view=v;
-  ['overview','products','domains','settings'].forEach(x=>{ $('v-'+x).classList.toggle('hidden',x!==v); });
+  ['overview','products','domains'].forEach(x=>{ $('v-'+x).classList.toggle('hidden',x!==v); });
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===v));
   refresh();
 }
