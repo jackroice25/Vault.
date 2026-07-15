@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -19,13 +19,7 @@
   --r:12px; --r2:16px;
   --fs: 'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
 }
-@media (prefers-color-scheme: light){
-  :root:not([data-theme="dark"]){
-    --bg:#f4f4f6; --s1:#ffffff; --s2:#ffffff; --s3:#f0f0f2;
-    --bd:#e3e3e6; --bd2:#d5d5d9; --t1:#141414; --t2:#5a5a5a; --t3:#9a9a9a;
-    --gold-dim:rgba(201,162,39,.12);
-  }
-}
+/* Explicit user choice wins; when set to "light" we flip the palette. */
 :root[data-theme="light"]{
   --bg:#f4f4f6; --s1:#ffffff; --s2:#ffffff; --s3:#f0f0f2;
   --bd:#e3e3e6; --bd2:#d5d5d9; --t1:#141414; --t2:#5a5a5a; --t3:#9a9a9a;
@@ -45,10 +39,6 @@ button{font-family:inherit;cursor:pointer}
 /* ---- login ---- */
 #auth{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:100;padding:24px}
 .auth-card{width:100%;max-width:380px;background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);padding:32px 28px}
-.brand{display:flex;align-items:center;gap:12px;margin-bottom:6px}
-.brand-mark{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#e9c34a,#a9821a);display:flex;align-items:center;justify-content:center;font-weight:800;color:#1a1500;font-size:20px;box-shadow:0 4px 14px rgba(201,162,39,.3)}
-.brand h1{font-size:19px;font-weight:800;letter-spacing:-.3px}
-.brand .sub{font-size:11px;color:var(--gold);font-weight:700;letter-spacing:.5px;text-transform:uppercase}
 .auth-card p.lead{color:var(--t2);font-size:13px;margin:14px 0 20px}
 .field{margin-bottom:12px}
 .field label{display:block;font-size:11px;color:var(--t2);font-weight:600;margin-bottom:5px}
@@ -61,13 +51,13 @@ button{font-family:inherit;cursor:pointer}
 .btn-sm{width:auto;padding:8px 14px;font-size:12.5px;border-radius:9px}
 .err{color:var(--red);font-size:12px;margin-top:10px;min-height:16px}
 
-/* ---- vault. business logo lockup ---- */
-.vb-brand{display:inline-flex;align-items:baseline;gap:8px;line-height:1}
-.vb-logo{height:30px;width:auto;display:block}
-.vb-tag{font-weight:800;font-size:19px;color:var(--gold);letter-spacing:.3px}
-.vb-sub{font-size:11px;color:var(--gold);font-weight:700;letter-spacing:.6px;text-transform:uppercase;margin-top:8px}
-.topbar .vb-logo{height:21px}
-.topbar .vb-tag{font-size:13.5px}
+/* ---- vault. business chrome logo ---- */
+.vb-brand{display:inline-flex;align-items:center;line-height:1}
+.vb-logo{height:26px;width:auto;display:block}
+.vb-sub{font-size:11px;color:var(--gold);font-weight:700;letter-spacing:.6px;text-transform:uppercase;margin-top:10px}
+.auth-card .vb-logo{height:34px}
+.topbar .vb-logo{height:20px}
+.pw .vb-logo{height:30px}
 
 /* ---- paywall ---- */
 .pw-ov{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);z-index:80;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}
@@ -93,15 +83,13 @@ button{font-family:inherit;cursor:pointer}
 /* ---- shell ---- */
 #app{display:none;min-height:100vh;flex-direction:column}
 .topbar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--bd);padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.topbar .brand h1{font-size:15px}
-.topbar .brand-mark{width:30px;height:30px;font-size:15px;border-radius:8px}
 .spacer{flex:1}
 .select{background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:8px 12px;color:var(--t1);font-size:13px;font-weight:600;outline:none}
 .seg{display:inline-flex;background:var(--s2);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
 .seg button{background:transparent;border:none;color:var(--t2);padding:7px 12px;font-size:12.5px;font-weight:600}
 .seg button.on{background:var(--gold-dim);color:var(--gold)}
-.tabs{display:flex;gap:4px;padding:0 20px;border-bottom:1px solid var(--bd);background:var(--bg);position:sticky;top:57px;z-index:19}
-.tab{background:transparent;border:none;border-bottom:2px solid transparent;color:var(--t2);padding:12px 14px;font-size:13px;font-weight:600;margin-bottom:-1px}
+.tabs{display:flex;gap:4px;padding:0 20px;border-bottom:1px solid var(--bd);background:var(--bg);position:sticky;top:57px;z-index:19;overflow-x:auto}
+.tab{background:transparent;border:none;border-bottom:2px solid transparent;color:var(--t2);padding:12px 14px;font-size:13px;font-weight:600;margin-bottom:-1px;white-space:nowrap}
 .tab.on{color:var(--t1);border-bottom-color:var(--gold)}
 .wrap{max-width:1100px;margin:0 auto;padding:22px 20px 60px;width:100%}
 .pagehd{font-size:13px;color:var(--t2);margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -148,6 +136,13 @@ tbody tr:hover{background:var(--s2)}
 .badge.pending{background:var(--gold-dim);color:var(--gold)}
 .code{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:var(--s3);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;word-break:break-all;color:var(--t1)}
 
+/* ---- settings ---- */
+.set-row{display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid var(--bd)}
+.set-row:last-child{border-bottom:none}
+.set-row .st{flex:1}
+.set-row .st b{display:block;font-size:14px;font-weight:700}
+.set-row .st span{font-size:12.5px;color:var(--t2)}
+
 /* ---- modal ---- */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:60;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}
 .ov.open{display:flex}
@@ -164,13 +159,13 @@ tbody tr:hover{background:var(--s2)}
 <div id="auth">
   <div class="auth-card">
     <div id="loginBrand" class="vb-brand"></div>
-    <div class="vb-sub">Merchant insights</div>
-    <p class="lead">Accedi con il tuo account Vault per vedere gli insight aggregati sui prodotti del tuo dominio.</p>
-    <div class="field"><label>Email</label><input class="inp" id="email" type="email" autocomplete="email" placeholder="tu@negozio.com"></div>
-    <div class="field"><label>Password</label><input class="inp" id="pw" type="password" autocomplete="current-password" placeholder="••••••••"></div>
-    <button class="btn" id="loginBtn" onclick="doLogin()">Accedi</button>
+    <div class="vb-sub" data-i18n="login_sub">Merchant insights</div>
+    <p class="lead" data-i18n="login_lead">Sign in with your Vault account to see aggregated, anonymous insights for your domain.</p>
+    <div class="field"><label data-i18n="lbl_email">Email</label><input class="inp" id="email" type="email" autocomplete="email" data-i18n-ph="ph_email" placeholder="you@store.com"></div>
+    <div class="field"><label data-i18n="lbl_password">Password</label><input class="inp" id="pw" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+    <button class="btn" id="loginBtn" onclick="doLogin()" data-i18n="btn_login">Sign in</button>
     <div class="err" id="authErr"></div>
-    <p class="note" style="margin-top:14px">Non hai un account? Creane uno gratis su <a class="link" href="https://vaultwishlist.com" target="_blank" rel="noopener">vaultwishlist.com</a>, poi torna qui.</p>
+    <p class="note" style="margin-top:14px" data-i18n-html="login_note">No account yet? Create one free at <a class="link" href="https://vaultwishlist.com" target="_blank" rel="noopener">vaultwishlist.com</a>, then come back here.</p>
   </div>
 </div>
 
@@ -181,16 +176,17 @@ tbody tr:hover{background:var(--s2)}
     <div class="spacer"></div>
     <select class="select" id="domSel" onchange="onDomainChange()"></select>
     <div class="seg" id="rangeSeg">
-      <button data-r="7" onclick="setRange(7)">7g</button>
-      <button data-r="30" class="on" onclick="setRange(30)">30g</button>
-      <button data-r="90" onclick="setRange(90)">90g</button>
+      <button data-r="7" onclick="setRange(7)" data-i18n="d7">7d</button>
+      <button data-r="30" class="on" onclick="setRange(30)" data-i18n="d30">30d</button>
+      <button data-r="90" onclick="setRange(90)" data-i18n="d90">90d</button>
     </div>
-    <button class="btn btn-ghost btn-sm" onclick="logout()">Esci</button>
+    <button class="btn btn-ghost btn-sm" onclick="logout()" data-i18n="btn_logout">Sign out</button>
   </div>
   <div class="tabs">
-    <button class="tab on" data-v="overview" onclick="showView('overview')">Panoramica</button>
-    <button class="tab" data-v="products" onclick="showView('products')">Prodotti</button>
-    <button class="tab" data-v="domains" onclick="showView('domains')">Domini</button>
+    <button class="tab on" data-v="overview" onclick="showView('overview')" data-i18n="tab_overview">Overview</button>
+    <button class="tab" data-v="products" onclick="showView('products')" data-i18n="tab_products">Products</button>
+    <button class="tab" data-v="domains" onclick="showView('domains')" data-i18n="tab_domains">Domains</button>
+    <button class="tab" data-v="settings" onclick="showView('settings')" data-i18n="tab_settings">Settings</button>
   </div>
 
   <div class="wrap">
@@ -202,11 +198,11 @@ tbody tr:hover{background:var(--s2)}
     <!-- PRODUCTS -->
     <div id="v-products" class="view hidden">
       <div class="toolbar">
-        <div class="search"><input class="inp" id="prodSearch" placeholder="Cerca prodotto…" oninput="debouncedProducts()"></div>
+        <div class="search"><input class="inp" id="prodSearch" data-i18n-ph="ph_search_prod" placeholder="Search product…" oninput="debouncedProducts()"></div>
         <select class="select" id="prodSort" onchange="loadProducts(0)">
-          <option value="saves">Più salvati</option>
-          <option value="growth">In crescita</option>
-          <option value="clicks">Più clic</option>
+          <option value="saves" data-i18n="sort_saves">Most saved</option>
+          <option value="growth" data-i18n="sort_growth">Trending</option>
+          <option value="clicks" data-i18n="sort_clicks">Most clicks</option>
         </select>
       </div>
       <div id="prodBody"></div>
@@ -214,14 +210,33 @@ tbody tr:hover{background:var(--s2)}
     <!-- DOMAINS -->
     <div id="v-domains" class="view hidden">
       <div class="card" style="margin-bottom:16px">
-        <div class="mini-hd">Aggiungi un dominio</div>
+        <div class="mini-hd" data-i18n="dom_add_title">Add a domain</div>
         <div class="toolbar" style="margin:0">
-          <div class="search"><input class="inp" id="newDom" placeholder="es. ilmionegozio.com"></div>
-          <button class="btn btn-sm" onclick="addDomain()">Aggiungi</button>
+          <div class="search"><input class="inp" id="newDom" data-i18n-ph="ph_new_dom" placeholder="e.g. mystore.com"></div>
+          <button class="btn btn-sm" onclick="addDomain()" data-i18n="btn_add">Add</button>
         </div>
         <div class="err" id="domErr"></div>
       </div>
       <div id="domList"></div>
+    </div>
+    <!-- SETTINGS -->
+    <div id="v-settings" class="view hidden">
+      <div class="card">
+        <div class="set-row">
+          <div class="st"><b data-i18n="set_lang">Language</b><span data-i18n="set_lang_note">Interface language for this dashboard.</span></div>
+          <select class="select" id="langSel" onchange="setLang(this.value)">
+            <option value="en">English</option>
+            <option value="it">Italiano</option>
+          </select>
+        </div>
+        <div class="set-row">
+          <div class="st"><b data-i18n="set_theme">Appearance</b><span data-i18n="set_theme_note">Choose a light or dark background.</span></div>
+          <div class="seg" id="themeSeg">
+            <button data-th="dark" onclick="setTheme('dark')" data-i18n="theme_dark">Dark</button>
+            <button data-th="light" onclick="setTheme('light')" data-i18n="theme_light">Light</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -231,36 +246,36 @@ tbody tr:hover{background:var(--s2)}
   <div class="pw">
     <button class="pw-x" onclick="closePaywall()">✕</button>
     <div class="vb-brand" id="pwBrand"></div>
-    <h2>Sblocca gli insight del tuo negozio</h2>
-    <p class="plead">Vault Business ti mostra la <b>domanda reale</b> sui tuoi prodotti — salvataggi, trend, interesse per cali di prezzo e restock, clic verso il sito — in forma <b>100% aggregata e anonima</b>. Nessun dato personale, nessun plugin da installare sul sito.</p>
+    <h2 data-i18n="pw_title">Unlock your store's insights</h2>
+    <p class="plead" data-i18n-html="pw_lead">Vault Business shows you the <b>real demand</b> for your products — saves, trends, price-drop &amp; restock interest, click-throughs to your site — <b>100% aggregated and anonymous</b>. No personal data, nothing to install on your site.</p>
     <div class="pw-grid">
       <div class="pw-card">
-        <div class="pw-name">Mensile</div>
-        <div class="pw-price">€49,99 <span>/ mese</span></div>
+        <div class="pw-name" data-i18n="pw_monthly">Monthly</div>
+        <div class="pw-price"><span data-i18n="pw_price_m">€49.99</span> <span data-i18n="pw_per_m">/ month</span></div>
         <div class="pw-sub">&nbsp;</div>
         <ul class="pw-list">
-          <li>Dashboard completa per i tuoi domini verificati</li>
-          <li>Prodotti più salvati e in crescita</li>
-          <li>Clic verso il sito · interesse prezzo &amp; restock</li>
-          <li>Intervalli 7 / 30 / 90 giorni</li>
+          <li data-i18n="pw_m1">Full dashboard for your verified domains</li>
+          <li data-i18n="pw_m2">Most-saved and trending products</li>
+          <li data-i18n="pw_m3">Clicks to site · price &amp; restock interest</li>
+          <li data-i18n="pw_m4">7 / 30 / 90-day ranges</li>
         </ul>
-        <button class="btn" onclick="goCheckout('monthly')">Abbonati — €49,99/mese</button>
+        <button class="btn" onclick="goCheckout('monthly')" data-i18n="pw_cta_m">Subscribe — €49.99/mo</button>
       </div>
       <div class="pw-card best">
-        <span class="pw-badge">2 MESI GRATIS</span>
-        <div class="pw-name">Annuale</div>
-        <div class="pw-price">€499 <span>/ anno</span></div>
-        <div class="pw-sub">≈ €41,58 / mese</div>
+        <span class="pw-badge" data-i18n="pw_badge">2 MONTHS FREE</span>
+        <div class="pw-name" data-i18n="pw_annual">Annual</div>
+        <div class="pw-price"><span data-i18n="pw_price_y">€499</span> <span data-i18n="pw_per_y">/ year</span></div>
+        <div class="pw-sub" data-i18n="pw_permo">≈ €41.58 / month</div>
         <ul class="pw-list">
-          <li>Tutto del piano mensile</li>
-          <li>Due mesi gratis rispetto al mensile</li>
-          <li>Storico esteso</li>
-          <li>Priorità sulle nuove integrazioni</li>
+          <li data-i18n="pw_y1">Everything in Monthly</li>
+          <li data-i18n="pw_y2">Two months free vs monthly</li>
+          <li data-i18n="pw_y3">Extended history</li>
+          <li data-i18n="pw_y4">Priority on new integrations</li>
         </ul>
-        <button class="btn" onclick="goCheckout('annual')">Abbonati — €499/anno</button>
+        <button class="btn" onclick="goCheckout('annual')" data-i18n="pw_cta_y">Subscribe — €499/yr</button>
       </div>
     </div>
-    <div class="pw-foot">Pagamento sicuro tramite Stripe · Fatturazione aziendale · Disdici quando vuoi</div>
+    <div class="pw-foot" data-i18n="pw_foot">Secure payment via Stripe · Business invoicing · Cancel anytime</div>
   </div>
 </div>
 
@@ -278,28 +293,157 @@ let STATE={ domain:null, domains:[], range:30, view:'overview', prodOffset:0, pr
 let _userId='', _userEmail='';
 
 // ---- Stripe Business checkout links (create these two Payment Links in Stripe,
-//      €49,99/mese and €499/anno, then paste the URLs here) ----
-const BIZ_STRIPE_MONTHLY=''; // TODO: incolla il Payment Link Stripe — €49,99/mese
-const BIZ_STRIPE_ANNUAL ='';  // TODO: incolla il Payment Link Stripe — €499/anno
+//      €49.99/mo and €499/yr, then paste the URLs here) ----
+const BIZ_STRIPE_MONTHLY=''; // TODO: paste the Stripe Payment Link — €49.99/mo
+const BIZ_STRIPE_ANNUAL ='';  // TODO: paste the Stripe Payment Link — €499/yr
 
-// vault. chrome wordmark + gold "Business" tag — reused in login, topbar, paywall.
-const VB_LOGO=`<svg class="vb-logo" viewBox="118 32 445 132" xmlns="http://www.w3.org/2000/svg" style="overflow:visible" role="img" aria-label="vault.">
+// ═══ i18n — English is the native/default language; Italian is an option ═══
+const I18N={
+  en:{
+    login_sub:'Merchant insights',
+    login_lead:"Sign in with your Vault account to see aggregated, anonymous insights for your domain.",
+    lbl_email:'Email', lbl_password:'Password', ph_email:'you@store.com', btn_login:'Sign in',
+    err_login:'Sign-in failed. Check your email and password.',
+    login_note:'No account yet? Create one free at <a class="link" href="https://vaultwishlist.com" target="_blank" rel="noopener">vaultwishlist.com</a>, then come back here.',
+    btn_logout:'Sign out', opt_no_domain:'No verified domain',
+    d7:'7d', d30:'30d', d90:'90d',
+    tab_overview:'Overview', tab_products:'Products', tab_domains:'Domains', tab_settings:'Settings',
+    ph_search_prod:'Search product…', sort_saves:'Most saved', sort_growth:'Trending', sort_clicks:'Most clicks',
+    th_product:'Product', th_users:'Users', th_saves:'Saves', th_new:'New', th_clicks:'Clicks', th_interest:'Interest',
+    lt_badge:'Fewer than 10 users', pager_products:'{n} products · page {a}/{b}', prev:'‹ Prev', next:'Next ›',
+    empty_products:'No products found for this domain in the selected range.',
+    dom_add_title:'Add a domain', ph_new_dom:'e.g. mystore.com', btn_add:'Add',
+    dom_empty:'No domains yet. Add one above.',
+    badge_verified:'Verified', badge_pending:'Pending', dom_method:'Method:',
+    dom_prove:'Prove ownership with <b>one</b> of these methods, then press Verify:',
+    dom_dns:'<b>DNS TXT</b> on', dom_or:'…or a file <code class="ct">/.well-known/vault-verify.txt</code> containing the token, or a meta tag <code class="ct">&lt;meta name="vault-site-verification" content="{tok}"&gt;</code>',
+    btn_verify:'Verify', btn_verifying:'Verifying…', btn_remove:'Remove',
+    err_dom_other:'This domain is already verified by another account.',
+    err_dom_generic:'Could not add the domain.',
+    alert_token_pending:'Token not found on the domain yet. DNS propagation can take a few minutes — try again shortly.',
+    alert_verify_fail:'Verification failed. Make sure you published the token.',
+    confirm_revoke:'Remove {d}? You will lose access to this domain’s insights.',
+    ov_last_days:'last {n} days', loading:'Loading…', err_load:'Loading error.',
+    ov_below:'Not enough data yet.|At least {n} distinct users must save products from your domain before insights are shown (anti-identification protection).',
+    kpi_active:'Active saves', kpi_users:'Unique users', kpi_products:'Saved products', kpi_new:'New saves',
+    vs_prev:'vs prev. period', kpi_removed:'Removals', kpi_clicks:'Clicks to site',
+    top_saved:'Most saved product', unit_saves:'saves', top_growth:'Top growth', unit_new:'new',
+    ov_note:'Vault shows <b>demand</b> (saves, interest), not your site’s sales. Visits, purchases, revenue and conversion rate are not visible without an integration. All data is aggregated and anonymous.',
+    det_below:'Fewer than 10 distinct users — detail unavailable (privacy protection).',
+    kpi_pricedrop:'Price-drop interest', kpi_restock:'Restock interest',
+    det_newsaves:'New saves · {n}d', det_sources:'Save source', det_open:'open ↗',
+    det_note:'No personal data: never names, emails or individual wishlists. Aggregate counts only.',
+    det_nodata:'No data in the selected range',
+    pw_title:"Unlock your store's insights",
+    pw_lead:'Vault Business shows you the <b>real demand</b> for your products — saves, trends, price-drop &amp; restock interest, click-throughs to your site — <b>100% aggregated and anonymous</b>. No personal data, nothing to install on your site.',
+    pw_monthly:'Monthly', pw_price_m:'€49.99', pw_per_m:'/ month',
+    pw_m1:'Full dashboard for your verified domains', pw_m2:'Most-saved and trending products',
+    pw_m3:'Clicks to site · price & restock interest', pw_m4:'7 / 30 / 90-day ranges',
+    pw_cta_m:'Subscribe — €49.99/mo',
+    pw_badge:'2 MONTHS FREE', pw_annual:'Annual', pw_price_y:'€499', pw_per_y:'/ year', pw_permo:'≈ €41.58 / month',
+    pw_y1:'Everything in Monthly', pw_y2:'Two months free vs monthly', pw_y3:'Extended history', pw_y4:'Priority on new integrations',
+    pw_cta_y:'Subscribe — €499/yr',
+    pw_foot:'Secure payment via Stripe · Business invoicing · Cancel anytime',
+    checkout_alert:'Checkout not configured yet.\n\nAdd the Stripe payment link for the {p} plan in the code (BIZ_STRIPE_*).',
+    plan_monthly:'monthly (€49.99/mo)', plan_annual:'annual (€499/yr)',
+    set_lang:'Language', set_lang_note:'Interface language for this dashboard.',
+    set_theme:'Appearance', set_theme_note:'Choose a light or dark background.', theme_dark:'Dark', theme_light:'Light',
+    need_domain:'Verify a domain in the <b>Domains</b> tab to see insights.'
+  },
+  it:{
+    login_sub:'Insight per negozi',
+    login_lead:'Accedi con il tuo account Vault per vedere gli insight aggregati sui prodotti del tuo dominio.',
+    lbl_email:'Email', lbl_password:'Password', ph_email:'tu@negozio.com', btn_login:'Accedi',
+    err_login:'Accesso non riuscito. Controlla email e password.',
+    login_note:'Non hai un account? Creane uno gratis su <a class="link" href="https://vaultwishlist.com" target="_blank" rel="noopener">vaultwishlist.com</a>, poi torna qui.',
+    btn_logout:'Esci', opt_no_domain:'Nessun dominio verificato',
+    d7:'7g', d30:'30g', d90:'90g',
+    tab_overview:'Panoramica', tab_products:'Prodotti', tab_domains:'Domini', tab_settings:'Impostazioni',
+    ph_search_prod:'Cerca prodotto…', sort_saves:'Più salvati', sort_growth:'In crescita', sort_clicks:'Più clic',
+    th_product:'Prodotto', th_users:'Utenti', th_saves:'Salvataggi', th_new:'Nuovi', th_clicks:'Clic', th_interest:'Interesse',
+    lt_badge:'Meno di 10 utenti', pager_products:'{n} prodotti · pagina {a}/{b}', prev:'‹ Prec.', next:'Succ. ›',
+    empty_products:'Nessun prodotto trovato per questo dominio nel periodo selezionato.',
+    dom_add_title:'Aggiungi un dominio', ph_new_dom:'es. ilmionegozio.com', btn_add:'Aggiungi',
+    dom_empty:'Nessun dominio ancora. Aggiungine uno sopra.',
+    badge_verified:'Verificato', badge_pending:'In attesa', dom_method:'Metodo:',
+    dom_prove:'Dimostra la proprietà con <b>uno</b> di questi metodi, poi premi Verifica:',
+    dom_dns:'<b>DNS TXT</b> su', dom_or:'…oppure un file <code class="ct">/.well-known/vault-verify.txt</code> contenente il token, o un meta tag <code class="ct">&lt;meta name="vault-site-verification" content="{tok}"&gt;</code>',
+    btn_verify:'Verifica', btn_verifying:'Verifico…', btn_remove:'Rimuovi',
+    err_dom_other:'Questo dominio è già verificato da un altro account.',
+    err_dom_generic:'Impossibile aggiungere il dominio.',
+    alert_token_pending:'Token non ancora trovato sul dominio. La propagazione DNS può richiedere qualche minuto; riprova tra poco.',
+    alert_verify_fail:'Verifica non riuscita. Controlla di aver pubblicato il token.',
+    confirm_revoke:'Rimuovere {d}? Perderai l’accesso agli insight di questo dominio.',
+    ov_last_days:'ultimi {n} giorni', loading:'Carico…', err_load:'Errore nel caricamento.',
+    ov_below:'Ancora pochi dati.|Servono almeno {n} utenti distinti che salvano prodotti del tuo dominio prima di mostrare gli insight (protezione anti-identificazione).',
+    kpi_active:'Salvataggi attivi', kpi_users:'Utenti distinti', kpi_products:'Prodotti salvati', kpi_new:'Nuovi salvataggi',
+    vs_prev:'vs periodo prec.', kpi_removed:'Rimozioni', kpi_clicks:'Clic verso il sito',
+    top_saved:'Prodotto più salvato', unit_saves:'salvataggi', top_growth:'Maggiore crescita', unit_new:'nuovi',
+    ov_note:'Vault mostra <b>domanda</b> (salvataggi, interesse), non le vendite del tuo sito. Visite, acquisti, fatturato e conversion rate non sono visibili senza un’integrazione. Tutti i dati sono aggregati e anonimi.',
+    det_below:'Meno di 10 utenti distinti — dettaglio non disponibile (protezione privacy).',
+    kpi_pricedrop:'Interesse calo prezzo', kpi_restock:'Interesse restock',
+    det_newsaves:'Nuovi salvataggi · {n}g', det_sources:'Fonte dei salvataggi', det_open:'apri ↗',
+    det_note:'Nessun dato personale: mai nomi, email o wishlist individuali. Solo conteggi aggregati.',
+    det_nodata:'Nessun dato nel periodo',
+    pw_title:'Sblocca gli insight del tuo negozio',
+    pw_lead:'Vault Business ti mostra la <b>domanda reale</b> sui tuoi prodotti — salvataggi, trend, interesse per cali di prezzo e restock, clic verso il sito — in forma <b>100% aggregata e anonima</b>. Nessun dato personale, nessun plugin da installare sul sito.',
+    pw_monthly:'Mensile', pw_price_m:'€49,99', pw_per_m:'/ mese',
+    pw_m1:'Dashboard completa per i tuoi domini verificati', pw_m2:'Prodotti più salvati e in crescita',
+    pw_m3:'Clic verso il sito · interesse prezzo & restock', pw_m4:'Intervalli 7 / 30 / 90 giorni',
+    pw_cta_m:'Abbonati — €49,99/mese',
+    pw_badge:'2 MESI GRATIS', pw_annual:'Annuale', pw_price_y:'€499', pw_per_y:'/ anno', pw_permo:'≈ €41,58 / mese',
+    pw_y1:'Tutto del piano mensile', pw_y2:'Due mesi gratis rispetto al mensile', pw_y3:'Storico esteso', pw_y4:'Priorità sulle nuove integrazioni',
+    pw_cta_y:'Abbonati — €499/anno',
+    pw_foot:'Pagamento sicuro tramite Stripe · Fatturazione aziendale · Disdici quando vuoi',
+    checkout_alert:'Checkout in configurazione.\n\nAggiungi il link di pagamento Stripe per il piano {p} nel codice (BIZ_STRIPE_*).',
+    plan_monthly:'mensile (€49,99/mese)', plan_annual:'annuale (€499/anno)',
+    set_lang:'Lingua', set_lang_note:'Lingua dell’interfaccia di questa dashboard.',
+    set_theme:'Aspetto', set_theme_note:'Scegli sfondo chiaro o scuro.', theme_dark:'Scuro', theme_light:'Chiaro',
+    need_domain:'Verifica un dominio nella scheda <b>Domini</b> per vedere gli insight.'
+  }
+};
+let LANG = localStorage.getItem('vb_lang') || 'en';
+if(!I18N[LANG]) LANG='en';
+function T(k){ return (I18N[LANG] && I18N[LANG][k]!=null) ? I18N[LANG][k] : (I18N.en[k]!=null?I18N.en[k]:k); }
+function tf(k,vars){ let s=T(k); for(const kk in (vars||{})) s=s.split('{'+kk+'}').join(vars[kk]); return s; }
+function applyI18n(){
+  document.documentElement.lang=LANG;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent=T(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{ el.innerHTML=T(el.dataset.i18nHtml); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{ el.setAttribute('placeholder',T(el.dataset.i18nPh)); });
+  const ls=$('langSel'); if(ls) ls.value=LANG;
+}
+function setLang(l){ if(!I18N[l])return; LANG=l; localStorage.setItem('vb_lang',l); applyI18n(); refresh(); }
+
+// ═══ theme (light / dark) — user choice persisted; default dark ═══
+function applyTheme(){
+  const th=localStorage.getItem('vb_theme')||'dark';
+  document.documentElement.dataset.theme=th;
+  document.querySelectorAll('#themeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.th===th));
+}
+function setTheme(th){ localStorage.setItem('vb_theme',th); applyTheme(); }
+
+// ═══ vault. business — one chrome wordmark, both words on the SAME baseline ═══
+const VB_LOGO=`<svg class="vb-logo" viewBox="0 0 815 150" xmlns="http://www.w3.org/2000/svg" style="overflow:visible" role="img" aria-label="vault. business">
 <defs>
 <linearGradient id="vChrB" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f8f8f8"/><stop offset="8%" stop-color="#c0c0c0"/><stop offset="20%" stop-color="#f2f2f2"/><stop offset="33%" stop-color="#606060"/><stop offset="46%" stop-color="#383838"/><stop offset="58%" stop-color="#b8b8b8"/><stop offset="70%" stop-color="#ffffff"/><stop offset="82%" stop-color="#909090"/><stop offset="92%" stop-color="#d8d8d8"/><stop offset="100%" stop-color="#282828"/></linearGradient>
 <linearGradient id="vSideB" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#484848"/><stop offset="50%" stop-color="#282828"/><stop offset="100%" stop-color="#101010"/></linearGradient>
 </defs>
-<text x="349" y="148" font-family="'Arial Black','Impact','Helvetica Neue',sans-serif" font-weight="900" font-size="138" text-anchor="middle" fill="url(#vSideB)">vault.</text>
-<text x="345" y="144" font-family="'Arial Black','Impact','Helvetica Neue',sans-serif" font-weight="900" font-size="138" text-anchor="middle" fill="#303030">vault.</text>
-<text x="342" y="141" font-family="'Arial Black','Impact','Helvetica Neue',sans-serif" font-weight="900" font-size="138" text-anchor="middle" fill="#4e4e4e">vault.</text>
-<text x="340" y="139" font-family="'Arial Black','Impact','Helvetica Neue',sans-serif" font-weight="900" font-size="138" text-anchor="middle" fill="url(#vChrB)">vault.</text>
-<text x="340" y="139" font-family="'Arial Black','Impact','Helvetica Neue',sans-serif" font-weight="900" font-size="138" text-anchor="middle" fill="none" stroke="#ffffff" stroke-width="0.5" stroke-opacity="0.15">vault.</text>
-</svg><span class="vb-tag">Business</span>`;
-function injectLogos(){ ['loginBrand','barBrand','pwBrand'].forEach(id=>{const el=document.getElementById(id); if(el&&!el.dataset.done){el.innerHTML=VB_LOGO; el.dataset.done='1';}}); }
+<g font-family="'Arial Black','Impact','Helvetica Neue',sans-serif" font-weight="900" text-anchor="start">
+<text x="14" y="122" fill="url(#vSideB)"><tspan font-size="120">vault.</tspan><tspan dx="22" font-size="120">business</tspan></text>
+<text x="11" y="119" fill="#2b2b2b"><tspan font-size="120">vault.</tspan><tspan dx="22" font-size="120">business</tspan></text>
+<text x="8" y="116" fill="#454545"><tspan font-size="120">vault.</tspan><tspan dx="22" font-size="120">business</tspan></text>
+<text x="6" y="114" fill="url(#vChrB)"><tspan font-size="120">vault.</tspan><tspan dx="22" font-size="120">business</tspan></text>
+<text x="6" y="114" fill="none" stroke="#ffffff" stroke-width="0.5" stroke-opacity="0.15"><tspan font-size="120">vault.</tspan><tspan dx="22" font-size="120">business</tspan></text>
+</g>
+</svg>`;
+function injectLogos(){ ['loginBrand','barBrand','pwBrand'].forEach(id=>{const el=document.getElementById(id); if(el){el.innerHTML=VB_LOGO;}}); }
 
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const fmt=n=>n==null?'—':new Intl.NumberFormat('it-IT').format(n);
-const money=n=>n==null?'':'€'+new Intl.NumberFormat('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
+const nloc=()=>LANG==='it'?'it-IT':'en-GB';
+const fmt=n=>n==null?'—':new Intl.NumberFormat(nloc()).format(n);
+const money=n=>n==null?'':'€'+new Intl.NumberFormat(nloc(),{minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
 function pct(cur,prev){ if(!prev) return cur>0?{v:'+100%',c:'up'}:{v:'—',c:''}; const d=Math.round((cur-prev)/prev*100); return {v:(d>=0?'+':'')+d+'%', c:d>=0?'up':'down'}; }
 
 // ---------- auth ----------
@@ -307,19 +451,19 @@ async function doLogin(){
   const btn=$('loginBtn'); btn.disabled=true; $('authErr').textContent='';
   const {error}=await _sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('pw').value});
   btn.disabled=false;
-  if(error){ $('authErr').textContent='Accesso non riuscito. Controlla email e password.'; return; }
+  if(error){ $('authErr').textContent=T('err_login'); return; }
   boot();
 }
 async function logout(){ await _sb.auth.signOut(); location.reload(); }
 
 async function init(){
-  injectLogos();
+  applyTheme(); applyI18n(); injectLogos();
   const {data:{session}}=await _sb.auth.getSession();
   if(session?.user) boot(); // already logged in
 }
 async function boot(){
   $('auth').style.display='none'; $('app').style.display='flex';
-  injectLogos();
+  applyTheme(); applyI18n(); injectLogos();
   const {data:{user}}=await _sb.auth.getUser(); _userId=user?.id||''; _userEmail=user?.email||'';
   await loadDomains();
   // Ask for payment on arrival unless this account already has a paid plan.
@@ -334,20 +478,19 @@ function openPaywall(){ injectLogos(); $('pwOv').classList.add('open'); }
 function closePaywall(){ $('pwOv').classList.remove('open'); }
 function goCheckout(plan){
   const url = plan==='annual' ? BIZ_STRIPE_ANNUAL : BIZ_STRIPE_MONTHLY;
-  if(!url){ alert('Checkout in configurazione.\n\nAggiungi il link di pagamento Stripe per il piano '+(plan==='annual'?'annuale (€499/anno)':'mensile (€49,99/mese)')+' nel codice (BIZ_STRIPE_*).'); return; }
+  if(!url){ alert(tf('checkout_alert',{p:T(plan==='annual'?'plan_annual':'plan_monthly')})); return; }
   const sep = url.includes('?') ? '&' : '?';
-  // client_reference_id lets the Stripe webhook match the payment to this account
   location.href = url + sep + 'client_reference_id=' + encodeURIComponent(_userId) + '&prefilled_email=' + encodeURIComponent(_userEmail);
 }
 
 // ---------- domains ----------
 async function loadDomains(){
-  const {data,error}=await _sb.from('bi_merchant_domains').select('*').eq('revoked',false).order('created_at',{ascending:true});
+  const {data}=await _sb.from('bi_merchant_domains').select('*').eq('revoked',false).order('created_at',{ascending:true});
   STATE.domains=data||[];
   const verified=STATE.domains.filter(d=>d.verified);
   const sel=$('domSel');
   if(!verified.length){
-    sel.innerHTML='<option>Nessun dominio verificato</option>'; sel.disabled=true;
+    sel.innerHTML='<option>'+esc(T('opt_no_domain'))+'</option>'; sel.disabled=true;
     STATE.domain=null;
   } else {
     sel.disabled=false;
@@ -361,24 +504,24 @@ async function loadDomains(){
 }
 function renderDomains(){
   const el=$('domList');
-  if(!STATE.domains.length){ el.innerHTML='<div class="state">Nessun dominio ancora. Aggiungine uno sopra.</div>'; return; }
+  if(!STATE.domains.length){ el.innerHTML='<div class="state">'+esc(T('dom_empty'))+'</div>'; return; }
   el.innerHTML='<div class="card">'+STATE.domains.map(d=>{
     const token=`vault-site-verification=${esc(d.verify_token)}`;
     return `<div class="domrow">
       <div style="flex:1">
         <div style="font-weight:700">${esc(d.normalized_domain)}
-          ${d.verified?'<span class="badge ok">Verificato</span>':'<span class="badge pending">In attesa</span>'}</div>
-        ${d.verified?`<div class="muted" style="font-size:12px;margin-top:3px">Metodo: ${esc(d.verify_method||'—')} · ${d.verified_at?new Date(d.verified_at).toLocaleDateString('it-IT'):''}</div>`
+          ${d.verified?`<span class="badge ok">${esc(T('badge_verified'))}</span>`:`<span class="badge pending">${esc(T('badge_pending'))}</span>`}</div>
+        ${d.verified?`<div class="muted" style="font-size:12px;margin-top:3px">${esc(T('dom_method'))} ${esc(d.verify_method||'—')} · ${d.verified_at?new Date(d.verified_at).toLocaleDateString(nloc()):''}</div>`
         :`<div style="margin-top:10px">
-            <div class="muted" style="font-size:12px;margin-bottom:6px">Dimostra la proprietà con <b>uno</b> di questi metodi, poi premi Verifica:</div>
-            <div class="note" style="margin:2px 0 4px"><b>DNS TXT</b> su <code style="color:var(--t1)">_vault-verify.${esc(d.normalized_domain)}</code>:</div>
+            <div class="muted" style="font-size:12px;margin-bottom:6px">${T('dom_prove')}</div>
+            <div class="note" style="margin:2px 0 4px">${T('dom_dns')} <code style="color:var(--t1)">_vault-verify.${esc(d.normalized_domain)}</code>:</div>
             <div class="code">${token}</div>
-            <div class="note">…oppure file <code style="color:var(--t1)">/.well-known/vault-verify.txt</code> contenente il token, o meta tag <code style="color:var(--t1)">&lt;meta name="vault-site-verification" content="${esc(d.verify_token)}"&gt;</code></div>
+            <div class="note">${tf('dom_or',{tok:esc(d.verify_token)})}</div>
           </div>`}
       </div>
       <div style="display:flex;flex-direction:column;gap:8px">
-        ${d.verified?'':`<button class="btn btn-sm" onclick="verifyDomain('${esc(d.normalized_domain)}',this)">Verifica</button>`}
-        <button class="btn btn-ghost btn-sm" onclick="revokeDomain('${esc(d.normalized_domain)}')">Rimuovi</button>
+        ${d.verified?'':`<button class="btn btn-sm" onclick="verifyDomain('${esc(d.normalized_domain)}',this)">${esc(T('btn_verify'))}</button>`}
+        <button class="btn btn-ghost btn-sm" onclick="revokeDomain('${esc(d.normalized_domain)}')">${esc(T('btn_remove'))}</button>
       </div>
     </div>`;
   }).join('')+'</div>';
@@ -387,23 +530,21 @@ async function addDomain(){
   $('domErr').textContent='';
   const v=$('newDom').value.trim(); if(!v) return;
   const {error}=await _sb.rpc('bi_domain_add',{p_domain:v});
-  if(error){ $('domErr').textContent=error.message.includes('another account')?'Questo dominio è già verificato da un altro account.':'Impossibile aggiungere il dominio.'; return; }
+  if(error){ $('domErr').textContent=error.message.includes('another account')?T('err_dom_other'):T('err_dom_generic'); return; }
   $('newDom').value=''; await loadDomains(); showView('domains');
 }
 async function verifyDomain(dom,btn){
-  btn.disabled=true; btn.textContent='Verifico…';
+  btn.disabled=true; btn.textContent=T('btn_verifying');
   const {data,error}=await _sb.rpc('bi_domain_verify',{p_domain:dom});
   if(error||!data||!data.verified){
-    btn.disabled=false; btn.textContent='Verifica';
-    alert(data&&data.error==='token not found on domain yet'
-      ? 'Token non ancora trovato sul dominio. La propagazione DNS può richiedere qualche minuto; riprova tra poco.'
-      : 'Verifica non riuscita. Controlla di aver pubblicato il token.');
+    btn.disabled=false; btn.textContent=T('btn_verify');
+    alert(data&&data.error==='token not found on domain yet' ? T('alert_token_pending') : T('alert_verify_fail'));
     return;
   }
   await loadDomains();
 }
 async function revokeDomain(dom){
-  if(!confirm('Rimuovere '+dom+'? Perderai l’accesso agli insight di questo dominio.')) return;
+  if(!confirm(tf('confirm_revoke',{d:dom}))) return;
   await _sb.rpc('bi_domain_revoke',{p_domain:dom});
   await loadDomains();
 }
@@ -413,18 +554,18 @@ function setRange(r){ STATE.range=r; [...$('rangeSeg').children].forEach(b=>b.cl
 function onDomainChange(){ STATE.domain=$('domSel').value; refresh(); }
 function showView(v){
   STATE.view=v;
-  ['overview','products','domains'].forEach(x=>{ $('v-'+x).classList.toggle('hidden',x!==v); });
+  ['overview','products','domains','settings'].forEach(x=>{ $('v-'+x).classList.toggle('hidden',x!==v); });
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===v));
   refresh();
 }
 function refresh(){
   if(STATE.view==='overview') loadOverview();
   else if(STATE.view==='products') loadProducts(0);
-  else renderDomains();
+  else if(STATE.view==='domains') renderDomains();
 }
 function needDomain(elId){
   if(STATE.domain) return true;
-  $(elId).innerHTML='<div class="state">Verifica un dominio nella scheda <b>Domini</b> per vedere gli insight.</div>';
+  $(elId).innerHTML='<div class="state">'+T('need_domain')+'</div>';
   return false;
 }
 
@@ -432,35 +573,36 @@ function needDomain(elId){
 async function loadOverview(){
   $('ovHd').innerHTML='';
   if(!needDomain('ovBody')) return;
-  $('ovBody').innerHTML='<div class="state"><div class="spin"></div>Carico…</div>';
+  $('ovBody').innerHTML='<div class="state"><div class="spin"></div>'+esc(T('loading'))+'</div>';
   const {data,error}=await _sb.rpc('bi_overview',{p_domain:STATE.domain,p_range:STATE.range});
-  if(error){ $('ovBody').innerHTML='<div class="state">Errore nel caricamento.</div>'; return; }
-  $('ovHd').innerHTML=`<span class="dot"></span> <b>${esc(STATE.domain)}</b> · ultimi ${STATE.range} giorni`;
+  if(error){ $('ovBody').innerHTML='<div class="state">'+esc(T('err_load'))+'</div>'; return; }
+  $('ovHd').innerHTML=`<span class="dot"></span> <b>${esc(STATE.domain)}</b> · ${tf('ov_last_days',{n:STATE.range})}`;
   if(data.below_threshold){
-    $('ovBody').innerHTML=`<div class="state">Ancora pochi dati.<br><span class="muted">Servono almeno ${data.unique_savers_lt} utenti distinti che salvano prodotti del tuo dominio prima di mostrare gli insight (protezione anti-identificazione).</span></div>`;
+    const parts=T('ov_below').split('|');
+    $('ovBody').innerHTML=`<div class="state">${esc(parts[0])}<br><span class="muted">${tf('ov_below',{n:data.unique_savers_lt}).split('|')[1]}</span></div>`;
     return;
   }
   const g=pct(data.saves_added,data.saves_added_prev);
   const top=data.top_product, grow=data.top_growth_product;
   $('ovBody').innerHTML=`
     <div class="grid">
-      ${kpi('Salvataggi attivi',fmt(data.active_saves))}
-      ${kpi('Utenti distinti',fmt(data.unique_savers))}
-      ${kpi('Prodotti salvati',fmt(data.distinct_products))}
-      ${kpi('Nuovi salvataggi',fmt(data.saves_added),`<span class="${g.c}">${g.v}</span> vs periodo prec.`)}
-      ${kpi('Rimozioni',fmt(data.saves_removed))}
-      ${kpi('Clic verso il sito',fmt(data.outbound_clicks))}
+      ${kpi(T('kpi_active'),fmt(data.active_saves))}
+      ${kpi(T('kpi_users'),fmt(data.unique_savers))}
+      ${kpi(T('kpi_products'),fmt(data.distinct_products))}
+      ${kpi(T('kpi_new'),fmt(data.saves_added),`<span class="${g.c}">${g.v}</span> ${esc(T('vs_prev'))}`)}
+      ${kpi(T('kpi_removed'),fmt(data.saves_removed))}
+      ${kpi(T('kpi_clicks'),fmt(data.outbound_clicks))}
     </div>
     <div class="two">
-      <div class="card"><div class="mini-hd">Prodotto più salvato</div>${top?prodLine(top.title,top.image,fmt(top.saves)+' salvataggi'):'<div class="muted">—</div>'}</div>
-      <div class="card"><div class="mini-hd">Maggiore crescita</div>${grow?prodLine(grow.product_key.split('|').pop(),null,fmt(grow.added)+' nuovi'):'<div class="muted">—</div>'}</div>
+      <div class="card"><div class="mini-hd">${esc(T('top_saved'))}</div>${top?prodLine(top.title,top.image,fmt(top.saves)+' '+T('unit_saves')):'<div class="muted">—</div>'}</div>
+      <div class="card"><div class="mini-hd">${esc(T('top_growth'))}</div>${grow?prodLine(grow.product_key.split('|').pop(),null,fmt(grow.added)+' '+T('unit_new')):'<div class="muted">—</div>'}</div>
     </div>
-    <div class="note" style="margin-top:16px">Vault mostra <b>domanda</b> (salvataggi, interesse), non le vendite del tuo sito. Visite, acquisti, fatturato e conversion rate non sono visibili senza un’integrazione. Tutti i dati sono aggregati e anonimi.</div>`;
+    <div class="note" style="margin-top:16px">${T('ov_note')}</div>`;
 }
-function kpi(lbl,val,delta){ return `<div class="card kpi"><div class="lbl">${lbl}</div><div class="val mono">${val}</div>${delta?`<div class="delta">${delta}</div>`:''}</div>`; }
+function kpi(lbl,val,delta){ return `<div class="card kpi"><div class="lbl">${esc(lbl)}</div><div class="val mono">${val}</div>${delta?`<div class="delta">${delta}</div>`:''}</div>`; }
 function prodLine(title,img,sub){
   const t=(img)?`<img class="thumb" src="${esc(img)}" onerror="this.style.display='none'">`:`<div class="thumb ph">▦</div>`;
-  return `<div class="prodline">${t}<div style="min-width:0"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(title||'—')}</div><div class="muted" style="font-size:12px">${sub}</div></div></div>`;
+  return `<div class="prodline">${t}<div style="min-width:0"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(title||'—')}</div><div class="muted" style="font-size:12px">${esc(sub)}</div></div></div>`;
 }
 
 // ---------- products ----------
@@ -469,15 +611,15 @@ function debouncedProducts(){ clearTimeout(_pt); _pt=setTimeout(()=>loadProducts
 async function loadProducts(offset){
   if(!needDomain('prodBody')) return;
   STATE.prodOffset=offset;
-  $('prodBody').innerHTML='<div class="state"><div class="spin"></div>Carico…</div>';
+  $('prodBody').innerHTML='<div class="state"><div class="spin"></div>'+esc(T('loading'))+'</div>';
   const {data,error}=await _sb.rpc('bi_products',{p_domain:STATE.domain,p_range:STATE.range,
     p_search:$('prodSearch').value.trim(),p_sort:$('prodSort').value,p_limit:STATE.prodLimit,p_offset:offset});
-  if(error){ $('prodBody').innerHTML='<div class="state">Errore nel caricamento.</div>'; return; }
-  if(!data.rows.length){ $('prodBody').innerHTML='<div class="state">Nessun prodotto trovato per questo dominio nel periodo selezionato.</div>'; return; }
+  if(error){ $('prodBody').innerHTML='<div class="state">'+esc(T('err_load'))+'</div>'; return; }
+  if(!data.rows.length){ $('prodBody').innerHTML='<div class="state">'+esc(T('empty_products'))+'</div>'; return; }
   const rows=data.rows.map(r=>{
     const lt=r.below_threshold;
     const cells=lt
-      ? `<td class="num" colspan="5"><span class="pill lt">Meno di 10 utenti</span></td>`
+      ? `<td class="num" colspan="5"><span class="pill lt">${esc(T('lt_badge'))}</span></td>`
       : `<td class="num mono">${fmt(r.unique_savers)}</td><td class="num mono">${fmt(r.active_saves)}</td><td class="num mono">${fmt(r.added)}</td><td class="num mono">${fmt(r.clicks)}</td><td class="num mono">${fmt((r.price_drop_interest||0)+(r.restock_interest||0))}</td>`;
     const title=lt?`<span>${esc(r.title||'—')}</span>`:`<span class="link" onclick="openDet('${esc(r.product_key)}')">${esc(r.title||'—')}</span>`;
     const img=r.image?`<img class="thumb" src="${esc(r.image)}" onerror="this.style.display='none'">`:`<div class="thumb ph">▦</div>`;
@@ -486,14 +628,14 @@ async function loadProducts(offset){
   const totPages=Math.ceil(data.total/STATE.prodLimit), curPage=Math.floor(offset/STATE.prodLimit)+1;
   $('prodBody').innerHTML=`
     <div class="tbl-wrap"><table>
-      <thead><tr><th>Prodotto</th><th class="num">Utenti</th><th class="num">Salvataggi</th><th class="num">Nuovi</th><th class="num">Clic</th><th class="num">Interesse</th></tr></thead>
+      <thead><tr><th>${esc(T('th_product'))}</th><th class="num">${esc(T('th_users'))}</th><th class="num">${esc(T('th_saves'))}</th><th class="num">${esc(T('th_new'))}</th><th class="num">${esc(T('th_clicks'))}</th><th class="num">${esc(T('th_interest'))}</th></tr></thead>
       <tbody>${rows}</tbody>
     </table></div>
     <div class="pager">
-      <span>${data.total} prodotti · pagina ${curPage}/${totPages||1}</span>
+      <span>${tf('pager_products',{n:data.total,a:curPage,b:totPages||1})}</span>
       <span>
-        <button class="btn btn-ghost btn-sm" ${offset<=0?'disabled':''} onclick="loadProducts(${Math.max(0,offset-STATE.prodLimit)})">‹ Prec.</button>
-        <button class="btn btn-ghost btn-sm" ${curPage>=totPages?'disabled':''} onclick="loadProducts(${offset+STATE.prodLimit})">Succ. ›</button>
+        <button class="btn btn-ghost btn-sm" ${offset<=0?'disabled':''} onclick="loadProducts(${Math.max(0,offset-STATE.prodLimit)})">${esc(T('prev'))}</button>
+        <button class="btn btn-ghost btn-sm" ${curPage>=totPages?'disabled':''} onclick="loadProducts(${offset+STATE.prodLimit})">${esc(T('next'))}</button>
       </span>
     </div>`;
 }
@@ -501,28 +643,28 @@ async function loadProducts(offset){
 // ---------- product detail ----------
 async function openDet(key){
   $('detOv').classList.add('open');
-  $('detModal').innerHTML='<div class="state"><div class="spin"></div>Carico…</div>';
+  $('detModal').innerHTML='<div class="state"><div class="spin"></div>'+esc(T('loading'))+'</div>';
   const {data,error}=await _sb.rpc('bi_product_detail',{p_domain:STATE.domain,p_key:key,p_range:STATE.range});
-  if(error){ $('detModal').innerHTML='<button class="x" onclick="closeDet()">✕</button><div class="state">Errore.</div>'; return; }
-  if(data.below_threshold){ $('detModal').innerHTML='<button class="x" onclick="closeDet()">✕</button><div class="state">Meno di 10 utenti distinti — dettaglio non disponibile (protezione privacy).</div>'; return; }
+  if(error){ $('detModal').innerHTML='<button class="x" onclick="closeDet()">✕</button><div class="state">'+esc(T('err_load'))+'</div>'; return; }
+  if(data.below_threshold){ $('detModal').innerHTML='<button class="x" onclick="closeDet()">✕</button><div class="state">'+esc(T('det_below'))+'</div>'; return; }
   const trend=data.trend||[]; const max=Math.max(1,...trend.map(t=>t.added||0));
-  const bars=trend.map(t=>`<div class="bar" title="${t.day}: +${t.added}" style="height:${Math.round((t.added||0)/max*100)}%"></div>`).join('')||'<div class="muted">Nessun dato nel periodo</div>';
+  const bars=trend.map(t=>`<div class="bar" title="${t.day}: +${t.added}" style="height:${Math.round((t.added||0)/max*100)}%"></div>`).join('')||`<div class="muted">${esc(T('det_nodata'))}</div>`;
   const src=data.sources?Object.entries(data.sources).map(([k,v])=>`<span class="pill">${esc(k)}: ${v}</span>`).join(' '):'';
   $('detModal').innerHTML=`
     <button class="x" onclick="closeDet()">✕</button>
     <div class="prodline" style="margin-bottom:16px">${data.image?`<img class="thumb" style="width:60px;height:60px" src="${esc(data.image)}" onerror="this.style.display='none'">`:'<div class="thumb ph" style="width:60px;height:60px">▦</div>'}
       <div><div style="font-weight:800;font-size:16px">${esc(data.title||'—')}</div>
-      <div class="muted" style="font-size:12px">${data.price?money(data.price):''} · <a class="link" href="${esc(data.url||'#')}" target="_blank" rel="noopener">apri ↗</a></div></div></div>
+      <div class="muted" style="font-size:12px">${data.price?money(data.price):''} · <a class="link" href="${esc(data.url||'#')}" target="_blank" rel="noopener">${esc(T('det_open'))}</a></div></div></div>
     <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr))">
-      ${kpi('Utenti distinti',fmt(data.unique_savers))}
-      ${kpi('Salvataggi attivi',fmt(data.active_saves))}
-      ${kpi('Clic verso il sito',fmt(data.outbound_clicks))}
-      ${kpi('Interesse calo prezzo',fmt(data.price_drop_interest))}
-      ${kpi('Interesse restock',fmt(data.restock_interest))}
+      ${kpi(T('kpi_users'),fmt(data.unique_savers))}
+      ${kpi(T('kpi_active'),fmt(data.active_saves))}
+      ${kpi(T('kpi_clicks'),fmt(data.outbound_clicks))}
+      ${kpi(T('kpi_pricedrop'),fmt(data.price_drop_interest))}
+      ${kpi(T('kpi_restock'),fmt(data.restock_interest))}
     </div>
-    <div class="card" style="margin-top:14px"><div class="mini-hd">Nuovi salvataggi · ${STATE.range}g</div><div class="trend">${bars}</div></div>
-    ${src?`<div style="margin-top:14px"><div class="mini-hd">Fonte dei salvataggi</div>${src}</div>`:''}
-    <div class="note" style="margin-top:14px">Nessun dato personale: mai nomi, email o wishlist individuali. Solo conteggi aggregati.</div>`;
+    <div class="card" style="margin-top:14px"><div class="mini-hd">${tf('det_newsaves',{n:STATE.range})}</div><div class="trend">${bars}</div></div>
+    ${src?`<div style="margin-top:14px"><div class="mini-hd">${esc(T('det_sources'))}</div>${src}</div>`:''}
+    <div class="note" style="margin-top:14px">${esc(T('det_note'))}</div>`;
 }
 function closeDet(){ $('detOv').classList.remove('open'); }
 

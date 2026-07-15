@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>/* set saved appearance before paint to avoid a flash */(function(){try{if(localStorage.getItem('vault_site_theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Vault — The wishlist for everything you want</title>
@@ -42,6 +43,16 @@
     --t1:#f0f0f0; --t2:#8a8a8a; --t3:#4a4a4a;
     --silver:#b8b8b8; --gold:#c9a227; --gold2:#e2c150;
   }
+  /* Light appearance — user toggle (persisted); dark stays the default. */
+  :root[data-theme="light"]{
+    --bg:#f5f5f7; --s1:#ffffff; --s2:#ffffff; --s3:#f0f0f2;
+    --bd:#e4e4e8; --bd2:#d4d4d9;
+    --t1:#131313; --t2:#585858; --t3:#9a9a9a;
+    --silver:#6d6d6d; --gold:#a9821a; --gold2:#c9a227;
+  }
+  .theme-toggle{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;border:1px solid var(--bd2);background:transparent;color:var(--t1);cursor:pointer;transition:border-color .18s,background .18s}
+  .theme-toggle:hover{border-color:var(--silver);background:var(--s1)}
+  .theme-toggle svg{width:17px;height:17px}
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
   body{background:var(--bg);color:var(--t2);font-family:'Inter',-apple-system,sans-serif;font-size:16px;line-height:1.65;overflow-x:hidden;-webkit-font-smoothing:antialiased;letter-spacing:-.005em}
@@ -351,7 +362,8 @@
       <a href="#business">Business</a>
       <a href="#download">Download</a>
     </div>
-    <a class="btn btn-line nav-open" href="app.html">Open Vault <svg class="ico"><use href="#ic-external"/></svg></a>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Toggle light/dark" style="margin-left:auto;margin-right:12px"></button>
+    <a class="btn btn-line nav-open" href="app.html" style="margin-left:0">Open Vault <svg class="ico"><use href="#ic-external"/></svg></a>
   </div>
 </nav>
 
@@ -781,6 +793,21 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script>
+  // ── light / dark appearance toggle ──
+  const _SUN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.6M12 18.9v2.6M4.4 4.4l1.8 1.8M17.8 17.8l1.8 1.8M2.5 12h2.6M18.9 12h2.6M4.4 19.6l1.8-1.8M17.8 6.2l1.8-1.8"/></svg>';
+  const _MOON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.9A8.5 8.5 0 1 1 11.1 3a6.6 6.6 0 0 0 9.9 9.9z"/></svg>';
+  function _setThemeIcon(){
+    const light=document.documentElement.getAttribute('data-theme')==='light';
+    const b=document.getElementById('themeToggle'); if(b) b.innerHTML=light?_MOON:_SUN; // show what you'll switch TO
+  }
+  function toggleTheme(){
+    const light=document.documentElement.getAttribute('data-theme')==='light';
+    if(light){document.documentElement.removeAttribute('data-theme');try{localStorage.setItem('vault_site_theme','dark');}catch(e){}}
+    else{document.documentElement.setAttribute('data-theme','light');try{localStorage.setItem('vault_site_theme','light');}catch(e){}}
+    _setThemeIcon();
+  }
+  _setThemeIcon();
+
   // ── real photo marquee ──
   const U=id=>`https://images.unsplash.com/${id}?w=440&q=80&auto=format&fit=crop`;
   const ITEMS=[
