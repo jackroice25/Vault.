@@ -928,13 +928,6 @@ body.cmp-mode .card{cursor:default}
 .c-rem{display:inline-flex;align-items:center;gap:3px;font-size:10px;color:var(--t2);padding:2px 7px;border-radius:8px;background:var(--s3);border:1px solid var(--bd);margin-top:3px}
 .c-rem.due{color:var(--accent);border-color:rgba(201,162,39,.4);background:rgba(201,162,39,.08)}
 /* ── FIND CHEAPER ── */
-.cheap-btn{display:inline-flex;align-items:center;gap:5px;background:var(--s3);border:1px solid var(--bd);color:var(--t2);border-radius:8px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .12s;vertical-align:middle;margin-left:8px}
-.cheap-btn:hover{color:var(--accent);border-color:rgba(201,162,39,.4)}
-.cheap-row{display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid var(--bd);border-radius:11px;background:var(--s2);cursor:pointer;transition:all .12s;margin-bottom:8px}
-.cheap-row:hover{background:var(--s3);border-color:var(--accent)}
-.cheap-row-ico{width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:var(--s3);border-radius:9px;flex-shrink:0;font-size:16px}
-.cheap-row-name{font-size:13px;font-weight:700;color:var(--t1)}
-.cheap-row-sub{font-size:11px;color:var(--t3);margin-top:2px}
 
 /* ── GIFT BADGE ── */
 .c-gift{display:inline-flex;align-items:center;gap:3px;font-size:10px;color:var(--accent);padding:2px 7px;border-radius:8px;background:var(--ax);border:1px solid var(--bd);margin-top:3px}
@@ -1945,7 +1938,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.07.15-copy1';
+const APP_BUILD='2026.07.16-nocheap';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 (function(){
@@ -2918,7 +2911,7 @@ function openDetMo(id){
     ${sec?`· <span style="color:var(--accent)">${secIcon(sec,12)} ${esc(sec.name)}</span>`:''}
   </div>
   <div class="det-title">${esc(item.title||domain)}</div>`;
-  if(item.price>0) h+=`<div class="det-price">${cur()}${fmt(item.price)}${(!item.isPlace&&item.type!=='luogo')?`<button class="cheap-btn" onclick="openCheaper('${item.id}')">${t('chBtn')}${isPlus()?'':' '+ico('crown',9)}</button>`:''}</div>`;
+  if(item.price>0) h+=`<div class="det-price">${cur()}${fmt(item.price)}</div>`;
   h+=`<div class="det-badges">
     <span class="det-badge ${st.cls}" style="background:${st.cls==='st-voglio'?'var(--ax)':st.cls==='st-ordinato'?'var(--yx)':st.cls==='st-comprato'?'var(--gx)':'var(--bx)'};color:${st.color}">${st.label}</span>
     ${item.star?`<span class="det-badge" style="background:var(--yx);color:var(--yellow);display:inline-flex;align-items:center;gap:4px">${ico('star-filled',10)} ${t('prioBadge')}</span>`:''}
@@ -5755,7 +5748,7 @@ function _initAuthSession(){
 // ══ VAULT PLUS ══
 const PLANS={
   free:{name:'Free',features:[]},
-  plus:{name:'Plus',price:'€4.99/month',features:['sharedLists','giftMode','browserExtension','savingsGoal','smartReminders','findCheaper','advancedStats','folders','aiProfile','multiWorkspace','cloudBackup','premiumThemes','advancedMoodboard']}
+  plus:{name:'Plus',price:'€4.99/month',features:['sharedLists','giftMode','browserExtension','savingsGoal','smartReminders','advancedStats','folders','aiProfile','multiWorkspace','cloudBackup','premiumThemes','advancedMoodboard']}
 };
 function getCurrentPlan(){return _sbPlan!=='free'?_sbPlan:(localStorage.getItem('vaultPlan')||'free');}
 function isPlus(){return getCurrentPlan()==='plus';}
@@ -6324,43 +6317,6 @@ function renderRemBanner(){
 setInterval(renderRemBanner,60000);
 
 // ══ FIND CHEAPER (price comparison deep links) ══
-const CHEAP_STORES=[
-  {key:'gshop', name:'Google Shopping', ico:'🛍️', subK:'chSubGshop', url:q=>'https://www.google.com/search?tbm=shop&q='+q},
-  {key:'trova', name:'Trovaprezzi',     ico:'🇮🇹', subK:'chSubTrova',        url:q=>'https://www.trovaprezzi.it/categoria.aspx?id=-1&libera='+q},
-  {key:'idealo',name:'Idealo',          ico:'📊', subK:'chSubIdealo',       url:q=>'https://www.idealo.it/mag/risultati.html?q='+q},
-  {key:'amazon',name:'Amazon',          ico:'📦', subK:'chSubAmazon',      url:q=>'https://www.amazon.it/s?k='+q},
-  {key:'ebay',  name:'eBay',            ico:'🏷️', subK:'chSubEbay',                 url:q=>'https://www.ebay.it/sch/i.html?_nkw='+q},
-];
-let _cheapItemId=null;
-function openCheaper(id){
-  requirePlus('findCheaper',()=>{
-    const item=S.items.find(i=>i.id===id); if(!item) return;
-    _cheapItemId=id;
-    const q=(item.title||'').trim();
-    document.getElementById('chMoHd').textContent=t('chTitle');
-    document.getElementById('cheapQuery').placeholder=t('chPh');
-    document.getElementById('cheapQuery').value=q;
-    document.getElementById('cheapPrice').textContent=item.price>0?`${t('chSavedAt')} ${cur()}${fmt(item.price)} ${t('chBeat')}`:t('chSearchAll');
-    document.getElementById('cheapList').innerHTML=CHEAP_STORES.map(s=>`
-      <div class="cheap-row" onclick="cheapGo('${s.key}')">
-        <div class="cheap-row-ico">${s.ico}</div>
-        <div style="flex:1;min-width:0">
-          <div class="cheap-row-name">${s.name}</div>
-          <div class="cheap-row-sub">${t(s.subK)}</div>
-        </div>
-        <span class="shared-row-arrow">↗</span>
-      </div>`).join('');
-    document.getElementById('cheaperOv').classList.add('open');
-  });
-}
-function closeCheaper(){document.getElementById('cheaperOv').classList.remove('open');_cheapItemId=null;}
-function cheapGo(storeKey){
-  const store=CHEAP_STORES.find(s=>s.key===storeKey); if(!store) return;
-  const q=(document.getElementById('cheapQuery').value||'').trim();
-  if(!q){showToast(t('chEmptyQ'));return;}
-  _openExt(store.url(encodeURIComponent(q.slice(0,200))));
-}
-
 // ══ GIFT MODE (registries with reservations) ══
 let _giftRegs=[];        // registries owned by the user
 let _activeGiftPub=null; // public registry currently displayed {id,name,emoji,items,reservations}
@@ -6713,7 +6669,7 @@ setTimeout(_hideBootLoader, (_sb && _hasSession && !_wasGuest) ? 5000 : 2000);
               if(incoming!==_lastPushedJSON){                    // not our own echo
                 const rlen=(n.data.items||[]).length;
                 _mergeRemoteData(n.data);                        // safe union merge, never deletes local data
-                try{ localStorage.setItem(vaultKey(),JSON.stringify(S)); }catch(e){}
+                _cacheLocal(); // quota-safe write (falls back to an image-light copy instead of throwing, see _cacheLocal)
                 renderSidebar();render();_updatePlusSideBtn();
                 if((S.items||[]).length!==rlen){ _lastPushedJSON=''; _sbPushNow(); } // we had extra locals → push the union up
                 else { _lastPushedJSON=JSON.stringify(S); }
@@ -6998,19 +6954,6 @@ async function _initGlobe(){
 
 
 <!-- ═══ FIND CHEAPER MODAL ═══ -->
-<div class="ov" id="cheaperOv" onclick="if(event.target===this)closeCheaper()">
-  <div class="plus-mo">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-      <div style="flex:1;font-size:16px;font-weight:800;color:var(--t1)" id="chMoHd">🔍 Find it cheaper</div>
-      <span class="plus-badge">Plus</span>
-      <button style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:18px;line-height:1;padding:2px 4px;border-radius:6px;font-family:inherit" onclick="closeCheaper()">×</button>
-    </div>
-    <div id="cheapPrice" style="font-size:12px;color:var(--t3);margin-bottom:10px"></div>
-    <input id="cheapQuery" class="inp" placeholder="Product name…" data-i18n-ph="chPh" style="width:100%;margin-bottom:12px" maxlength="200">
-    <div id="cheapList"></div>
-  </div>
-</div>
-
 <!-- ═══ GIFT MODE, OWNER MODAL ═══ -->
 <div class="ov" id="giftOv" onclick="if(event.target===this)closeGiftMode()">
   <div class="plus-mo">
