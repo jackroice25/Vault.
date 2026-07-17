@@ -242,7 +242,7 @@ code.ct,.ct{color:var(--t1)}
 
 <!-- ===== bottom-left dock: subscription + settings (always reachable) ===== -->
 <div id="fabDock">
-  <button id="planFab" class="fab fab-plan" onclick="openPaywall(false)"><span>◈</span> <span data-i18n="fab_plan">Subscription</span></button>
+  <button id="planFab" class="fab fab-plan" onclick="planFabClick()"><span>◈</span> <span data-i18n="fab_plan">Subscription</span></button>
   <button id="helpFab" class="fab fab-gear" onclick="openOnb()" aria-label="Help" title="Help">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M9.2 9.3a2.8 2.8 0 0 1 5.4 1c0 1.9-2.8 2.5-2.8 2.5"/><line x1="12" y1="17" x2="12" y2="17"/></svg>
   </button>
@@ -906,6 +906,16 @@ function goCheckout(plan){
   if(!url){ alert(tf('checkout_alert',{p:T(plan==='annual'?'plan_annual':'plan_monthly')})); return; }
   const sep = url.includes('?') ? '&' : '?';
   location.href = url + sep + 'client_reference_id=' + encodeURIComponent(_userId) + '&prefilled_email=' + encodeURIComponent(_userEmail);
+}
+// Bottom-left "Subscription" button: paid merchants manage/cancel via the Stripe
+// Customer Portal; unpaid users get the plans paywall.
+function planFabClick(){ if(_paid) openBilling(); else openPaywall(false); }
+async function openBilling(){
+  try{
+    const {data,error}=await _sb.functions.invoke('bi-portal',{body:{returnUrl:location.href}});
+    if(error||!data||!data.url){ openPaywall(false); return; } // no active sub yet → show plans
+    location.href=data.url;
+  }catch(e){ openPaywall(false); }
 }
 
 // ---------- domains ----------
