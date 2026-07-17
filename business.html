@@ -161,6 +161,15 @@ code.ct,.ct{color:var(--t1)}
 .trend{display:flex;align-items:flex-end;gap:3px;height:90px;margin-top:10px}
 .bar{flex:1;background:var(--gold-dim);border-top:2px solid var(--gold);border-radius:3px 3px 0 0;min-height:2px}
 .note{font-size:11.5px;color:var(--t3);line-height:1.5;margin-top:8px}
+/* ---- onboarding tutorial ---- */
+#onbOv{z-index:120}
+.onb-modal{max-width:520px}
+.onb-steps{display:flex;flex-direction:column;gap:14px;margin:6px 0 4px}
+.onb-step{display:flex;gap:13px;align-items:flex-start}
+.onb-n{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--gold-dim);color:var(--gold);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.onb-step b{display:block;font-size:14px;font-weight:700;color:var(--t1);margin-bottom:2px}
+.onb-step span{font-size:12.5px;color:var(--t2);line-height:1.5}
+.onb-priv{margin-top:16px;font-size:11.5px;color:var(--t2);line-height:1.55;border:1px solid var(--bd);border-radius:12px;padding:11px 13px;background:var(--s2)}
 </style>
 </head>
 <body>
@@ -234,6 +243,9 @@ code.ct,.ct{color:var(--t1)}
 <!-- ===== bottom-left dock: subscription + settings (always reachable) ===== -->
 <div id="fabDock">
   <button id="planFab" class="fab fab-plan" onclick="openPaywall(false)"><span>◈</span> <span data-i18n="fab_plan">Subscription</span></button>
+  <button id="helpFab" class="fab fab-gear" onclick="openOnb()" aria-label="Help" title="Help">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M9.2 9.3a2.8 2.8 0 0 1 5.4 1c0 1.9-2.8 2.5-2.8 2.5"/><line x1="12" y1="17" x2="12" y2="17"/></svg>
+  </button>
   <button id="setFab" class="fab fab-gear" onclick="toggleSetPop()" aria-label="Settings">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/></svg>
   </button>
@@ -288,6 +300,23 @@ code.ct,.ct{color:var(--t1)}
     </div>
     <div class="pw-foot" data-i18n="pw_foot">Secure payment via Stripe · Business invoicing · Cancel anytime</div>
     <div class="pw-foot" id="pwLockNote" style="display:none;color:var(--gold);margin-top:6px" data-i18n="pw_locked">An active Vault Business subscription is required to use the dashboard.</div>
+  </div>
+</div>
+
+<!-- onboarding tutorial (first visit + reopenable via ? button) -->
+<div class="ov" id="onbOv" onclick="if(event.target===this)closeOnb()">
+  <div class="modal onb-modal">
+    <button class="x" onclick="closeOnb()">✕</button>
+    <div class="vb-brand" id="onbBrand" style="margin-bottom:2px"></div>
+    <h2 id="onbTitle" style="font-size:22px;font-weight:800;letter-spacing:-.3px;margin:12px 0 4px"></h2>
+    <p id="onbSub" class="muted" style="font-size:13.5px;margin-bottom:18px"></p>
+    <div class="onb-steps">
+      <div class="onb-step"><div class="onb-n">1</div><div><b id="onbS1t"></b><span id="onbS1b"></span></div></div>
+      <div class="onb-step"><div class="onb-n">2</div><div><b id="onbS2t"></b><span id="onbS2b"></span></div></div>
+      <div class="onb-step"><div class="onb-n">3</div><div><b id="onbS3t"></b><span id="onbS3b"></span></div></div>
+    </div>
+    <div class="onb-priv" id="onbPriv"></div>
+    <button class="btn" id="onbCta" onclick="closeOnb()" style="margin-top:18px"></button>
   </div>
 </div>
 
@@ -731,6 +760,7 @@ function applyI18n(){
   document.querySelectorAll('[data-i18n-html]').forEach(el=>{ el.innerHTML=T(el.dataset.i18nHtml); });
   document.querySelectorAll('[data-i18n-ph]').forEach(el=>{ el.setAttribute('placeholder',T(el.dataset.i18nPh)); });
   if(ls) ls.value=LANG;
+  try{ renderOnb(); }catch(e){}
 }
 function setLang(l){ if(!I18N[l])return; LANG=l; localStorage.setItem('vb_lang',l); applyI18n(); refresh(); }
 
@@ -756,7 +786,67 @@ const VB_LOGO=`<svg class="vb-logo" viewBox="0 0 815 150" xmlns="http://www.w3.o
 <text x="6" y="114" fill="none" stroke="#ffffff" stroke-width="0.5" stroke-opacity="0.15"><tspan font-size="120">vault.</tspan><tspan dx="22" font-size="120">business</tspan></text>
 </g>
 </svg>`;
-function injectLogos(){ ['loginBrand','barBrand','pwBrand'].forEach(id=>{const el=document.getElementById(id); if(el){el.innerHTML=VB_LOGO;}}); }
+function injectLogos(){ ['loginBrand','barBrand','pwBrand','onbBrand'].forEach(id=>{const el=document.getElementById(id); if(el){el.innerHTML=VB_LOGO;}}); }
+
+// ── onboarding tutorial (first-visit welcome, reopenable via the ? button) ──
+const ONB={
+  en:{title:'Welcome to Vault Business',sub:'See the real, anonymous demand for your products.',
+    s1t:'Verify your domain',s1b:'Prove you own your store via DNS, a file, or a meta tag. It unlocks insights for that domain only.',
+    s2t:'Read the demand',s2b:'Most-saved and trending products, clicks to your site, and interest in price drops & restocks.',
+    s3t:'Everything stays private',s3b:'Only aggregated numbers, above a 10-user minimum. Never names, emails or individual wishlists.',
+    priv:'Vault never sells personal data. Merchants only ever see anonymous, aggregated stats.',cta:'Get started'},
+  it:{title:'Benvenuto in Vault Business',sub:'Scopri la domanda reale e anonima dei tuoi prodotti.',
+    s1t:'Verifica il dominio',s1b:'Dimostra di possedere il tuo negozio via DNS, file o meta tag. Sblocca gli insight solo per quel dominio.',
+    s2t:'Leggi la domanda',s2b:'Prodotti più salvati e in crescita, clic verso il sito, interesse per cali di prezzo e restock.',
+    s3t:'Tutto resta privato',s3b:'Solo numeri aggregati, sopra una soglia di 10 utenti. Mai nomi, email o wishlist individuali.',
+    priv:'Vault non vende dati personali. I negozi vedono solo statistiche anonime e aggregate.',cta:'Inizia'},
+  es:{title:'Bienvenido a Vault Business',sub:'Descubre la demanda real y anónima de tus productos.',
+    s1t:'Verifica tu dominio',s1b:'Demuestra que eres el dueño de tu tienda con DNS, un archivo o una etiqueta meta. Desbloquea los insights solo de ese dominio.',
+    s2t:'Lee la demanda',s2b:'Productos más guardados y en tendencia, clics a tu sitio e interés en bajadas de precio y reposiciones.',
+    s3t:'Todo sigue siendo privado',s3b:'Solo cifras agregadas, por encima de un mínimo de 10 usuarios. Nunca nombres, emails ni listas individuales.',
+    priv:'Vault nunca vende datos personales. Las tiendas solo ven estadísticas anónimas y agregadas.',cta:'Empezar'},
+  fr:{title:'Bienvenue sur Vault Business',sub:'Découvre la demande réelle et anonyme pour tes produits.',
+    s1t:'Vérifie ton domaine',s1b:'Prouve que tu possèdes ta boutique via DNS, un fichier ou une balise meta. Cela débloque les insights de ce domaine uniquement.',
+    s2t:'Lis la demande',s2b:'Produits les plus enregistrés et en hausse, clics vers ton site, intérêt pour les baisses de prix et les réassorts.',
+    s3t:'Tout reste privé',s3b:'Uniquement des chiffres agrégés, au-dessus d’un minimum de 10 utilisateurs. Jamais de noms, e-mails ou listes individuelles.',
+    priv:'Vault ne vend jamais de données personnelles. Les marchands ne voient que des statistiques anonymes et agrégées.',cta:'Commencer'},
+  de:{title:'Willkommen bei Vault Business',sub:'Sieh die echte, anonyme Nachfrage nach deinen Produkten.',
+    s1t:'Domain verifizieren',s1b:'Weise den Besitz deines Shops per DNS, Datei oder Meta-Tag nach. Das schaltet die Insights nur für diese Domain frei.',
+    s2t:'Nachfrage lesen',s2b:'Meist gespeicherte und Trend-Produkte, Klicks zu deiner Website, Interesse an Preissenkungen und Wiederverfügbarkeit.',
+    s3t:'Alles bleibt privat',s3b:'Nur aggregierte Zahlen, über einer Mindestgrenze von 10 Nutzern. Nie Namen, E-Mails oder einzelne Wunschlisten.',
+    priv:'Vault verkauft niemals personenbezogene Daten. Händler sehen nur anonyme, aggregierte Statistiken.',cta:'Loslegen'},
+  pl:{title:'Witaj w Vault Business',sub:'Poznaj realny, anonimowy popyt na swoje produkty.',
+    s1t:'Zweryfikuj domenę',s1b:'Udowodnij, że jesteś właścicielem sklepu przez DNS, plik lub meta tag. Odblokowuje statystyki tylko tej domeny.',
+    s2t:'Czytaj popyt',s2b:'Najczęściej zapisywane i rosnące produkty, kliknięcia w stronę, zainteresowanie obniżkami i wznowieniami.',
+    s3t:'Wszystko pozostaje prywatne',s3b:'Tylko dane zbiorcze, powyżej minimum 10 użytkowników. Nigdy imion, e-maili ani list.',
+    priv:'Vault nigdy nie sprzedaje danych osobowych. Sklepy widzą tylko anonimowe, zbiorcze statystyki.',cta:'Zaczynaj'},
+  ru:{title:'Добро пожаловать в Vault Business',sub:'Узнайте реальный анонимный спрос на ваши товары.',
+    s1t:'Подтвердите домен',s1b:'Докажите, что владеете магазином, через DNS, файл или мета-тег. Это откроет аналитику только для этого домена.',
+    s2t:'Читайте спрос',s2b:'Самые сохраняемые и трендовые товары, клики на сайт, интерес к снижению цены и возврату в наличие.',
+    s3t:'Всё остаётся анонимным',s3b:'Только агрегированные числа, выше минимума в 10 пользователей. Никогда имён, email или списков.',
+    priv:'Vault никогда не продаёт персональные данные. Магазины видят только анонимную агрегированную статистику.',cta:'Начать'},
+  zh:{title:'欢迎使用 Vault Business',sub:'了解你产品的真实匿名需求。',
+    s1t:'验证你的域名',s1b:'通过 DNS、文件或元标签证明你拥有该店铺。仅解锁该域名的洞察。',
+    s2t:'读取需求',s2b:'最多收藏与趋势产品、到网站的点击，以及对降价和补货的兴趣。',
+    s3t:'一切保持匿名',s3b:'仅聚合数字，且高于 10 位用户的下限。绝不含姓名、邮箱或个人清单。',
+    priv:'Vault 绝不出售个人数据。商家只看到匿名的聚合统计。',cta:'开始'},
+  ja:{title:'Vault Business へようこそ',sub:'商品の実際の匿名需要を確認しましょう。',
+    s1t:'ドメインを確認',s1b:'DNS・ファイル・メタタグで店舗の所有を証明します。そのドメインのインサイトだけが解放されます。',
+    s2t:'需要を読む',s2b:'最も保存・トレンドの商品、サイトへのクリック、値下げや再入荷への関心。',
+    s3t:'すべて匿名のまま',s3b:'集計値のみ、10人の下限以上。名前・メール・個別リストは一切なし。',
+    priv:'Vault は個人データを販売しません。店舗は匿名の集計統計のみを見ます。',cta:'はじめる'}
+};
+function renderOnb(){
+  const L=ONB[LANG]||ONB.en, S1=id=>document.getElementById(id);
+  if(!S1('onbTitle'))return;
+  S1('onbTitle').textContent=L.title; S1('onbSub').textContent=L.sub;
+  S1('onbS1t').textContent=L.s1t; S1('onbS1b').textContent=' '+L.s1b;
+  S1('onbS2t').textContent=L.s2t; S1('onbS2b').textContent=' '+L.s2b;
+  S1('onbS3t').textContent=L.s3t; S1('onbS3b').textContent=' '+L.s3b;
+  S1('onbPriv').textContent=L.priv; S1('onbCta').textContent=L.cta;
+}
+function openOnb(){ injectLogos(); renderOnb(); document.getElementById('onbOv').classList.add('open'); }
+function closeOnb(){ document.getElementById('onbOv').classList.remove('open'); try{localStorage.setItem('vb_onboarded','1');}catch(e){} }
 
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -777,6 +867,8 @@ async function logout(){ await _sb.auth.signOut(); location.reload(); }
 
 async function init(){
   applyTheme(); applyI18n(); injectLogos();
+  // First-visit tutorial (once; reopenable via the ? button in the dock).
+  if(localStorage.getItem('vb_onboarded')!=='1'){ setTimeout(openOnb, 450); }
   const {data:{session}}=await _sb.auth.getSession();
   if(session?.user) boot(); // already logged in
 }
