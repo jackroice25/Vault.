@@ -1938,7 +1938,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.07.22-lazyimg3';
+const APP_BUILD='2026.07.22-eagerimg';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 (function(){
@@ -2779,64 +2779,15 @@ function render(){
     grid.className=S.view==='list'?'lv':'grid';
     grid.innerHTML=sortedItems(items).map(item=>cardHTML(item)).join('');
   }
-  _setupLazyImgs();
   renderRemBanner();
 }
 
-// ── LAZY CARD IMAGES (mobile memory fix) ──────────────────────────────────────
-// WKWebView / mobile WebKit caps how many decoded images it keeps in memory. The
-// grid injects every card (each with full base64 photos) at once, so scrolling to
-// older items pushed past that cap and their images rendered blank on phones while
-// desktop (no cap) showed them all. Fix: cards ship with data-src (no src), and an
-// IntersectionObserver only sets src for images near the viewport and DROPS src
-// again once they scroll far away, so the number of decoded images stays bounded.
-// Horizontal margin is huge so a carousel's off-screen side-slides (translated
-// ±100%) are never treated as "far" — only vertical distance unloads an image.
-let _imgObs=null;
-const _thumbCache=new Map();
-// iOS/WKWebView caps decoded-image memory. User photos are stored as FULL-RES
-// base64 (a camera shot decodes to tens of MB), so past ~a dozen of them iOS just
-// stops painting the rest — "most images vanish" on iPhone while desktop shows all.
-// Fix: for each big base64 photo we render a small (~520px) JPEG thumbnail in the
-// card and cache it; the full-res original stays in data-src for the detail view.
-// Remote (http) images are left to WebKit, which downsamples them itself.
-function _makeThumb(u){
-  return new Promise(res=>{
-    const im=new Image();
-    im.onload=()=>{ try{
-      const MAX=520, w=im.naturalWidth||im.width, h=im.naturalHeight||im.height;
-      const s=Math.min(1, MAX/Math.max(w,h||1));
-      if(s>=1){ res(u); return; }              // already small → keep as-is
-      const c=document.createElement('canvas'); c.width=Math.round(w*s); c.height=Math.round(h*s);
-      c.getContext('2d').drawImage(im,0,0,c.width,c.height);
-      res(c.toDataURL('image/jpeg',0.8));
-    }catch(e){ res(u); } };
-    im.onerror=()=>res(u);
-    im.src=u;
-  });
-}
-function _applySrc(img){
-  if(img.dataset.lz==='1') return; img.dataset.lz='1';
-  const u=img.dataset.src; if(!u) return;
-  if(!/^data:image/i.test(u)){ img.src=u; return; }         // remote → direct
-  if(_thumbCache.has(u)){ img.src=_thumbCache.get(u); return; } // warm cache → sync, no flicker
-  _makeThumb(u).then(t=>{ _thumbCache.set(u,t); if(img.isConnected && img.dataset.src===u) img.src=t; });
-}
-function _setupLazyImgs(){
-  const imgs=[...document.querySelectorAll('#grid img.c-lazy')];
-  // Preload what's already near the viewport (cached thumbs apply synchronously → no flash on refocus).
-  const vh=window.innerHeight||800;
-  imgs.forEach(img=>{ const r=img.getBoundingClientRect(); if(r.bottom> -vh && r.top< vh*2) _applySrc(img); });
-  if(!('IntersectionObserver' in window)){ imgs.forEach(_applySrc); return; }
-  if(_imgObs) _imgObs.disconnect();
-  // LOAD-ONLY: load a bit before an image scrolls in, then stop watching it. We
-  // never remove a src (unloading caused desktop flicker + mobile vanish).
-  _imgObs=new IntersectionObserver((entries,obs)=>{
-    for(const e of entries){ if(e.isIntersecting){ _applySrc(e.target); obs.unobserve(e.target); } }
-  },{root:null,rootMargin:'1200px 3000px',threshold:0});
-  imgs.forEach(img=>{ if(img.dataset.lz!=='1') _imgObs.observe(img); });
-}
-
+// Card images load EAGERLY (plain src). Lazy-loading was removed: iOS WKWebView
+// fails to trigger below-the-fold lazy loads in this scroll container, so most
+// photos never appeared on iPhone while desktop showed them all. The vault is
+// small (tens of remote URLs) and mobile WebKit loads them fine directly. http://
+// image URLs are upgraded to https:// at render because the Capacitor app runs in
+// a secure context where http subresources are blocked as mixed content.
 function cardHTML(item){
   const sec=S.sections.find(s=>s.id===item.sid);
   const domain=getDomain(item.url);
@@ -2847,7 +2798,7 @@ function cardHTML(item){
   const multi=imgs.length>1;
 
   const slides=imgs.length
-    ?imgs.map(u=>`<div class="c-car-slide"><div class="c-ph" style="display:none">${ph}</div><img class="c-lazy" data-src="${esc(u)}" alt="" decoding="async" onerror="this.style.display='none';this.previousElementSibling.style.display='flex'"></div>`).join('')
+    ?imgs.map(u=>`<div class="c-car-slide"><div class="c-ph" style="display:none">${ph}</div><img src="${esc(u.replace(/^http:\/\//i,'https://'))}" alt="" decoding="async" onerror="this.style.display='none';this.previousElementSibling.style.display='flex'"></div>`).join('')
     :`<div class="c-car-slide"><div class="c-ph">${ph}</div></div>`;
 
   const dots=multi?`<div class="c-car-dots">${imgs.map((_,i)=>`<div class="c-car-dot${i===0?' on':''}"></div>`).join('')}</div>`:'';
