@@ -1938,7 +1938,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.07.22-lazyimg';
+const APP_BUILD='2026.07.22-lazyimg2';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 (function(){
@@ -2794,23 +2794,21 @@ function render(){
 // ±100%) are never treated as "far" — only vertical distance unloads an image.
 let _imgObs=null;
 function _setupLazyImgs(){
-  const imgs=document.querySelectorAll('#grid img.c-lazy');
-  if(!('IntersectionObserver' in window)){ // very old engine → just load everything
-    imgs.forEach(img=>{ if(img.dataset.src) img.src=img.dataset.src; });
-    return;
-  }
+  const imgs=[...document.querySelectorAll('#grid img.c-lazy')];
+  const load=img=>{ if(img.dataset.src && img.getAttribute('src')!==img.dataset.src) img.src=img.dataset.src; };
+  // Synchronously load anything already at/near the viewport BEFORE the browser
+  // paints, so a re-render (e.g. window refocus) never flashes blank/placeholder.
+  const vh=window.innerHeight||800;
+  imgs.forEach(img=>{ const r=img.getBoundingClientRect(); if(r.bottom> -vh && r.top< vh*2) load(img); });
+  if(!('IntersectionObserver' in window)){ imgs.forEach(load); return; }
   if(_imgObs) _imgObs.disconnect();
-  _imgObs=new IntersectionObserver((entries)=>{
-    for(const e of entries){
-      const img=e.target;
-      if(e.isIntersecting){
-        if(img.dataset.src && img.getAttribute('src')!==img.dataset.src){ img.style.visibility=''; img.src=img.dataset.src; }
-      } else if(img.getAttribute('src')){
-        img.removeAttribute('src'); // free the decoded bitmap; data-src keeps the source
-      }
-    }
-  },{root:null,rootMargin:'900px 3000px',threshold:0});
-  imgs.forEach(img=>_imgObs.observe(img));
+  // LOAD-ONLY: bring images in a bit before they scroll into view, then stop
+  // watching them. We never remove a src once set — unloading was what made photos
+  // flicker on desktop refresh and briefly vanish while scrolling on mobile.
+  _imgObs=new IntersectionObserver((entries,obs)=>{
+    for(const e of entries){ if(e.isIntersecting){ load(e.target); obs.unobserve(e.target); } }
+  },{root:null,rootMargin:'1200px 3000px',threshold:0});
+  imgs.forEach(img=>{ if(!img.getAttribute('src')) _imgObs.observe(img); });
 }
 
 function cardHTML(item){
@@ -2823,7 +2821,7 @@ function cardHTML(item){
   const multi=imgs.length>1;
 
   const slides=imgs.length
-    ?imgs.map(u=>`<div class="c-car-slide"><div class="c-ph">${ph}</div><img class="c-lazy" data-src="${esc(u)}" alt="" decoding="async" onerror="this.style.visibility='hidden'"></div>`).join('')
+    ?imgs.map(u=>`<div class="c-car-slide"><div class="c-ph" style="display:none">${ph}</div><img class="c-lazy" data-src="${esc(u)}" alt="" decoding="async" onerror="this.style.display='none';this.previousElementSibling.style.display='flex'"></div>`).join('')
     :`<div class="c-car-slide"><div class="c-ph">${ph}</div></div>`;
 
   const dots=multi?`<div class="c-car-dots">${imgs.map((_,i)=>`<div class="c-car-dot${i===0?' on':''}"></div>`).join('')}</div>`:'';
