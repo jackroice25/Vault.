@@ -1941,7 +1941,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.07.22-editbtn';
+const APP_BUILD='2026.07.22-photos';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 (function(){
@@ -2134,6 +2134,55 @@ function _cacheLocal(){
       return true;
     }catch(e2){ return false; }
   }
+}
+
+// ── CUSTOM PHOTOS → SUPABASE STORAGE ─────────────────────────────────────────
+// Custom photos used to be embedded as base64 INSIDE the synced vault JSON. A few
+// photos blew past the localStorage quota, so _cacheLocal dropped them on overflow
+// — and that stripped copy then propagated to the cloud (read-merge-write), so a
+// photo added on one device silently vanished on the others. Fix: upload each photo
+// to the public `vault-photos` bucket and keep only its tiny URL in the vault, just
+// like scraped images. _uploadPhoto is a no-op for anything that isn't a data: URL.
+async function _uploadPhoto(u){
+  try{
+    if(!_sb||!_sbUser) return u;
+    if(typeof u!=='string'||!/^data:image\//i.test(u)) return u;
+    const m=u.match(/^data:(image\/[a-z0-9.+-]+);base64,([\s\S]*)$/i); if(!m) return u;
+    const mime=m[1]; const bin=atob(m[2].trim());
+    const arr=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+    const ext=((mime.split('/')[1]||'jpg').split('+')[0]).replace('jpeg','jpg');
+    const path=_sbUser.id+'/'+Date.now().toString(36)+Math.random().toString(36).slice(2,9)+'.'+ext;
+    const {error}=await _sb.storage.from('vault-photos').upload(path,new Blob([arr],{type:mime}),{contentType:mime,upsert:false});
+    if(error) return u; // upload failed → keep base64, never lose the photo
+    const pub=_sb.storage.from('vault-photos').getPublicUrl(path);
+    return (pub&&pub.data&&pub.data.publicUrl)||u;
+  }catch(e){ return u; }
+}
+// Upload any lingering base64 photos in the vault to storage and swap in the URL.
+// Bumps each touched item's mod time so the freshly-migrated copy WINS the next
+// cross-device merge (else a stale imageless cloud row would re-strip it).
+let _migRunning=false;
+async function _migratePhotos(){
+  if(_migRunning||!_sb||!_sbUser) return; _migRunning=true;
+  try{
+    let changed=false;
+    for(const it of (S.items||[])){
+      if(Array.isArray(it.images)){
+        for(let i=0;i<it.images.length;i++){
+          const v=it.images[i];
+          if(typeof v==='string'&&/^data:image\//i.test(v)){
+            const url=await _uploadPhoto(v);
+            if(url&&url!==v){ it.images[i]=url; it.mod=Date.now(); changed=true; }
+          }
+        }
+      }
+      if(typeof it.img==='string'&&/^data:image\//i.test(it.img)){
+        const url=await _uploadPhoto(it.img);
+        if(url&&url!==it.img){ it.img=url; it.mod=Date.now(); changed=true; }
+      }
+    }
+    if(changed){ _cacheLocal(); try{renderSidebar();render();}catch(e){} _lastPushedJSON=''; try{await _sbPushNow();}catch(e){} }
+  }catch(e){}finally{ _migRunning=false; }
 }
 // Cloud pull, overwrites local with remote, returns true if data found
 async function _sbPull(){
@@ -3531,6 +3580,7 @@ function saveItem(){
     _biItem=S.items[0];
   }
   save();closeAddMo();renderSidebar();render();
+  _migratePhotos(); // fire-and-forget: push any just-added base64 photo up to storage as a URL
   if(_biItem) _biTrackSave(_biItem, 'manual', !_biIsEdit); // Vault Business: anonymized insight (consent-gated, fire-and-forget)
 }
 
@@ -6654,7 +6704,9 @@ setTimeout(_hideBootLoader, (_sb && _hasSession && !_wasGuest) ? 5000 : 2000);
             // safety net can compare local-vs-cloud and recover if the cloud is empty
     renderSidebar();render();
     const prevPlan=_sbPlan;
+    await _migratePhotos(); // upload any base64 photos still in THIS device's local copy to storage + push, BEFORE the pull, so recovered photos win the merge
     const synced=await _sbPullRetry(); // cold start: retry until the network is ready, so ghosts/wrong count self-heal
+    await _migratePhotos(); // and once more after the merge, in case base64 arrived from the cloud copy
     if(synced){
       renderSidebar();render();_updatePlusSideBtn();_forceRepaint();
       // Tutorial only shown via Realtime (new upgrade), not on page load
