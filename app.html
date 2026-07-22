@@ -184,6 +184,8 @@ body{background:var(--bg);color:var(--t1);display:flex}
 /* hover actions on image */
 .c-acts{position:absolute;top:8px;right:8px;display:none;gap:5px}
 .card:hover .c-acts{display:flex}
+/* Touch devices have no hover → always show the card actions (edit/open/delete) */
+@media(hover:none){.c-acts{display:flex}}
 .ca{width:27px;height:27px;border-radius:6px;background:rgba(0,0,0,.78);border:1px solid rgba(255,255,255,.1);color:var(--t2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;text-decoration:none;transition:all .12s;backdrop-filter:blur(8px)}
 .ca:hover{color:var(--t1);background:rgba(255,255,255,.1)}
 .ca.del:hover{color:var(--red);border-color:var(--red)}
@@ -1939,7 +1941,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.07.22-bgimg';
+const APP_BUILD='2026.07.22-editbtn';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 (function(){
@@ -2844,8 +2846,9 @@ function cardHTML(item){
       <button class="c-star ${item.star?'on':''}" onclick="event.stopPropagation();star('${item.id}')">${item.star?ico('star-filled',13):ico('star',13)}</button>
     </div>
     <div class="c-acts">
-      <button class="ca del" onclick="event.stopPropagation();del('${item.id}')" title="${t('ttDelete')}">✕</button>
+      <button class="ca" onclick="event.stopPropagation();editItem('${item.id}')" title="${t('editTitle')||'Edit'}">${ico('pencil',12)}</button>
       <a class="ca" href="${safeUrl(item.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation();_biTrackClick('${item.id}')" title="${t('ttOpen')}">↗</a>
+      <button class="ca del" onclick="event.stopPropagation();del('${item.id}')" title="${t('ttDelete')}">✕</button>
     </div>
     <div class="c-body">
       ${sec?`<div class="c-tag">${secIcon(sec,11)} ${esc(sec.name)}</div>`:''}
