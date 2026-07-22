@@ -165,10 +165,6 @@ body{background:var(--bg);color:var(--t1);display:flex}
 
 /* ── CARDS ── */
 .card{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;cursor:pointer;position:relative;transition:border-color .15s,transform .15s,box-shadow .15s}
-/* Skip rendering off-screen grid cards so mobile WebKit keeps only a handful of
-   carousel compositing layers alive at once (real iPhones ran out of GPU backing
-   store with ~79 always-composited cards → images loaded but painted blank). */
-.grid .card{content-visibility:auto;contain-intrinsic-size:auto 340px}
 .card:hover{border-color:var(--bd2);transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.35)}
 
 /* image area */
@@ -384,6 +380,7 @@ select.inp{cursor:pointer}
 
 /* ── CARD CAROUSEL ── */
 .c-car-track{position:absolute;inset:0;display:flex;transition:transform .28s ease}
+.c-car-bg{position:absolute;inset:0;background-size:cover;background-position:center;background-repeat:no-repeat}
 .c-car-slide{min-width:100%;height:100%;flex-shrink:0;overflow:hidden;position:relative}
 .c-car-slide img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .3s}
 .card:hover .c-car-slide img{transform:scale(1.05)}
@@ -1942,7 +1939,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.07.22-gpufix';
+const APP_BUILD='2026.07.22-bgimg';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 (function(){
@@ -2802,7 +2799,7 @@ function cardHTML(item){
   const multi=imgs.length>1;
 
   const slides=imgs.length
-    ?imgs.map(u=>`<div class="c-car-slide"><div class="c-ph" style="display:none">${ph}</div><img src="${esc(u.replace(/^http:\/\//i,'https://'))}" alt="" decoding="async" onerror="this.style.display='none';this.previousElementSibling.style.display='flex'"></div>`).join('')
+    ?imgs.map(u=>`<div class="c-car-slide"><div class="c-ph">${ph}</div><div class="c-car-bg" style="background-image:url(&quot;${esc(u.replace(/^http:\/\//i,'https://'))}&quot;)"></div></div>`).join('')
     :`<div class="c-car-slide"><div class="c-ph">${ph}</div></div>`;
 
   const dots=multi?`<div class="c-car-dots">${imgs.map((_,i)=>`<div class="c-car-dot${i===0?' on':''}"></div>`).join('')}</div>`:'';
