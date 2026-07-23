@@ -1941,7 +1941,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.07.22-photos2';
+const APP_BUILD='2026.07.23-syncfix';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 (function(){
@@ -2198,15 +2198,13 @@ async function _sbPull(){
       if(data.plan){ _sbPlan=data.plan; try{ if(data.plan==='plus') localStorage.setItem('vaultPlan','plus'); else localStorage.removeItem('vaultPlan'); }catch(e){} }
       const remote=data.data;
       const remoteItems=(remote&&Array.isArray(remote.items))?remote.items.length:0;
-      const localItems=(S&&Array.isArray(S.items))?S.items.length:0;
-      // SAFETY NET: if the cloud lost its items but this device still has them,
-      // DO NOT overwrite local with the empty cloud. Keep local and repair the
-      // cloud by pushing local back up. Local-with-data always beats empty-cloud.
-      if(remote && remoteItems===0 && localItems>0){
-        _syncReady=true;
-        _sbPushNow();       // restore the cloud from this device's copy
-        return true;
-      }
+      // BUG-1 FIX: the old "cloud empty → just push local back up" shortcut bypassed
+      // _mergeRemoteData and therefore IGNORED remote tombstones — so a vault that was
+      // intentionally wiped on another device (items:[], tomb: full) got resurrected
+      // on a device that still held a stale local copy. Now EVERY case (including an
+      // empty cloud) flows through the merge below: it keeps local items ONLY when no
+      // tombstone covers them (a genuine cloud data-loss is still repaired by the
+      // length!==remoteItems push right after), and drops the ones the cloud deleted.
       if(remote){
         _mergeRemoteData(remote);                    // MERGE, never overwrite, local additions survive
         // Best-effort local cache. If localStorage is full ("quota exceeded" —
@@ -2321,7 +2319,7 @@ function _mergeRemoteData(remote){
   const tks=Object.keys(tomb); if(tks.length>500){ tks.sort((a,b)=>tomb[a]-tomb[b]).slice(0,tks.length-500).forEach(k=>delete tomb[k]); }
   const tksSec=Object.keys(tombSec); if(tksSec.length>500){ tksSec.sort((a,b)=>tombSec[a]-tombSec[b]).slice(0,tksSec.length-500).forEach(k=>delete tombSec[k]); }
   S.items=items;
-  S.sections=sections.length?sections:S.sections;
+  S.sections=sections;
   S.tomb=tomb;
   S.tombSec=tombSec;
   S.onboardingDone=S.onboardingDone||R.onboardingDone;
