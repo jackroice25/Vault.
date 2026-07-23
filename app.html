@@ -1941,7 +1941,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.07.22-photos';
+const APP_BUILD='2026.07.22-photos2';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 (function(){
@@ -3258,7 +3258,14 @@ async function addFileImgs(files){
   if(lbl)lbl.textContent='Processing…';
   for(const file of files){
     const dataUrl=await _resizeImg(file,1400,0.82);
-    if(dataUrl) extraImages.push(dataUrl);
+    if(!dataUrl) continue;
+    // Upload to storage IMMEDIATELY so base64 never enters the saved vault (no quota
+    // overflow, so it can never be stripped and lost). Offline/guest → keep the
+    // base64 as a fallback; _migratePhotos swaps it for a URL on the next sync.
+    let stored=dataUrl;
+    if(lbl)lbl.textContent='Uploading…';
+    try{ const url=await _uploadPhoto(dataUrl); if(url&&url!==dataUrl) stored=url; }catch(e){}
+    extraImages.push(stored);
   }
   if(lbl)lbl.textContent='Upload from device';
   document.getElementById('imgFileInp').value='';
