@@ -1941,7 +1941,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.07.23-share';
+const APP_BUILD='2026.07.23-share2';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 (function(){
@@ -2126,7 +2126,7 @@ function _handleDeepLink(u){
     let target; try{ target=decodeURIComponent(m[1]); }catch(e){ return; }
     if(!/^https?:\/\//i.test(target)) return; target=target.slice(0,2048);
     if((typeof _sbUser!=='undefined' && _sbUser) || localStorage.getItem('vault_guest')==='1'){
-      if(typeof _extAdd==='function') _extAdd(target);
+      if(typeof openAddMo==='function') openAddMo(target); // FREE: share-to-save is a core feature, no Plus gate
     }else{
       try{ localStorage.setItem('vault_pendingAdd',target); }catch(e){}
     }
@@ -6613,7 +6613,7 @@ function _consumePendingJoin(){
   const pa=localStorage.getItem('vault_pendingAdd');
   if(pa){
     localStorage.removeItem('vault_pendingAdd');
-    if(/^https?:\/\//i.test(pa)) setTimeout(()=>_extAdd(pa),700);
+    if(/^https?:\/\//i.test(pa)) setTimeout(()=>{ if(typeof openAddMo==='function') openAddMo(pa); },700); // FREE share-to-save (was _extAdd, Plus-gated)
   }
 }
 async function _joinSharedList(id){
