@@ -1941,7 +1941,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.07.23-syncfix';
+const APP_BUILD='2026.07.23-share';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 (function(){
@@ -2112,6 +2112,31 @@ try{
   if(_cap&&_cap.addListener){
     _cap.addListener('appStateChange',(s)=>{ if(s&&s.isActive){ try{_resumeRefresh();}catch(e){} } });
     _cap.addListener('resume',()=>{ try{_resumeRefresh();}catch(e){} });
+  }
+}catch(e){}
+
+// ── NATIVE SHARE SHEET / DEEP LINK (vault://add?url=<enc>) ──
+// The iOS Share Extension (and any vault:// open) launches the app here. Pull the
+// shared product URL out and feed it into the SAME add pipeline the browser
+// extension uses (_extAdd → requirePlus → openAddMo). If logged out, stash it so
+// _consumePendingJoin() adds it right after sign-in.
+function _handleDeepLink(u){
+  try{
+    const m=(u||'').match(/[?&]url=([^&#]+)/); if(!m) return;
+    let target; try{ target=decodeURIComponent(m[1]); }catch(e){ return; }
+    if(!/^https?:\/\//i.test(target)) return; target=target.slice(0,2048);
+    if((typeof _sbUser!=='undefined' && _sbUser) || localStorage.getItem('vault_guest')==='1'){
+      if(typeof _extAdd==='function') _extAdd(target);
+    }else{
+      try{ localStorage.setItem('vault_pendingAdd',target); }catch(e){}
+    }
+  }catch(e){}
+}
+try{
+  const _capApp=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;
+  if(_capApp){
+    if(_capApp.addListener) _capApp.addListener('appUrlOpen',(d)=>{ setTimeout(()=>_handleDeepLink(d&&d.url),300); }); // warm launch
+    if(_capApp.getLaunchUrl) _capApp.getLaunchUrl().then(r=>{ if(r&&r.url) setTimeout(()=>_handleDeepLink(r.url),1000); }).catch(()=>{}); // cold launch
   }
 }catch(e){}
 
