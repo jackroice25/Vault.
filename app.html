@@ -223,7 +223,7 @@ body{background:var(--bg);color:var(--t1);display:flex}
 /* ── OVERLAY / MODAL ── */
 .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);align-items:center;justify-content:center;z-index:9000}
 .ov.open{display:flex}
-.mo{background:var(--s1);border:1px solid var(--bd2);border-radius:16px;width:480px;max-width:92vw;padding:24px;max-height:88vh;overflow-y:auto}
+.mo{background:var(--s1);border:1px solid var(--bd2);border-radius:16px;width:480px;max-width:92vw;padding:24px;max-height:88vh;overflow-x:hidden;overflow-y:auto}
 .mo.wide{width:580px}
 .mo-hd{font-size:16px;font-weight:800;margin-bottom:18px;letter-spacing:-.3px}
 .prof-head{text-align:center;padding:8px 0 22px;border-bottom:1px solid var(--bd)}
@@ -309,7 +309,8 @@ body{background:var(--bg);color:var(--t1);display:flex}
 .inp::placeholder{color:var(--t3)}
 textarea.inp{resize:vertical;min-height:64px;line-height:1.5}
 select.inp{cursor:pointer}
-.row2{display:flex;gap:8px}
+.row2{display:flex;gap:8px;flex-wrap:wrap}
+.row2>.fl{flex:1 1 120px;min-width:0}
 .row2 .fl{flex:1}
 .price-wrap{display:flex;align-items:center;background:var(--s2);border:1px solid var(--bd);border-radius:8px;overflow:hidden;transition:border .13s}
 .price-wrap:focus-within{border-color:var(--accent);background:var(--s3)}
@@ -1941,7 +1942,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.07.23-share3';
+const APP_BUILD='2026.07.24-shareauto';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 (function(){
@@ -2133,11 +2134,39 @@ function _addSharedTarget(target){
   if(!/^https?:\/\//i.test(target)) return false;
   target=target.slice(0,2048);
   if((typeof _sbUser!=='undefined' && _sbUser) || localStorage.getItem('vault_guest')==='1'){
-    if(typeof openAddMo==='function'){ openAddMo(target); return true; }
-    return false;
+    _quickAddFromUrl(target); return true; // auto-add, NO confirmation modal
   }
   try{ localStorage.setItem('vault_pendingAdd',target); }catch(e){}
   return true; // stashed → _consumePendingJoin adds it after login
+}
+// Silently add an item straight into the vault from a shared/pasted URL: scrape,
+// build the item, save + sync, toast. No add-sheet, no Save tap. Skips duplicates.
+async function _quickAddFromUrl(url){
+  try{
+    url=(url||'').slice(0,2048);
+    if(!/^https?:\/\//i.test(url)) return;
+    try{ const dup=(S.items||[]).find(i=>!i.archived && i.url && typeof normUrl==='function' && normUrl(i.url)===normUrl(url));
+      if(dup){ showToast(ico('info',12)+' '+(t('dupAlready')||'Already in vault')); return; } }catch(e){}
+    showToast(ico('sparkle',12)+' '+(t('fbarAnalyzing')||'Adding…'));
+    let d={}; try{ d=(await _scrapeUrl(url))||{}; }catch(e){ d={}; }
+    const img=(d.img||'').replace(/^http:\/\//i,'https://');
+    const item={
+      id:uid(), url, type:'prodotto', status:'voglio', star:false, archived:false,
+      title:(d.title||getDomain(url)||'Item').slice(0,300), desc:d.desc||'',
+      images: img?[img]:[], giftFor:'',
+      note:'', sid:null, price:d.price||0,
+      priceFound:0, deadline:null, tags:[], variant:'', qty:1,
+      voiceMemo:null, priceHistory:[], relatedIds:[], userRating:0,
+      isPlace:false, rating:d.rating||null, reviewCount:d.reviewCount||null,
+      priceRange:null, address:null, phone:null, cuisine:null, hours:null, menu:[], reviews:[],
+      at:Date.now(), mod:Date.now()
+    };
+    S.items.unshift(item);
+    try{ save(); }catch(e){ try{ _cacheLocal(); }catch(_){} }
+    try{ renderSidebar(); render(); }catch(e){}
+    try{ _biTrackSave(item,'share',true); }catch(e){}
+    showToast(ico('check-circle',12)+' '+item.title.slice(0,38));
+  }catch(e){}
 }
 // Called natively (AppDelegate) with the URL the Share Extension left in the App Group.
 // Returns true once consumed so the native side clears the shared value.
@@ -6623,7 +6652,7 @@ function _consumePendingJoin(){
   const pa=localStorage.getItem('vault_pendingAdd');
   if(pa){
     localStorage.removeItem('vault_pendingAdd');
-    if(/^https?:\/\//i.test(pa)) setTimeout(()=>{ if(typeof openAddMo==='function') openAddMo(pa); },700); // FREE share-to-save (was _extAdd, Plus-gated)
+    if(/^https?:\/\//i.test(pa)) setTimeout(()=>{ if(typeof _quickAddFromUrl==='function') _quickAddFromUrl(pa); },700); // FREE share-to-save, auto-add (no confirmation)
   }
 }
 async function _joinSharedList(id){
