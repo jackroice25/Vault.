@@ -1942,7 +1942,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.07.24-shareauto';
+const APP_BUILD='2026.07.24-nobiz';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 (function(){
@@ -2164,7 +2164,6 @@ async function _quickAddFromUrl(url){
     S.items.unshift(item);
     try{ save(); }catch(e){ try{ _cacheLocal(); }catch(_){} }
     try{ renderSidebar(); render(); }catch(e){}
-    try{ _biTrackSave(item,'share',true); }catch(e){}
     showToast(ico('check-circle',12)+' '+item.title.slice(0,38));
   }catch(e){}
 }
@@ -3650,7 +3649,6 @@ function saveItem(){
   }
   save();closeAddMo();renderSidebar();render();
   _migratePhotos(); // fire-and-forget: push any just-added base64 photo up to storage as a URL
-  if(_biItem) _biTrackSave(_biItem, 'manual', !_biIsEdit); // Vault Business: anonymized insight (consent-gated, fire-and-forget)
 }
 
 // ── SECTION MODAL ──
@@ -4677,47 +4675,12 @@ function getDomain(url){try{return new URL(url).hostname.replace(/^www\./,'');}c
 // could tie to a person (merchant reads happen exclusively via aggregate RPCs).
 // URL/identity normalization mirrors vault-business/test/normalize.js (unit-tested).
 // ═══════════════════════════════════════════════════════════════════════════
-const BI_TRACKING_PARAMS=new Set(['utm_source','utm_medium','utm_campaign','utm_term','utm_content','utm_id','utm_name','utm_reader','utm_social','utm_brand','fbclid','gclid','gbraid','wbraid','dclid','msclkid','yclid','twclid','ttclid','scid','mc_cid','mc_eid','igshid','igsh','ref','ref_src','referrer','referral','aff','affid','affiliate','affiliate_id','cmpid','campaignid','adgroupid','adid','_ga','_gl','spm','_branch_match_id','vero_id','oly_anon_id','oly_enc_id','pk_campaign','pk_kwd','piwik_campaign','s_kwcid','gclsrc','irclickid','cjevent']);
-function biNormDomain(input){try{return new URL(input).hostname.toLowerCase().replace(/^www\./,'');}catch(e){return String(input||'').toLowerCase().replace(/^https?:\/\//,'').replace(/^www\./,'').split('/')[0];}}
-function biNormUrl(input){try{const u=new URL(input);const keep=new URLSearchParams();for(const [k,v] of u.searchParams){if(!BI_TRACKING_PARAMS.has(k.toLowerCase()))keep.append(k,v);}const sorted=[...keep.entries()].sort((a,b)=>a[0]<b[0]?-1:a[0]>b[0]?1:(a[1]<b[1]?-1:1));u.search=new URLSearchParams(sorted).toString();u.hash='';u.hostname=u.hostname.toLowerCase().replace(/^www\./,'');if(u.pathname.length>1)u.pathname=u.pathname.replace(/\/+$/,'');return u.toString();}catch(e){return String(input||'');}}
-function biProductKey(item){const domain=biNormDomain(item.canonical||item.url||'');const id=item.gtin||item.sku||item.mpn||item.productId||item.variantId;if(id)return 'd:'+domain+'|id:'+String(id).trim().toLowerCase();const canonical=item.canonical?biNormUrl(item.canonical):null;const base=canonical||biNormUrl(item.url||'');try{const u=new URL(base);return 'd:'+domain+'|p:'+u.pathname+(u.search||'');}catch(e){return 'd:'+domain+'|u:'+base;}}
-// Consent gate: needs a Supabase account (stable user id) + opt-in preference.
-// NOTE(legal): the opt-in copy + default must be reviewed by legal before launch.
-function _biEnabled(){ return !!(_sb && _sbUser && S && S.insightsOptIn!==false && window.navigator.onLine!==false); }
-async function _biTrackSave(item, source, isNew){
-  if(!_biEnabled()||!item||!item.url) return;
-  try{
-    const domain=biNormDomain(item.url); if(!domain||domain.indexOf('.')<0) return; // skip non-web (manual/no-url items)
-    const key=biProductKey(item);
-    await _sb.from('bi_product_saves').upsert({
-      user_id:_sbUser.id, product_key:key, domain, url:biNormUrl(item.url),
-      title:(item.title||'').slice(0,300), price:(item.price>0?item.price:null),
-      image:(item.images&&item.images[0])||null, variant:(item.variant||null),
-      source:source||'manual', active:true, removed_at:null, updated_at:new Date().toISOString()
-    },{onConflict:'user_id,product_key'});
-    if(isNew) await _sb.from('bi_events').insert({user_id:_sbUser.id,domain,product_key:key,type:'save_add',price:(item.price>0?item.price:null),source:source||'manual'});
-  }catch(e){}
-}
-async function _biTrackRemove(item){
-  if(!_biEnabled()||!item||!item.url) return;
-  try{
-    const domain=biNormDomain(item.url); if(!domain||domain.indexOf('.')<0) return;
-    const key=biProductKey(item);
-    await _sb.from('bi_product_saves').update({active:false,removed_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('user_id',_sbUser.id).eq('product_key',key);
-    await _sb.from('bi_events').insert({user_id:_sbUser.id,domain,product_key:key,type:'save_remove'});
-  }catch(e){}
-}
-async function _biTrackClick(itemId){
-  if(!_biEnabled()) return;
-  try{
-    const item=(S.items||[]).find(i=>i.id===itemId); if(!item||!item.url) return;
-    const domain=biNormDomain(item.url); if(!domain||domain.indexOf('.')<0) return;
-    // Only log a click whose destination host actually belongs to the product's
-    // domain (guards against logging clicks to an unrelated/redirected host).
-    const dest=biNormDomain(item.url); if(dest!==domain) return;
-    await _sb.from('bi_events').insert({user_id:_sbUser.id,domain,product_key:biProductKey(item),type:'click'});
-  }catch(e){}
-}
+// Vault Business removed 2026-09 — the merchant-insight product was dropped. These
+// stubs stay so the (harmless) call sites keep working while collecting nothing.
+function _biEnabled(){ return false; }
+function _biTrackSave(){}
+function _biTrackRemove(){}
+function _biTrackClick(){}
 function validUrl(url){try{new URL(url);return true;}catch(e){return false;}}
 function titleFromUrl(url){
   try{
@@ -5101,71 +5064,8 @@ function openSettings(btn){
       <span class="lang-opt-icon">${ico('tag',17)}</span>
       <span class="lang-opt-name">${t('settingsColors')}</span>
       <span style="color:var(--t3);font-size:12px;margin-left:auto">›</span>
-    </div>
-    <div class="lang-opt" onclick="openPrivacyPanel()">
-      <span class="lang-opt-icon">${ico('lock',17)}</span>
-      <span class="lang-opt-name">${_biPrivLbl('title')}</span>
-      <span style="color:var(--t3);font-size:12px;margin-left:auto">${S.insightsOptIn!==false?'●':'○'} ›</span>
     </div>`;
   _positionPopup(popup, _settingsBtn);
-}
-
-// Vault Business, anonymous-insights consent panel.
-// NOTE(legal): this user-facing copy is provisional and MUST be reviewed by legal
-// before launch (GDPR lawful basis / wording of consent).
-function _biPrivLbl(k){
-  const L={
-    it:{title:'Privacy',head:'Contribuisci agli insight anonimi sui prodotti',
-        body:'Vault può usare i tuoi salvataggi per creare statistiche aggregate sui prodotti più desiderati. I negozi non vedranno mai la tua identità, la tua email o la tua wishlist privata.',
-        on:'Attivo',off:'Disattivato',note:'Separato dalle notifiche promozionali. Puoi cambiare idea quando vuoi.'},
-    en:{title:'Privacy',head:'Contribute to anonymous product insights',
-        body:'Vault can use your saves to build aggregate stats on the most-wanted products. Shops will never see your identity, your email, or your private wishlist.',
-        on:'On',off:'Off',note:'Separate from promotional notifications. You can change your mind anytime.'}
-  };
-  return (L[S.lang]||L.en)[k];
-}
-function openPrivacyPanel(){
-  const popup=document.getElementById('langPopup');
-  popup.dataset.mode='settings';
-  const on=S.insightsOptIn!==false;
-  popup.innerHTML=`<div class="lang-popup-nav">
-      <button class="lang-popup-nav-back" onclick="openSettings()">${t('back')}</button>
-      <span class="lang-popup-nav-title">${_biPrivLbl('title')}</span>
-      <div style="width:60px"></div>
-    </div>
-    <div style="padding:12px 14px">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="flex:1">
-          <div style="font-size:13px;font-weight:700;color:var(--t1);line-height:1.35">${_biPrivLbl('head')}</div>
-        </div>
-        <button id="biOptToggle" onclick="toggleInsightsOptIn()" role="switch" aria-checked="${on}"
-          style="flex-shrink:0;width:44px;height:26px;border-radius:14px;border:none;cursor:pointer;position:relative;transition:background .2s;background:${on?'var(--accent,#c9a227)':'var(--b2,#333)'}">
-          <span style="position:absolute;top:3px;left:${on?'21px':'3px'};width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.4)"></span>
-        </button>
-      </div>
-      <div style="font-size:11.5px;color:var(--t2);line-height:1.55;margin-top:10px">${_biPrivLbl('body')}</div>
-      <div style="font-size:10.5px;color:var(--t3);line-height:1.5;margin-top:8px">${_biPrivLbl('note')}</div>
-    </div>`;
-  requestAnimationFrame(()=>{const r=_settingsBtn.getBoundingClientRect();popup.style.top=(r.top-popup.offsetHeight-8)+'px';});
-}
-function toggleInsightsOptIn(){
-  S.insightsOptIn = (S.insightsOptIn===false); // flip
-  save();
-  // If the user just opted OUT, stop contributing AND remove their existing
-  // anonymized rows from future aggregations (privacy: honour the withdrawal).
-  if(S.insightsOptIn===false){ _biPurgeMyInsights(); }
-  else { _biBackfillMyInsights(); } // opted back in → re-seed current wishlist
-  openPrivacyPanel();
-}
-// Remove this device's user from all future aggregates when they opt out.
-async function _biPurgeMyInsights(){
-  if(!_sb||!_sbUser) return;
-  try{ await _sb.from('bi_product_saves').delete().eq('user_id',_sbUser.id); }catch(e){}
-}
-// Seed the current wishlist into insights when the user (re-)opts in.
-async function _biBackfillMyInsights(){
-  if(!_biEnabled()) return;
-  try{ for(const it of (S.items||[])){ if(it&&it.url&&!it.archived) await _biTrackSave(it,'manual',false); } }catch(e){}
 }
 
 function openLangPanel(){
