@@ -852,7 +852,7 @@ body.cmp-mode .card{cursor:default}
 .shared-add .ico{color:var(--t3);flex-shrink:0}
 .shared-add input{flex:1;background:none;border:none;color:var(--t1);font-family:inherit;font-size:14px;padding:10px 4px;outline:none;min-width:0}
 .shared-add input::placeholder{color:var(--t3)}
-.shared-add button{flex-shrink:0}
+.shared-add button{flex-shrink:0;width:auto}
 .shared-sub{font-size:12px;color:var(--t3);margin-bottom:12px;display:flex;gap:6px;align-items:center}
 .shared-sub b{color:var(--accent);font-weight:700}
 .shared-card.clickable{cursor:pointer;transition:transform .15s,border-color .15s}
@@ -1945,6 +1945,12 @@ let _sb=null,_sbUser=null,_sbPlan='free';
 const APP_BUILD='2026.07.24-nobiz';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
+// RevenueCat (Apple In-App Purchase on iOS; web keeps Stripe = 0% Apple). The SDK
+// key is a PUBLIC client key (safe to embed). This is the TEST key: with RevenueCat's
+// Test Store we can build/test the flow WITHOUT App Store Connect. Swap to the real
+// appl_ key in Sept, once the App Store is connected + Paid Apps Agreement is signed.
+const RC_API_KEY='test_KqQrYGiApDrasmqhkfawhGLJkYx';
+const RC_ENTITLEMENT='plus';
 (function(){
   if(!SUPABASE_URL||!SUPABASE_ANON_KEY) return;
   if(typeof window.supabase==='undefined') return;
@@ -2111,10 +2117,13 @@ window.addEventListener('online',()=>{try{_resumeRefresh();}catch(e){}});
 try{
   const _cap=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;
   if(_cap&&_cap.addListener){
-    _cap.addListener('appStateChange',(s)=>{ if(s&&s.isActive){ try{_resumeRefresh();}catch(e){} } });
+    _cap.addListener('appStateChange',(s)=>{ if(s&&s.isActive){ try{_resumeRefresh();}catch(e){} try{_rcEnsureUser().then(()=>_rcSyncEntitlement());}catch(e){} } });
     _cap.addListener('resume',()=>{ try{_resumeRefresh();}catch(e){} });
   }
 }catch(e){}
+// Apple IAP (RevenueCat) — initialise once on native. Function declarations below are
+// hoisted, so calling here (before their definition) is safe. No-op on web.
+try{ _rcInit(); }catch(e){}
 
 // ── NATIVE SHARE SHEET / DEEP LINK (vault://add?url=<enc>) ──
 // The iOS Share Extension (and any vault:// open) launches the app here. Pull the
@@ -5839,6 +5848,7 @@ function renderPlusModal(){
     <button class="btn-plus" onclick="closePlusModal();showCheckout()">${ico('bolt',14)} ${t('plusContinue')}</button>
     <div style="text-align:center;margin-top:11px">
       <button onclick="closePlusModal()" style="background:none;border:none;color:var(--t3);font-size:12px;cursor:pointer;font-family:inherit;padding:4px 8px">${t('plusMaybeLater')}</button>
+      ${_isNativePlatform()?`<button onclick="_rcRestore()" style="background:none;border:none;color:var(--t3);font-size:12px;cursor:pointer;font-family:inherit;padding:4px 8px;margin-left:4px;text-decoration:underline">${(S&&S.lang==='it')?'Ripristina acquisti':'Restore purchases'}</button>`:''}
     </div>`;
 }
 
@@ -5849,6 +5859,10 @@ function showCheckout(){
     setTimeout(()=>document.getElementById('authOv')?.style.setProperty('display','flex'),400);
     return;
   }
+  // iOS: subscriptions consumed in-app MUST go through Apple IAP (App Store rule
+  // 3.1.1) — linking to Stripe from inside the app gets the app rejected. Route to
+  // RevenueCat. Web/desktop keep Stripe (Apple takes 0% on the web).
+  if(_isNativePlatform()){ closePlusModal(); _rcPurchase(_plusBilling); return; }
   const isAnnual=_plusBilling==='annual';
   const base=isAnnual?STRIPE_ANNUAL:STRIPE_MONTHLY;
   const email=_currentUser?.email||'';
@@ -5880,6 +5894,85 @@ function deactivatePlus(){
   _updatePlusSideBtn();
   renderProfile();
   showToast('Reset to Free plan.');
+}
+
+// ── APPLE IN-APP PURCHASE via RevenueCat (iOS only; web keeps Stripe) ──────────
+// Vault is a no-bundler single-file app, so the RevenueCat Capacitor plugin is
+// reached through the raw bridge window.Capacitor.Plugins.Purchases (same pattern
+// as the App/Browser plugins), NOT the npm ESM wrapper. Bridge methods used:
+// configure, logIn, getOfferings, purchasePackage, restorePurchases, getCustomerInfo.
+// Plus stays gated by isPlus() (Supabase data.plan = cross-device source of truth).
+// A successful iOS purchase grants the "plus" entitlement → we mirror it locally
+// (_sbPlan/localStorage); the server-side RevenueCat→Supabase webhook (Sept) will
+// persist data.plan='plus' so Plus follows the account across every device.
+function _isNativePlatform(){ try{ return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()); }catch(e){ return false; } }
+function _rcPlugin(){ try{ return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Purchases; }catch(e){ return null; } }
+let _rcReady=false, _rcCurrentUser=null;
+async function _rcInit(){
+  if(!_isNativePlatform()) return;
+  const P=_rcPlugin(); if(!P) return;
+  try{
+    try{ await P.setLogLevel({level:'INFO'}); }catch(e){}
+    await P.configure({apiKey:RC_API_KEY, appUserID:(_sbUser&&_sbUser.id)||null});
+    _rcReady=true;
+    if(_sbUser&&_sbUser.id) _rcCurrentUser=_sbUser.id;
+    await _rcSyncEntitlement();
+  }catch(e){ console.warn('[RC] init failed', e); }
+}
+async function _rcEnsureUser(){
+  if(!_isNativePlatform()) return;
+  const P=_rcPlugin(); if(!P||!_rcReady) return;
+  const uid=(_sbUser&&_sbUser.id)||null;
+  if(uid && uid!==_rcCurrentUser){
+    try{ await P.logIn({appUserID:uid}); _rcCurrentUser=uid; }catch(e){}
+  }
+}
+function _rcHasPlus(customerInfo){
+  try{ const a=customerInfo&&customerInfo.entitlements&&customerInfo.entitlements.active;
+    return !!(a && a[RC_ENTITLEMENT] && a[RC_ENTITLEMENT].isActive); }catch(e){ return false; }
+}
+function _rcMarkPlus(){
+  _sbPlan='plus';
+  try{ localStorage.setItem('vaultPlan','plus'); }catch(e){}
+  try{ _updatePlusSideBtn(); }catch(e){}
+  try{ if(typeof renderProfile==='function') renderProfile(); }catch(e){}
+}
+async function _rcSyncEntitlement(){
+  if(!_isNativePlatform()) return false;
+  const P=_rcPlugin(); if(!P||!_rcReady) return false;
+  try{
+    const res=await P.getCustomerInfo();
+    if(_rcHasPlus(res&&res.customerInfo)){ _rcMarkPlus(); return true; }
+  }catch(e){}
+  return false; // never DOWNGRADE here — Supabase (web/Stripe) stays the source of truth
+}
+async function _rcPurchase(billing){
+  const P=_rcPlugin();
+  if(!_isNativePlatform()||!P){ showToast('In-app purchases are only available in the app.'); return; }
+  await _rcEnsureUser();
+  try{
+    const offs=await P.getOfferings();
+    const cur=offs&&offs.current;
+    if(!cur){ showToast('Plus is not available right now. Please try again later.'); return; }
+    const pkg=(billing==='annual')?cur.annual:cur.monthly;
+    if(!pkg){ showToast('This plan is not available right now.'); return; }
+    const res=await P.purchasePackage({aPackage:pkg});
+    if(_rcHasPlus(res&&res.customerInfo)){ activatePlus(); }
+  }catch(e){
+    if(e && (e.userCancelled===true || (e.code+'')==='1' || /cancel/i.test((e&&e.message)||''))) return;
+    console.warn('[RC] purchase failed', e);
+    showToast('Purchase could not be completed. Please try again.');
+  }
+}
+async function _rcRestore(){
+  const P=_rcPlugin();
+  if(!_isNativePlatform()||!P) return;
+  await _rcEnsureUser();
+  try{
+    const res=await P.restorePurchases();
+    if(_rcHasPlus(res&&res.customerInfo)){ activatePlus(); showToast('Vault Plus restored ✓'); }
+    else showToast('No previous purchases found.');
+  }catch(e){ showToast('Could not restore purchases.'); }
 }
 
 function plusSideBtnClick(){
@@ -6071,6 +6164,7 @@ function renderSharedView(){
         <div class="shared-row-name">${esc(l.name||t('shDefault'))}</div>
         <div class="shared-row-sub">${count} ${t('shItems')} · ${memCount} ${t('shMembers')}${isOwner?' · '+t('shYouOwn'):''}</div>
       </div>
+      ${isOwner?`<button class="btn-s" style="padding:6px 8px;color:#cc4444;flex-shrink:0" onclick="event.stopPropagation();deleteSharedList('${esc(l.id)}')" title="${t('ttDelete')}">${ico('trash',12)}</button>`:''}
       <span class="shared-row-arrow">›</span>
     </div>`;
   }).join('')||`<div style="text-align:center;padding:24px;color:var(--t3);font-size:13px;line-height:1.6">${t('shEmpty1')}<br>${t('shEmpty2')}</div>`;
