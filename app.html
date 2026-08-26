@@ -1951,6 +1951,9 @@ const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 // appl_ key in Sept, once the App Store is connected + Paid Apps Agreement is signed.
 const RC_API_KEY='test_KqQrYGiApDrasmqhkfawhGLJkYx';
 const RC_ENTITLEMENT='plus';
+// Free plan: max active (non-archived) items before Vault Plus is required.
+// Single source of truth — change the number here only.
+const FREE_LIMIT=20;
 (function(){
   if(!SUPABASE_URL||!SUPABASE_ANON_KEY) return;
   if(typeof window.supabase==='undefined') return;
@@ -2804,10 +2807,10 @@ function renderSidebar(){
   if(ctr){
     if(!isPlus()){
       const n=S.items.filter(i=>!i.archived).length;
-      const pct=Math.min(100,Math.round(n/30*100));
-      const warn=n>=25;
+      const pct=Math.min(100,Math.round(n/FREE_LIMIT*100));
+      const warn=n>=FREE_LIMIT-4;
       ctr.style.display='';
-      ctr.innerHTML=`<div style="font-size:10px;color:${warn?'#f87171':'var(--t3)'};margin-bottom:4px;display:flex;justify-content:space-between"><span>${n}/30 items</span>${warn?'<span onclick="showPlusModal(\'limit\')" style="cursor:pointer;color:#c9a227;text-decoration:underline">Upgrade</span>':''}</div><div style="height:3px;border-radius:2px;background:var(--brd);overflow:hidden"><div style="height:100%;width:${pct}%;background:${warn?'#f87171':'#c9a227'};border-radius:2px;transition:width .4s"></div></div>`;
+      ctr.innerHTML=`<div style="font-size:10px;color:${warn?'#f87171':'var(--t3)'};margin-bottom:4px;display:flex;justify-content:space-between"><span>${n}/${FREE_LIMIT} items</span>${warn?'<span onclick="showPlusModal(\'limit\')" style="cursor:pointer;color:#c9a227;text-decoration:underline">Upgrade</span>':''}</div><div style="height:3px;border-radius:2px;background:var(--brd);overflow:hidden"><div style="height:100%;width:${pct}%;background:${warn?'#f87171':'#c9a227'};border-radius:2px;transition:width .4s"></div></div>`;
     } else {
       ctr.style.display='none';
     }
@@ -3609,10 +3612,10 @@ function saveItem(){
   const tagInput=document.getElementById('tagI');
   if(tagInput?.value.trim()) addTag(tagInput.value.trim());
 
-  // Free tier: max 30 active items
+  // Free tier: max FREE_LIMIT active items
   if(!editingItemId && !isPlus()){
     const activeCount=S.items.filter(i=>!i.archived).length;
-    if(activeCount>=30){closeAddMo();showPlusModal('itemLimit');return;}
+    if(activeCount>=FREE_LIMIT){closeAddMo();showPlusModal('itemLimit');return;}
   }
 
   const _biIsEdit=!!editingItemId; let _biItem=null; // Vault Business: track new saves vs edits
@@ -5694,7 +5697,7 @@ async function _doLogin(email,pass){
     // Persist the session locally so the NEXT reload restores _currentUser
     // synchronously and load() reads THIS user's key (vault5_<hash>). Without
     // this, a reload falls back to the guest key and flashes the welcome screen,
-    // the Free n/30 limit and hides the last-added item until the cloud pull.
+    // the Free item limit (FREE_LIMIT) and hides the last-added item until the cloud pull.
     localStorage.setItem('vault_session',JSON.stringify({eHash}));
     try{const _a=JSON.parse(localStorage.getItem('vault_accounts')||'{}');_a[eHash]={email,joined:(_a[eHash]&&_a[eHash].joined)||new Date().toISOString()};localStorage.setItem('vault_accounts',JSON.stringify(_a));}catch(e){}
     localStorage.removeItem('vault_guest');
