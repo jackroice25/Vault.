@@ -16,8 +16,8 @@
   --s1:#0d0d0d;
   --s2:#141414;
   --s3:#1a1a1a;
-  --bd:#222222;
-  --bd2:#2c2c2c;
+  --bd:#2e2e2e;
+  --bd2:#3c3c3c;
   --accent:#b8b8b8;
   --ax:rgba(184,184,184,.10);
   --ax2:rgba(184,184,184,.20);
@@ -31,8 +31,8 @@
   --purple:#707070;
   --purplex:rgba(112,112,112,.10);
   --t1:#f0f0f0;
-  --t2:#787878;
-  --t3:#383838;
+  --t2:#aeaeae;
+  --t3:#7a7a7a;
   --r:10px;
 }
 html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif}
@@ -1942,7 +1942,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.07.24-nobiz';
+const APP_BUILD='2026.08.29-fixes';
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 // RevenueCat (Apple In-App Purchase on iOS; web keeps Stripe = 0% Apple). The SDK
@@ -2782,11 +2782,14 @@ function renderSidebar(){
     const isOn=S.active===s.id;
     const clickArg=s.id===null?'null':(isOn?'null':`'${s.id}'`);
     const arrow=s.id!==null?`<span class="si-arrow">${isOn?ico('close',10):ico('chevron-right',10)}</span>`:'';
+    // Explicit, tappable delete for real sections (mobile: long-press ctx menu is
+    // undiscoverable, and tapping the collapse X looked like delete → confusing loop).
+    const delBtn=(s.id!==null&&isOn)?`<span class="si-del" onclick="event.stopPropagation();delSec('${s.id}')" title="${t('ctxDeleteSec')}" style="display:inline-flex;align-items:center;padding:5px;margin-left:1px;color:#e06666;cursor:pointer">${ico('trash',13)}</span>`:'';
     return `<div class="si ${isOn?'on':''}" onclick="setActive(${clickArg})" ${ctx} ${accent}>
       <span class="si-icon">${s._allIcon?ico('layers',15):secIcon(s,15)}</span>
       ${dot}<span class="si-name">${esc(s.name)}</span>
       <span class="si-count">${count}</span>
-      ${arrow}
+      ${delBtn}${arrow}
     </div>`;
   };
   const prodotti=S.sections.filter(s=>s.cat!=='luoghi');
@@ -3157,7 +3160,35 @@ function quickAdd(){
     return;
   }
   if(!validUrl(url)) return;
-  openAddMo(url);
+  _quickAddFromUrl(url);
+}
+
+// Auto-add from a pasted/shared link with the FEWEST steps: scrape in the
+// background and save directly (no modal). Used by the paste bar AND the iOS
+// share sheet (was referenced but undefined → share-to-save was broken). If the
+// scrape is too thin to build a useful card, fall back to the modal so the user
+// completes it instead of saving a blank item.
+async function _quickAddFromUrl(url){
+  url=(url||'').trim();
+  if(!/^https?:\/\//i.test(url)) return;
+  if(!editingItemId && !isPlus() && S.items.filter(i=>!i.archived).length>=FREE_LIMIT){
+    showPlusModal('itemLimit'); return;
+  }
+  showToast(_lbl({it:'Aggiungo…',en:'Adding…',es:'Añadiendo…',fr:'Ajout…',de:'Hinzufügen…',pt:'A adicionar…',nl:'Toevoegen…'}));
+  let d=null; try{ d=await _scrapeUrl(url); }catch(e){}
+  d=d||{};
+  if(!d.img && (d.price==null||d.price===0)){ openAddMo(url); return; } // too thin → complete in modal
+  const title=(d.title||getDomain(url)||'Item').toString().slice(0,300);
+  S.items.unshift({
+    id:uid(),url:url.slice(0,2048),type:'prodotto',status:'voglio',star:false,archived:false,
+    title,desc:d.desc||'',images:d.img?[String(d.img).slice(0,2048)]:[],giftFor:'',
+    note:'',sid:S.active||null,price:d.price||0,priceFound:0,deadline:null,tags:[],variant:'',qty:1,
+    voiceMemo:null,priceHistory:[],relatedIds:[],userRating:0,isPlace:false,
+    rating:null,reviewCount:null,priceRange:null,address:null,phone:null,cuisine:null,hours:null,menu:[],reviews:[],
+    at:Date.now(),mod:Date.now()
+  });
+  save(); try{renderSidebar();render();}catch(e){}
+  showToast(_lbl({it:'✓ Salvato in Vault',en:'✓ Saved to Vault',es:'✓ Guardado',fr:'✓ Enregistré',de:'✓ Gespeichert',pt:'✓ Salvo',nl:'✓ Opgeslagen'}));
 }
 
 {
@@ -3844,6 +3875,7 @@ function star(id){
 function toggleTheme(){
   const cycle={dark:'light',light:'auto',auto:'dark'};
   S.theme=cycle[S.theme||'dark']||'dark';
+  try{localStorage.setItem('vault_theme',S.theme);}catch(e){} // survive cold starts / sync resets
   save();applyTheme();
 }
 // ── THEME PRESETS ──
@@ -3975,6 +4007,10 @@ function applyPreset(id){S.themePreset=id;if(id!=='custom')S.customColors=undefi
 function setCustomColor(k,v){if(!S.customColors)S.customColors={};S.customColors[k]=v;S.themePreset='custom';save();applyCustomTheme();}
 function resetTheme(){S.themePreset=undefined;S.customColors=undefined;save();applyCustomTheme();_renderThemePanel();}
 function applyTheme(){
+  // The theme is a per-device preference: a dedicated localStorage key is the
+  // source of truth so the choice survives app restarts (and any state reset from
+  // the cloud pull). Mirror it both ways.
+  try{ const _lt=localStorage.getItem('vault_theme'); if(_lt){ S.theme=_lt; } else if(S.theme){ localStorage.setItem('vault_theme',S.theme); } }catch(e){}
   if(!S.themePreset){
     const isLight=S.theme==='light'||(S.theme==='auto'&&window.matchMedia('(prefers-color-scheme: light)').matches);
     document.body.classList.toggle('light',isLight);
