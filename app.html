@@ -962,6 +962,44 @@ body.cmp-mode .card{cursor:default}
 .ro-card-price{font-size:12px;color:var(--accent);margin-top:3px}
 .ro-card-note{font-size:11px;color:var(--t2);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ro-card-domain{font-size:10px;color:var(--t3);margin-top:5px;text-decoration:none;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* ── SOCIAL LAYER ── */
+.vbadge{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:2px 7px;border-radius:20px;border:1px solid;margin:0 3px 3px 0;vertical-align:middle}
+.disc-search-wrap{position:relative;margin-bottom:12px}
+.disc-at{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:15px;pointer-events:none}
+.disc-search{width:100%;box-sizing:border-box;padding:11px 14px 11px 30px;background:var(--s2);border:1px solid var(--bd);border-radius:11px;color:var(--t1);font-size:14px;font-family:inherit;outline:none}
+.disc-search:focus{border-color:var(--accent)}
+.disc-results{min-height:120px;max-height:52vh;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+.disc-empty{text-align:center;color:var(--t3);font-size:12.5px;padding:28px 10px;line-height:1.6}
+.disc-row{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:var(--s2);border:1px solid var(--bd);border-radius:11px;padding:9px 12px;cursor:pointer;font-family:inherit;transition:background .12s,border-color .12s}
+.disc-row:hover{background:var(--s3);border-color:var(--bd2)}
+.disc-av,.disc-av-i{width:38px;height:38px;min-width:38px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--s3),var(--s2));color:var(--t2);font-weight:800;font-size:16px}
+.disc-av img{width:100%;height:100%;object-fit:cover}
+.disc-nick{flex:1;font-size:14px;font-weight:700;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.disc-badges{display:flex;flex-wrap:wrap;justify-content:flex-end;max-width:45%}
+.pub-head{text-align:center;padding:14px 6px 4px}
+.pub-av{width:92px;height:92px;border-radius:50%;margin:0 auto 12px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--s3),var(--s2));color:var(--t1);font-weight:800;font-size:38px;border:2px solid var(--bd2)}
+.pub-av img{width:100%;height:100%;object-fit:cover}
+.pub-nick{font-size:20px;font-weight:800;color:var(--t1)}
+.pub-badges{margin:8px 0 4px}
+.pub-bio{font-size:13px;color:var(--t2);line-height:1.55;margin:8px auto 0;max-width:300px;white-space:pre-wrap;word-break:break-word}
+.pub-meta{font-size:11px;color:var(--t3);margin-top:10px}
+.pub-notfound{text-align:center;color:var(--t3);font-size:14px;padding:34px 12px;line-height:2;font-weight:600}
+.pub-notfound div{font-size:13px;font-weight:500;margin-top:6px}
+.pub-report{display:block;margin:16px auto 0;background:none;border:none;color:var(--t3);font-size:11px;cursor:pointer;font-family:inherit;opacity:.7}
+.pub-report:hover{color:var(--red);opacity:1}
+.soc-edit{background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:10px}
+.soc-av-row{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+.soc-av{width:56px;height:56px;min-width:56px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--s3),var(--s2));color:var(--t1);font-weight:800;font-size:22px}
+.soc-av img{width:100%;height:100%;object-fit:cover}
+.soc-lbl{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--t3);margin:10px 0 5px}
+.soc-nick-wrap{position:relative}
+.soc-at{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:13px;pointer-events:none}
+.soc-inp{width:100%;box-sizing:border-box;padding:9px 12px;background:var(--s1);border:1px solid var(--bd);border-radius:9px;color:var(--t1);font-size:13.5px;font-family:inherit;outline:none;resize:vertical}
+.soc-inp:focus{border-color:var(--accent)}
+.soc-toggle{display:flex;align-items:center;gap:9px;margin-top:12px;font-size:13px;color:var(--t1);cursor:pointer;font-weight:600}
+.soc-toggle input{width:16px;height:16px;accent-color:var(--accent);cursor:pointer}
+.soc-note{font-size:11px;color:var(--t3);margin-top:5px;line-height:1.5}
+.soc-err{color:var(--red);font-size:12px;margin-top:8px;min-height:14px}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
@@ -1361,6 +1399,7 @@ body.cmp-mode .card{cursor:default}
   <div class="sb-hint" id="sbHint" style="display:none"><kbd>⌘K</kbd> aggiungi veloce · <kbd>V</kbd> vista</div>
   <button class="sb-plus-btn" id="plusSideBtn" onclick="plusSideBtnClick()"></button>
   <button class="newsec" id="profileBtn" onclick="openProfileMo()" style="border-style:solid;margin-top:0"><svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-id-card"/></svg> Profile</button>
+  <button class="newsec" id="discoverBtn" onclick="openDiscover()" style="border-style:solid;margin-top:0"><svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-globe"/></svg> Discover</button>
   <button class="newsec" id="themeBtn" onclick="toggleTheme()" style="border-style:solid;margin-top:0"><svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-sun"/></svg> Tema chiaro</button>
   <div id="itemLimitBar" style="display:none;padding:8px 12px 4px"></div>
   <button class="newsec" id="mapBtn" onclick="openMapMo()" style="border-style:solid;margin-top:0"><svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-globe"/></svg> Map</button>
@@ -1460,6 +1499,11 @@ body.cmp-mode .card{cursor:default}
     <div class="auth-inp-wrap" id="authPass2Wrap" style="display:none">
       <input class="auth-inp" type="password" id="authPass2" placeholder="Repeat password" autocomplete="new-password" onkeydown="if(event.key==='Enter')doAuth()">
     </div>
+    <div class="auth-inp-wrap" id="authNickWrap" style="display:none">
+      <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:14px;pointer-events:none">@</span>
+      <input class="auth-inp" type="text" id="authNick" placeholder="Username" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="20" style="padding-left:28px" oninput="_nickLiveCheck()" onkeydown="if(event.key==='Enter')doAuth()">
+    </div>
+    <div id="authNickHint" style="display:none;font-size:10.5px;color:var(--t3);margin:-4px 2px 6px;min-height:14px"></div>
     <div style="text-align:right;margin:-4px 0 6px"><button id="forgotBtn" onclick="doForgotPass()" style="background:none;border:none;color:var(--t3);font-size:11px;cursor:pointer;font-family:inherit;padding:0">Forgot password?</button></div>
     <div class="auth-err" id="authErr"></div>
     <button class="auth-btn" id="authSubmitBtn" onclick="doAuth()">Sign in</button>
@@ -1505,6 +1549,26 @@ body.cmp-mode .card{cursor:default}
     <div class="mo-hd" id="statsMoHd"><svg class="ico" width="16" height="16" viewBox="0 0 16 16" style="margin-right:6px"><use href="#ic-chart"/></svg>Statistics</div>
     <div id="statsIn"></div>
     <div class="mo-acts"><button class="btn-s" onclick="document.getElementById('statsOv').classList.remove('open')">Close</button></div>
+  </div>
+</div>
+
+<!-- ═══ SOCIAL: DISCOVER (account search) ═══ -->
+<div class="ov" id="discoverOv">
+  <div class="mo" style="max-width:440px">
+    <div class="mo-hd"><svg class="ico" width="16" height="16" viewBox="0 0 16 16" style="margin-right:6px"><use href="#ic-globe"/></svg>Discover people</div>
+    <div class="disc-search-wrap">
+      <span class="disc-at">@</span>
+      <input id="discSearch" class="disc-search" type="text" placeholder="Search a username..." autocomplete="off" autocapitalize="none" spellcheck="false" oninput="_discSearchDebounced()">
+    </div>
+    <div id="discResults" class="disc-results"></div>
+    <div class="mo-acts"><button class="btn-s" onclick="closeDiscover()">Close</button></div>
+  </div>
+</div>
+<!-- ═══ SOCIAL: PUBLIC PROFILE ═══ -->
+<div class="ov" id="pubProfOv">
+  <div class="mo" style="max-width:400px">
+    <div id="pubProfIn"></div>
+    <div class="mo-acts"><button class="btn-s" onclick="closePubProf()">Close</button></div>
   </div>
 </div>
 
@@ -1942,7 +2006,13 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.08.29-fixes';
+const APP_BUILD='2026.09.04-social';
+// ── SOCIAL LAYER (Phase 1) ──────────────────────────────────────────────
+// Master switch for the optional social profiles feature (public @nickname,
+// account search, public profile pages with avatar/bio/admin badges).
+// Set to false to instantly hide ALL social UI and revert to the classic
+// private-only wishlist — the rest of the app is untouched either way.
+const SOCIAL_ON=true;
 const STRIPE_MONTHLY='https://buy.stripe.com/fZu3cvfAw5YBdE4cqW77O00';
 const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 // RevenueCat (Apple In-App Purchase on iOS; web keeps Stripe = 0% Apple). The SDK
@@ -4154,6 +4224,10 @@ function checkShareParam(){
     }).catch(()=>{});
     return;
   }
+  if(SOCIAL_ON&&hash.startsWith('#u=')){
+    openPublicProfile(decodeURIComponent(hash.slice(3)));
+    return;
+  }
   if(!hash.startsWith('#share='))return;
   try{
     const raw=JSON.parse(decodeURIComponent(escape(atob(hash.slice(7)))));
@@ -5483,6 +5557,7 @@ function renderProfile(){
     <div class="prof-btn-row"><button class="prof-btn danger" onclick="logout()">${ico('back',12)} Sign out</button></div>`
     :`<div class="prof-sec-hd">${ico('lock',11)} Account</div>
     <div class="prof-btn-row"><button class="prof-btn" onclick="closeProfileMo();setAuthMode('login');document.getElementById('authOv').style.display='flex'">${ico('back',12)} Sign in</button></div>`}
+    ${(SOCIAL_ON&&_currentUser)?_renderSocialEditHTML():''}
     ${_getPlanSectionHTML()}
     <div class="prof-sec-hd">${ico('trash',11)} Danger zone</div>
     <div class="prof-btn-row">
@@ -5549,6 +5624,170 @@ function resetVault(){
   S.items=[];S.sections=[...DEFAULT_SECTIONS];S.profile.joined=null;
   save();renderSidebar();render();closeProfileMo();
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SOCIAL LAYER (Phase 1) — optional public profiles (@nickname, avatar,
+// bio, admin-assigned badges), account search, public profile pages.
+// Everything is gated by SOCIAL_ON and PRIVATE by default. Backend =
+// security-definer RPCs (see vault-supabase/migrations/*_social_profiles.sql).
+// ══════════════════════════════════════════════════════════════════════
+let _myProfile=null;      // {nickname,avatar_url,bio,is_public,badges}
+let _pendingAvatar=null;  // chosen-but-unsaved avatar (data URL)
+const _RESERVED_NICKS=new Set(['admin','vault','support','official','mod','moderator','root','help','staff','team','system','api','null','undefined','me','you']);
+const _BAD_WORDS=/(nigger|faggot|kike|retard|\brape\b|\bheil\b|\bkkk\b)/i;
+// Admin-assigned tags — you decide who gets which (set via set_user_badges RPC).
+const BADGE_STYLE={
+  founder:{label:'Founder',color:'#c9a227'}, team:{label:'Team',color:'#7aa2f7'},
+  veteran:{label:'Veteran',color:'#9d7cd8'}, og:{label:'OG',color:'#e0af68'},
+  verified:{label:'Verified',color:'#2ac3de'}
+};
+function _normNick(s){return (s||'').toString().trim().toLowerCase().replace(/^@+/,'').replace(/[^a-z0-9_]/g,'');}
+function _nickFormatOk(n){return /^[a-z0-9_]{3,20}$/.test(n)&&!_RESERVED_NICKS.has(n)&&!_BAD_WORDS.test(n);}
+function _textClean(s){return !_BAD_WORDS.test(s||'');}
+function _avInitial(n){return `<span class="disc-av-i">${esc((n||'?').slice(0,1).toUpperCase())}</span>`;}
+function _badgesHTML(badges){
+  if(!badges||!badges.length) return '';
+  return badges.map(b=>{const s=BADGE_STYLE[b]||{label:b,color:'var(--t2)'};return `<span class="vbadge" style="color:${s.color};border-color:${s.color}55;background:${s.color}18">${esc(s.label)}</span>`;}).join('');
+}
+let _nickChkT=null;
+function _nickLiveCheck(){
+  const inp=document.getElementById('authNick'),hint=document.getElementById('authNickHint');
+  if(!inp||!hint) return;
+  const n=_normNick(inp.value);
+  clearTimeout(_nickChkT);
+  if(n.length<3){hint.textContent=n.length?'Username must be at least 3 characters':'';hint.style.color='var(--t3)';return;}
+  if(!_nickFormatOk(n)){hint.textContent='Only letters, numbers and _ (3–20 chars)';hint.style.color='var(--red)';return;}
+  hint.textContent='Checking availability…';hint.style.color='var(--t3)';
+  _nickChkT=setTimeout(async()=>{
+    try{
+      if(!_sb){hint.textContent='@'+n+' looks good';hint.style.color='var(--green)';return;}
+      const {data}=await _sb.rpc('check_nickname',{p_nick:n});
+      if(data&&data.available){hint.textContent='✓ @'+n+' is available';hint.style.color='var(--green)';}
+      else if(data&&!data.valid){hint.textContent='That username isn’t allowed';hint.style.color='var(--red)';}
+      else{hint.textContent='✗ @'+n+' is already taken';hint.style.color='var(--red)';}
+    }catch(e){hint.textContent='';}
+  },350);
+}
+async function _socialInit(){
+  if(!SOCIAL_ON){const b=document.getElementById('discoverBtn');if(b)b.style.display='none';return;}
+  await _socialLoadMyProfile();
+}
+async function _socialLoadMyProfile(){
+  _myProfile=null;
+  if(!SOCIAL_ON||!_sb||!_sbUser) return;
+  try{const {data}=await _sb.rpc('get_my_profile');if(data&&data.ok){_myProfile={nickname:data.nickname,avatar_url:data.avatar_url,bio:data.bio,is_public:!!data.is_public,badges:data.badges||[]};}}catch(e){}
+}
+// ── Discover / search ──
+function openDiscover(){
+  if(!SOCIAL_ON) return;
+  document.getElementById('discoverOv').classList.add('open');
+  const r=document.getElementById('discResults');if(r)r.innerHTML='<div class="disc-empty">Search for people by their @username.</div>';
+  setTimeout(()=>{const s=document.getElementById('discSearch');if(s){s.value='';s.focus();}},60);
+}
+function closeDiscover(){document.getElementById('discoverOv').classList.remove('open');}
+let _discT=null;
+function _discSearchDebounced(){clearTimeout(_discT);_discT=setTimeout(_doSearch,300);}
+async function _doSearch(){
+  const q=(document.getElementById('discSearch').value||'').trim().toLowerCase().replace(/^@+/,'');
+  const box=document.getElementById('discResults');if(!box) return;
+  if(q.length<2){box.innerHTML='<div class="disc-empty">Type at least 2 characters.</div>';return;}
+  if(!_sb){box.innerHTML='<div class="disc-empty">Search needs a connection.</div>';return;}
+  box.innerHTML='<div class="disc-empty">Searching…</div>';
+  try{
+    const {data}=await _sb.rpc('search_profiles',{p_q:q});
+    const res=(data&&data.results)||[];
+    if(!res.length){box.innerHTML='<div class="disc-empty">No public profiles found for “@'+esc(q)+'”.</div>';return;}
+    box.innerHTML=res.map(p=>`<button class="disc-row" onclick="openPublicProfile('${esc(p.nickname)}')">
+      <span class="disc-av">${p.avatar_url?`<img src="${esc(p.avatar_url)}" alt="">`:_avInitial(p.nickname)}</span>
+      <span class="disc-nick">@${esc(p.nickname)}</span>
+      <span class="disc-badges">${_badgesHTML(p.badges)}</span></button>`).join('');
+  }catch(e){box.innerHTML='<div class="disc-empty">Something went wrong. Try again.</div>';}
+}
+// ── Public profile view ──
+async function openPublicProfile(nick){
+  if(!SOCIAL_ON) return;
+  nick=_normNick(nick);
+  const ov=document.getElementById('pubProfOv'),box=document.getElementById('pubProfIn');
+  if(!ov||!box) return;
+  ov.classList.add('open');
+  box.innerHTML='<div class="disc-empty">Loading…</div>';
+  try{
+    if(!_sb){box.innerHTML='<div class="disc-empty">Needs a connection.</div>';return;}
+    const {data}=await _sb.rpc('get_public_profile',{p_nick:nick});
+    if(!data||!data.ok){box.innerHTML='<div class="pub-notfound">🔒<div>This profile is private or doesn’t exist.</div></div>';return;}
+    const joined=data.joined?new Date(data.joined).toLocaleDateString(S.lang||'en',{year:'numeric',month:'long'}):'';
+    box.innerHTML=`<div class="pub-head">
+        <div class="pub-av">${data.avatar_url?`<img src="${esc(data.avatar_url)}" alt="">`:esc((data.nickname||'?').slice(0,1).toUpperCase())}</div>
+        <div class="pub-nick">@${esc(data.nickname)}</div>
+        <div class="pub-badges">${_badgesHTML(data.badges)}</div>
+        ${data.bio?`<div class="pub-bio">${esc(data.bio)}</div>`:''}
+        <div class="pub-meta">${data.item_count||0} saved${joined?' · Member since '+joined:''}</div>
+      </div>
+      <button class="pub-report" onclick="_reportProfile('${esc(data.nickname)}')">${ico('trash',11)} Report profile</button>`;
+  }catch(e){box.innerHTML='<div class="disc-empty">Something went wrong.</div>';}
+}
+function closePubProf(){
+  document.getElementById('pubProfOv').classList.remove('open');
+  if((location.hash||'').startsWith('#u=')) history.replaceState(null,'',location.pathname+location.search);
+}
+async function _reportProfile(nick){
+  const reason=prompt('Report @'+nick+' — what’s wrong? (optional)');
+  if(reason===null) return;
+  try{if(_sb&&_sbUser) await _sb.rpc('report_profile',{p_nick:nick,p_reason:reason||''});}catch(e){}
+  alert('Thanks — this profile has been reported. We’ll review it.');
+}
+// ── Own social profile editing (rendered inside the Profile modal) ──
+function _renderSocialEditHTML(){
+  const p=_myProfile||{};const nick=p.nickname||'';const av=_pendingAvatar||p.avatar_url||'';
+  return `<div class="prof-sec-hd">${ico('globe',11)} Social profile</div>
+  <div class="soc-edit">
+    <div class="soc-av-row">
+      <div class="soc-av" id="socAvPrev">${av?`<img src="${esc(av)}" alt="">`:esc((nick||'?').slice(0,1).toUpperCase())}</div>
+      <div><button class="prof-btn" style="margin:0" onclick="document.getElementById('socAvFile').click()">${ico('upload',12)} ${av?'Change photo':'Add photo'}</button>
+        <input type="file" id="socAvFile" accept="image/*" style="display:none" onchange="_pickAvatar(this)"></div>
+    </div>
+    <label class="soc-lbl">Username</label>
+    <div class="soc-nick-wrap"><span class="soc-at">@</span><input id="socNick" class="soc-inp" style="padding-left:24px" type="text" maxlength="20" autocapitalize="none" spellcheck="false" value="${esc(nick)}" placeholder="username" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9_]/g,'')"></div>
+    <label class="soc-lbl">Bio</label>
+    <textarea id="socBio" class="soc-inp" rows="2" maxlength="300" placeholder="A short bio...">${esc(p.bio||'')}</textarea>
+    <label class="soc-toggle"><input type="checkbox" id="socPublic" ${p.is_public?'checked':''}> <span>Make my profile public</span></label>
+    <div class="soc-note">${p.is_public?'Anyone with your @username can view your profile.':'Your profile is private — only you can see it.'}</div>
+    ${(p.badges&&p.badges.length)?`<div style="margin-top:8px">${_badgesHTML(p.badges)}</div>`:''}
+    <div class="soc-err" id="socErr"></div>
+    <button class="prof-btn" style="width:100%;margin-top:8px;background:var(--accent);color:#111;border-color:var(--accent);font-weight:700" onclick="saveSocialProfile(this)">${ico('id-card',12)} Save social profile</button>
+  </div>`;
+}
+function _pickAvatar(input){
+  const f=input.files&&input.files[0];if(!f) return;
+  if(!/^image\//.test(f.type)){input.value='';return;}
+  const r=new FileReader();
+  r.onload=e=>{_pendingAvatar=e.target.result;const pv=document.getElementById('socAvPrev');if(pv)pv.innerHTML=`<img src="${_pendingAvatar}" alt="">`;const b=document.querySelector('#socAvFile');if(b){}};
+  r.readAsDataURL(f);input.value='';
+}
+async function saveSocialProfile(btn){
+  const err=document.getElementById('socErr');if(err)err.textContent='';
+  const nick=_normNick(document.getElementById('socNick').value);
+  const bio=(document.getElementById('socBio').value||'').trim().slice(0,300);
+  const pub=document.getElementById('socPublic').checked;
+  if(nick&&!_nickFormatOk(nick)){if(err)err.textContent='Username: only letters, numbers, _ (3–20 chars).';return;}
+  if(bio&&!_textClean(bio)){if(err)err.textContent='Please remove inappropriate language from your bio.';return;}
+  if(pub&&!nick){if(err)err.textContent='Pick a username before going public.';return;}
+  if(btn){btn.disabled=true;btn.style.opacity=.6;}
+  try{
+    let avatarUrl=(_myProfile&&_myProfile.avatar_url)||null;
+    if(_pendingAvatar) avatarUrl=await _uploadPhoto(_pendingAvatar);
+    if(!_sb||!_sbUser){if(err)err.textContent='You need to be signed in.';if(btn){btn.disabled=false;btn.style.opacity=1;}return;}
+    const {data}=await _sb.rpc('set_profile',{p_nick:nick||null,p_avatar:avatarUrl,p_bio:bio,p_public:pub});
+    if(!data||!data.ok){
+      const m={taken:'That username is already taken.',invalid:'Invalid username.',blocked:'That username isn’t allowed.',bio_blocked:'Please remove inappropriate language from your bio.'}[(data&&data.error)]||'Could not save. Try again.';
+      if(err)err.textContent=m;if(btn){btn.disabled=false;btn.style.opacity=1;}return;
+    }
+    _pendingAvatar=null;
+    await _socialLoadMyProfile();
+    renderProfile();
+  }catch(e){if(err)err.textContent='Something went wrong.';if(btn){btn.disabled=false;btn.style.opacity=1;}}
+}
+(function(){const _hide=()=>{if(!SOCIAL_ON){const b=document.getElementById('discoverBtn');if(b)b.style.display='none';}};if(document.readyState!=='loading')_hide();else document.addEventListener('DOMContentLoaded',_hide);})();
 
 // ── THEME AUTO ──
 const _mq=window.matchMedia('(prefers-color-scheme: light)');
@@ -5623,6 +5862,10 @@ function setAuthMode(mode){
   document.getElementById('authTitle').textContent=isReg?_as('reg'):_as('title');
   document.getElementById('authSub').textContent=isReg?_as('subReg'):_as('sub');
   document.getElementById('authPass2Wrap').style.display=isReg?'':'none';
+  // Social: username field only appears on the register screen (and only when the feature is on).
+  const _nw=document.getElementById('authNickWrap'), _nh=document.getElementById('authNickHint');
+  if(_nw) _nw.style.display=(isReg&&SOCIAL_ON)?'':'none';
+  if(_nh){ _nh.style.display=(isReg&&SOCIAL_ON)?'':'none'; _nh.textContent=''; _nh.style.color='var(--t3)'; }
   document.getElementById('authSubmitBtn').textContent=isReg?_as('reg'):_as('btn');
   document.getElementById('authDivider').textContent=_as('div');
   document.getElementById('authSwitch').innerHTML=isReg
@@ -5696,16 +5939,25 @@ async function doAuth(){
   if(_authMode==='register'){
     if(pass.length<6){_authErr('Password must be at least 6 characters.');return;}
     if(pass!==pass2){_authErr('Passwords do not match.');return;}
-    await _doRegister(email,pass);
+    let nick=null;
+    if(SOCIAL_ON){
+      nick=_normNick(document.getElementById('authNick').value);
+      if(!nick){_authErr('Please choose a username.');return;}
+      if(!_nickFormatOk(nick)){_authErr('Username: only letters, numbers and _ (3–20 characters).');return;}
+      if(_sb){ try{ const {data:ck}=await _sb.rpc('check_nickname',{p_nick:nick}); if(ck&&!ck.available){_authErr(ck.valid===false?'That username isn’t allowed.':'That username is already taken.');return;} }catch(e){} }
+    }
+    await _doRegister(email,pass,nick);
   } else {
     await _doLogin(email,pass);
   }
 }
-async function _doRegister(email,pass){
+async function _doRegister(email,pass,nick){
   if(_sb){
     const {data,error}=await _sb.auth.signUp({email,password:pass});
     if(error){_authErr(error.message);return;}
     _sbUser=data.user;
+    // Social: claim the username now that we have a session (RPC upserts the row).
+    if(SOCIAL_ON&&nick){ try{ const {data:nr}=await _sb.rpc('set_nickname',{p_nick:nick}); if(nr&&nr.ok){ _myProfile={nickname:nick,avatar_url:null,bio:null,is_public:false,badges:[]}; } }catch(e){} }
     const eHash=await _sha256(email);
     const guest=localStorage.getItem('vault5');
     if(guest) localStorage.setItem('vault5_'+eHash,guest);
@@ -5748,6 +6000,7 @@ async function _doLogin(email,pass){
       if(synced){renderSidebar();render();_showSyncDot('ok');}
       _renderOnbLang();initOnboarding();
       _consumePendingJoin();
+      if(SOCIAL_ON)_socialLoadMyProfile();
     },200);
     return;
   }
@@ -5775,7 +6028,7 @@ function _startSession(eHash,account,isNew=false){
   initCurrencyUI();applyTheme();applyStatusColors();applyLang();renderSidebar();render();
   if(S.sort){const sel=document.getElementById('sortSel');if(sel)sel.value=S.sort;}
   _updatePlusSideBtn();
-  setTimeout(()=>{_renderOnbLang();initOnboarding();_consumePendingJoin();},400);
+  setTimeout(()=>{_renderOnbLang();initOnboarding();_consumePendingJoin();if(SOCIAL_ON)_socialLoadMyProfile();},400);
 }
 function continueAsGuest(){
   _currentUser=null;
@@ -5987,7 +6240,7 @@ async function _rcSyncEntitlement(){
 }
 async function _rcPurchase(billing){
   const P=_rcPlugin();
-  if(!_isNativePlatform()||!P){ showToast('In-app purchases are only available in the app.'); return; }
+  if(!_isNativePlatform()||!P){ showToast(_lbl({it:'Vault Plus arriva presto 🚀',en:'Vault Plus is coming soon 🚀',es:'Vault Plus llega pronto 🚀',fr:'Vault Plus arrive bientôt 🚀',de:'Vault Plus kommt bald 🚀',pt:'Vault Plus em breve 🚀',nl:'Vault Plus komt binnenkort 🚀'})); return; }
   await _rcEnsureUser();
   try{
     const offs=await P.getOfferings();
@@ -6720,6 +6973,11 @@ if(!_hasSession && !_wasGuest){
     const _gid=location.hash.slice(6);
     if(/^[0-9a-f-]{10,}$/i.test(_gid)) setTimeout(()=>_openGiftView(_gid),100);
   }
+  // Public profile links (#u=<nickname>) open even without an account.
+  if(SOCIAL_ON&&location.hash.startsWith('#u=')){
+    const _un=decodeURIComponent(location.hash.slice(3));
+    setTimeout(()=>openPublicProfile(_un),100);
+  }
   // Extension add-link arrived while logged out, save it for after login
   if(location.hash.startsWith('#add=')){
     try{
@@ -6813,6 +7071,7 @@ setTimeout(_hideBootLoader, (_sb && _hasSession && !_wasGuest) ? 5000 : 2000);
       renderSidebar();render();_updatePlusSideBtn();_forceRepaint();
       // Tutorial only shown via Realtime (new upgrade), not on page load
     }
+    if(SOCIAL_ON)_socialInit(); // load this user's social profile (nickname/avatar/badges)
     // A returning user may have flashed the welcome/onboarding from the stale
     // pre-restore state, dismiss it now that we have the real (cloud) state.
     if(S.onboardingDone){const _o=document.getElementById('onbOv');if(_o)_o.classList.remove('open');}
