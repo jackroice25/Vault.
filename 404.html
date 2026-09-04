@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Vault</title>
+<style>html,body{margin:0;height:100%;background:#050505;color:#aaa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:center}</style>
+<script>
+(function(){
+  // Pretty profile URLs:  /@nickname  or  /u/nickname  ->  /app.html#u=nickname
+  var p = (location.pathname || '');
+  var m = p.match(/^\/@([a-z0-9_]{3,20})\/?$/i) || p.match(/^\/u\/([a-z0-9_]{3,20})\/?$/i);
+  if (m) { location.replace('/app.html#u=' + m[1].toLowerCase()); return; }
+  // Anything else that doesn't exist -> send to the app home.
+  location.replace('/');
+})();
+</script>
+</head>
+<body>Redirecting…</body>
+</html>

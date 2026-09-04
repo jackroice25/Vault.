@@ -1036,6 +1036,41 @@ body.cmp-mode .card{cursor:default}
 .pubi-row{display:flex;align-items:center;justify-content:space-between;gap:4px;margin-top:2px}
 .pubi-price{font-size:11px;font-weight:700;color:var(--accent)}
 .pubi-status{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.3px}
+/* Public profile — FULL PAGE (horizontal) */
+.profile-page{position:fixed;inset:0;z-index:1000000;background:var(--bg);overflow-y:auto;display:none}
+.profile-page.open{display:block}
+body.pp-open{overflow:hidden}
+.pp-loading{text-align:center;color:var(--t3);font-size:14px;padding:80px 20px}
+.pp-topbar{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 20px;background:color-mix(in srgb,var(--bg) 88%,transparent);border-bottom:1px solid var(--bd);backdrop-filter:blur(10px)}
+.pp-back{display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:var(--t2);font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;padding:4px 6px;border-radius:8px}
+.pp-back:hover{color:var(--t1);background:var(--s2)}
+.pp-topbar-handle{font-size:14.5px;font-weight:800;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pp-wrap{max-width:1120px;margin:0 auto;padding:30px 30px 70px}
+.pp-header{display:flex;align-items:center;gap:38px;padding:6px 0 28px;border-bottom:1px solid var(--bd);flex-wrap:wrap}
+.pp-avatar{width:136px!important;height:136px!important;min-width:136px!important;font-size:54px!important;margin:0!important;border-width:2px}
+.pp-info{flex:1;min-width:280px}
+.pp-name-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.pp-name{font-size:26px;font-weight:800;color:var(--t1);letter-spacing:-.5px}
+.pp-badges{display:flex;flex-wrap:wrap;gap:0}
+.pp-action{margin-left:auto}
+.pp-stats{display:flex;gap:40px;margin:18px 0 14px}
+.pp-stats .pub-stat{align-items:flex-start}
+.pp-stats .pub-stat b{font-size:20px}
+.pp-bio{font-size:14px;color:var(--t2);line-height:1.62;max-width:640px;white-space:pre-wrap;word-break:break-word}
+.pp-report{margin-top:12px;background:none;border:none;color:var(--t3);font-size:11px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:5px;opacity:.75}
+.pp-report:hover{color:var(--red);opacity:1}
+.pp-items-hd{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--t3);margin:26px 0 14px}
+.pp-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:16px}
+.profile-page .pubi-title{font-size:12px}
+.profile-page .pubi-price,.profile-page .pubi-status{font-size:11px}
+@media(max-width:640px){
+  .pp-wrap{padding:20px 16px 60px}
+  .pp-header{gap:20px}
+  .pp-avatar{width:96px!important;height:96px!important;min-width:96px!important;font-size:38px!important}
+  .pp-name{font-size:21px}
+  .pp-stats{gap:26px}
+  .pp-items{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
@@ -1607,13 +1642,8 @@ body.cmp-mode .card{cursor:default}
     <div class="mo-acts"><button class="btn-s" onclick="closeDiscover()">Close</button></div>
   </div>
 </div>
-<!-- ═══ SOCIAL: PUBLIC PROFILE ═══ -->
-<div class="ov" id="pubProfOv">
-  <div class="mo" style="max-width:400px">
-    <div id="pubProfIn"></div>
-    <div class="mo-acts"><button class="btn-s" onclick="closePubProf()">Close</button></div>
-  </div>
-</div>
+<!-- ═══ SOCIAL: PUBLIC PROFILE (full page) ═══ -->
+<div id="pubProfOv" class="profile-page"><div id="pubProfIn"></div></div>
 <!-- ═══ SOCIAL: AVATAR CROPPER ═══ -->
 <div class="ov" id="avatarCropOv">
   <div class="mo" style="max-width:340px">
@@ -2068,7 +2098,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.05-social2';
+const APP_BUILD='2026.09.05-social3';
 // ── SOCIAL LAYER (Phase 1) ──────────────────────────────────────────────
 // Master switch for the optional social profiles feature (public @nickname,
 // account search, public profile pages with avatar/bio/admin badges).
@@ -5773,15 +5803,19 @@ async function openPublicProfile(nick){
   nick=_normNick(nick);
   const ov=document.getElementById('pubProfOv'),box=document.getElementById('pubProfIn');
   if(!ov||!box) return;
+  // close any open modal/drawer so the profile page takes over cleanly
+  try{ closeDiscover(); }catch(e){}
   ov.classList.add('open');
-  box.innerHTML='<div class="disc-empty">Loading…</div>';
+  document.body.classList.add('pp-open');
+  try{ history.replaceState(null,'','#u='+encodeURIComponent(nick)); }catch(e){}
+  box.innerHTML='<div class="pp-loading">Loading…</div>';
   try{
-    if(!_sb){box.innerHTML='<div class="disc-empty">Needs a connection.</div>';return;}
+    if(!_sb){box.innerHTML='<div class="pp-loading">Needs a connection.</div>';return;}
     const {data}=await _sb.rpc('get_public_profile',{p_nick:nick});
-    if(!data||!data.ok){box.innerHTML='<div class="pub-notfound">🔒<div>'+(data&&data.error==='private'?'This profile is private.':'This profile doesn’t exist.')+'</div></div>';return;}
+    if(!data||!data.ok){box.innerHTML=`<div class="pp-topbar"><button class="pp-back" onclick="closePubProf()">${ico('back',14)} Back</button><div></div><div style="width:70px"></div></div><div class="pub-notfound">🔒<div>${data&&data.error==='private'?'This profile is private.':'This profile doesn’t exist.'}</div></div>`;return;}
     _pubData=data;
     _renderPubProfile();
-  }catch(e){box.innerHTML='<div class="disc-empty">Something went wrong.</div>';}
+  }catch(e){box.innerHTML='<div class="pp-loading">Something went wrong.</div>';}
 }
 function _renderPubProfile(){
   const box=document.getElementById('pubProfIn'); const d=_pubData; if(!box||!d) return;
@@ -5789,7 +5823,7 @@ function _renderPubProfile(){
   const items=(d.items||[]).map(it=>{
     const price=(it.price&&+it.price>0)?`<span class="pubi-price">${cur()}${fmt(+it.price)}</span>`:'';
     const st=_PUB_STATUS[it.status]?`<span class="pubi-status">${_PUB_STATUS[it.status]}</span>`:'';
-    const img=it.img?`<img src="${esc(it.img)}" alt="" loading="lazy">`:`<div class="pubi-noimg">${ico(it.place?'map':'bag',20)}</div>`;
+    const img=it.img?`<img src="${esc(it.img)}" alt="" loading="lazy">`:`<div class="pubi-noimg">${ico(it.place?'map':'bag',22)}</div>`;
     const open=it.url?`onclick="window.open('${esc(it.url)}','_blank','noopener')"`:'';
     return `<div class="pubi-card" ${open}>
       <div class="pubi-img">${img}</div>
@@ -5801,20 +5835,32 @@ function _renderPubProfile(){
     : `<button class="pub-act ${d.is_following?'pub-act-following':'pub-act-follow'}" id="pubFollowBtn" onclick="_toggleFollow()">
          ${ico(d.is_following?'user-check':'user-plus',13)} ${d.is_following?'Following':'Follow'}</button>`;
   box.innerHTML=`
-    <div class="pub-head">
-      <div class="pub-av pub-av-lg">${av}</div>
-      <div class="pub-nick">@${esc(d.nickname)}</div>
-      <div class="pub-badges">${_badgesHTML(d.badges)}</div>
-      <div class="pub-stats">
-        <div class="pub-stat"><b>${d.item_count||0}</b><span>Saved</span></div>
-        <div class="pub-stat"><b id="pubFollowers">${d.follower_count||0}</b><span>Followers</span></div>
-        <div class="pub-stat"><b>${d.following_count||0}</b><span>Following</span></div>
-      </div>
-      ${d.bio?`<div class="pub-bio">${esc(d.bio)}</div>`:''}
-      <div class="pub-actrow">${action}</div>
+    <div class="pp-topbar">
+      <button class="pp-back" onclick="closePubProf()">${ico('back',14)} Back</button>
+      <div class="pp-topbar-handle">@${esc(d.nickname)}</div>
+      <div style="width:70px"></div>
     </div>
-    ${items?`<div class="pub-items">${items}</div>`:'<div class="disc-empty" style="padding:22px">Nothing saved publicly yet.</div>'}
-    ${d.is_me?'':`<button class="pub-report" onclick="_reportProfile('${esc(d.nickname)}')">${ico('flag',11)} Report profile</button>`}`;
+    <div class="pp-wrap">
+      <div class="pp-header">
+        <div class="pub-av pp-avatar">${av}</div>
+        <div class="pp-info">
+          <div class="pp-name-row">
+            <span class="pp-name">@${esc(d.nickname)}</span>
+            <span class="pp-badges">${_badgesHTML(d.badges)}</span>
+            <span class="pp-action">${action}</span>
+          </div>
+          <div class="pp-stats">
+            <div class="pub-stat"><b>${d.item_count||0}</b><span>Saved</span></div>
+            <div class="pub-stat"><b id="pubFollowers">${d.follower_count||0}</b><span>Followers</span></div>
+            <div class="pub-stat"><b>${d.following_count||0}</b><span>Following</span></div>
+          </div>
+          ${d.bio?`<div class="pp-bio">${esc(d.bio)}</div>`:''}
+          ${d.is_me?'':`<button class="pp-report" onclick="_reportProfile('${esc(d.nickname)}')">${ico('flag',11)} Report profile</button>`}
+        </div>
+      </div>
+      <div class="pp-items-hd">${d.item_count||0} saved${(d.items&&d.item_count>d.items.length)?` · showing ${d.items.length}`:''}</div>
+      ${items?`<div class="pp-items">${items}</div>`:'<div class="disc-empty" style="padding:44px">Nothing saved publicly yet.</div>'}
+    </div>`;
 }
 async function _toggleFollow(){
   if(!_pubData) return;
@@ -5831,6 +5877,7 @@ async function _toggleFollow(){
 }
 function closePubProf(){
   document.getElementById('pubProfOv').classList.remove('open');
+  document.body.classList.remove('pp-open');
   if((location.hash||'').startsWith('#u=')) history.replaceState(null,'',location.pathname+location.search);
 }
 async function _reportProfile(nick){
