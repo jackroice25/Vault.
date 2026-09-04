@@ -137,7 +137,13 @@ body{background:var(--bg);color:var(--t1);display:flex}
 /* ── MOBILE / RESPONSIVE ── */
 .sb-toggle{display:none}
 .sb-backdrop{display:none}
+.mtabs{display:none}
 @media(max-width:768px){
+  .mtabs{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:115;justify-content:space-around;align-items:stretch;background:color-mix(in srgb,var(--s1) 94%,transparent);border-top:1px solid var(--bd);backdrop-filter:blur(14px);padding-bottom:env(safe-area-inset-bottom)}
+  .mtab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;color:var(--t3);font-family:inherit;font-size:9.5px;font-weight:700;letter-spacing:.2px;cursor:pointer;padding:9px 0 8px;-webkit-tap-highlight-color:transparent;transition:color .12s}
+  .mtab .ico{width:24px;height:24px}
+  .mtab:active{color:var(--accent);transform:scale(.94)}
+  .mtab.on{color:var(--t1)}
   .sb{position:fixed;top:0;left:0;bottom:0;z-index:120;width:82vw;max-width:300px;transform:translateX(-100%);transition:transform .26s cubic-bezier(.4,0,.2,1);box-shadow:2px 0 26px rgba(0,0,0,.55)}
   body.sb-open .sb{transform:none}
   .sb-backdrop{display:block;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:110;opacity:0;pointer-events:none;transition:opacity .26s}
@@ -152,7 +158,7 @@ body{background:var(--bg);color:var(--t1);display:flex}
   .add-btn{padding:8px 12px}
   .paste-bar{padding:9px 12px}
   .chips{padding:9px 12px 0}
-  .content{padding:12px 12px 20px}
+  .content{padding:12px 12px calc(78px + env(safe-area-inset-bottom))}
   .grid{grid-template-columns:1fr;gap:12px}
   /* iOS auto-zooms into any focused field whose font-size is < 16px, then can
      get stuck zoomed. Forcing 16px on every input kills the auto-zoom entirely. */
@@ -1561,6 +1567,19 @@ body.pp-open{overflow:hidden}
   </div>
 </main>
 
+<!-- ═══ MOBILE BOTTOM TAB BAR (Instagram-style) ═══ -->
+<nav class="mtabs" id="mtabs">
+  <button class="mtab" onclick="openMapMo()" aria-label="Map">
+    <svg class="ico" viewBox="0 0 16 16"><use href="#ic-map"/></svg><span>Map</span>
+  </button>
+  <button class="mtab" id="mtabDiscover" onclick="openDiscover()" aria-label="Search people">
+    <svg class="ico" viewBox="0 0 16 16"><use href="#ic-search"/></svg><span>People</span>
+  </button>
+  <button class="mtab" onclick="openProfileMo()" aria-label="Profile">
+    <svg class="ico" viewBox="0 0 16 16"><use href="#ic-id-card"/></svg><span>Profile</span>
+  </button>
+</nav>
+
 <!-- ═══ STATS MODAL ═══ -->
 <div id="authOv">
   <div class="auth-box">
@@ -2098,7 +2117,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.05-social3';
+const APP_BUILD='2026.09.05-social4';
 // ── SOCIAL LAYER (Phase 1) ──────────────────────────────────────────────
 // Master switch for the optional social profiles feature (public @nickname,
 // account search, public profile pages with avatar/bio/admin badges).
@@ -5761,7 +5780,7 @@ function _nickLiveCheck(){
   },350);
 }
 async function _socialInit(){
-  if(!SOCIAL_ON){const b=document.getElementById('discoverBar');if(b)b.style.display='none';return;}
+  if(!SOCIAL_ON){['discoverBar','mtabDiscover'].forEach(id=>{const b=document.getElementById(id);if(b)b.style.display='none';});return;}
   await _socialLoadMyProfile();
 }
 async function _socialLoadMyProfile(){
@@ -5997,7 +6016,7 @@ async function saveSocialProfile(btn){
     renderProfile();
   }catch(e){if(err)err.textContent='Something went wrong.';if(btn){btn.disabled=false;btn.style.opacity=1;}}
 }
-(function(){const _hide=()=>{if(!SOCIAL_ON){const b=document.getElementById('discoverBar');if(b)b.style.display='none';}};if(document.readyState!=='loading')_hide();else document.addEventListener('DOMContentLoaded',_hide);})();
+(function(){const _hide=()=>{if(!SOCIAL_ON){['discoverBar','mtabDiscover'].forEach(id=>{const b=document.getElementById(id);if(b)b.style.display='none';});}};if(document.readyState!=='loading')_hide();else document.addEventListener('DOMContentLoaded',_hide);})();
 
 // ── THEME AUTO ──
 const _mq=window.matchMedia('(prefers-color-scheme: light)');
