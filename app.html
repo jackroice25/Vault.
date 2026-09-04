@@ -1000,6 +1000,42 @@ body.cmp-mode .card{cursor:default}
 .soc-toggle input{width:16px;height:16px;accent-color:var(--accent);cursor:pointer}
 .soc-note{font-size:11px;color:var(--t3);margin-top:5px;line-height:1.5}
 .soc-err{color:var(--red);font-size:12px;margin-top:8px;min-height:14px}
+/* Discover search bar (sidebar) */
+.disc-bar{display:flex;align-items:center;gap:8px;margin:2px 14px 10px;padding:9px 12px;background:var(--s2);border:1px solid var(--bd);border-radius:11px;cursor:pointer;transition:border-color .12s,background .12s}
+.disc-bar:hover{border-color:var(--accent);background:var(--s3)}
+.disc-bar-ico{color:var(--accent);flex-shrink:0}
+.disc-bar-ph{font-size:12.5px;color:var(--t3);font-weight:500}
+/* Avatar cropper */
+.crop-stage{position:relative;width:260px;height:260px;margin:6px auto 4px;border-radius:12px;overflow:hidden;background:#000;touch-action:none}
+.crop-canvas{display:block;width:260px;height:260px;cursor:grab}
+.crop-canvas:active{cursor:grabbing}
+.crop-ring{position:absolute;inset:0;pointer-events:none;box-shadow:0 0 0 999px rgba(0,0,0,.55);border-radius:50%;margin:6px}
+.crop-zoom-row{display:flex;align-items:center;gap:10px;margin:12px 6px 4px}
+.crop-zoom{flex:1;accent-color:var(--accent);cursor:pointer}
+.crop-hint{text-align:center;font-size:10.5px;color:var(--t3);margin-top:2px}
+/* Public profile — big centred layout */
+.pub-av-lg{width:110px;height:110px;font-size:44px;margin-bottom:14px}
+.pub-stats{display:flex;justify-content:center;gap:26px;margin:14px 0 4px}
+.pub-stat{display:flex;flex-direction:column;align-items:center;gap:1px}
+.pub-stat b{font-size:17px;font-weight:800;color:var(--t1)}
+.pub-stat span{font-size:10.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.4px}
+.pub-actrow{margin-top:14px}
+.pub-act{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-width:150px;padding:9px 20px;border-radius:22px;font-size:13.5px;font-weight:700;font-family:inherit;cursor:pointer;border:1px solid;transition:opacity .12s,background .12s}
+.pub-act-follow{background:var(--accent);color:#111;border-color:var(--accent)}
+.pub-act-following{background:transparent;color:var(--t2);border-color:var(--bd2)}
+.pub-act-edit{background:var(--s2);color:var(--t1);border-color:var(--bd2)}
+.pub-act:hover{opacity:.88}
+.pub-items{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px;max-height:44vh;overflow-y:auto;padding-top:2px}
+.pubi-card{background:var(--s2);border:1px solid var(--bd);border-radius:10px;overflow:hidden;cursor:pointer;transition:border-color .12s}
+.pubi-card:hover{border-color:var(--bd2)}
+.pubi-img{aspect-ratio:1;background:var(--s3);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.pubi-img img{width:100%;height:100%;object-fit:cover}
+.pubi-noimg{color:var(--t3);display:flex;align-items:center;justify-content:center;width:100%;height:100%}
+.pubi-body{padding:6px 8px}
+.pubi-title{font-size:11px;font-weight:600;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pubi-row{display:flex;align-items:center;justify-content:space-between;gap:4px;margin-top:2px}
+.pubi-price{font-size:11px;font-weight:700;color:var(--accent)}
+.pubi-status{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.3px}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
@@ -1117,6 +1153,9 @@ body.cmp-mode .card{cursor:default}
   <symbol id="ic-crown" viewBox="0 0 16 16"><path d="M1.5 12h13M2 12L3.5 5 8 9.5 12.5 5 14 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="3.5" cy="4.5" r="1" fill="currentColor" stroke="none"/><circle cx="8" cy="3" r="1" fill="currentColor" stroke="none"/><circle cx="12.5" cy="4.5" r="1" fill="currentColor" stroke="none"/></symbol>
   <symbol id="ic-flame" viewBox="0 0 16 16"><path d="M8 1.5C7 4.5 11 6 11 9.5a3 3 0 0 1-6 0C5 8 6.5 6 6 4.5c0 2.5-1 4-1 5a3 3 0 0 1 3-8z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="ic-globe" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 1.5c-2 2.5-3 4-3 6.5s1 4 3 6.5c2-2.5 3-4 3-6.5s-1-4-3-6.5z" fill="none" stroke="currentColor" stroke-width="1.2"/><line x1="1.5" y1="8" x2="14.5" y2="8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M3 5.5h10M3 10.5h10" stroke="currentColor" stroke-width="0.8" stroke-linecap="round"/></symbol>
+  <symbol id="ic-search" viewBox="0 0 16 16"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><line x1="10.8" y1="10.8" x2="14.5" y2="14.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="ic-user-plus" viewBox="0 0 16 16"><circle cx="6" cy="5" r="2.6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M1.5 13.5c0-2.5 2-4.2 4.5-4.2s4.5 1.7 4.5 4.2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="13" y1="5.5" x2="13" y2="10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="10.5" y1="8" x2="15.5" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+  <symbol id="ic-user-check" viewBox="0 0 16 16"><circle cx="6" cy="5" r="2.6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M1.5 13.5c0-2.5 2-4.2 4.5-4.2s4.5 1.7 4.5 4.2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10.5 7.5l1.8 1.8 3-3.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="ic-bolt" viewBox="0 0 16 16"><path d="M10 1.5L4 9h5.5l-3.5 5.5L15 7H9.5z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="ic-wine" viewBox="0 0 16 16"><path d="M5 2h6l1.5 5a4.5 4.5 0 0 1-9 0z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><line x1="8" y1="11.5" x2="8" y2="14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><line x1="5.5" y1="14" x2="10.5" y2="14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
   <symbol id="ic-swim" viewBox="0 0 16 16"><path d="M1 9.5c1.5-2 3.5-2 5 0s3.5 2 5 0 3.5-2 5 0" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M1 12.5c1.5-2 3.5-2 5 0s3.5 2 5 0 3.5-2 5 0" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="5" r="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M6.5 6.5L4.5 9M9.5 6.5L11.5 8.5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></symbol>
@@ -1365,6 +1404,11 @@ body.cmp-mode .card{cursor:default}
     <div class="logo-text" style="display:none">vault<span>.</span><span class="logo-sub">Wishlist</span></div>
   </div>
 
+  <div class="disc-bar" id="discoverBar" onclick="openDiscover()" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openDiscover()">
+    <svg class="ico disc-bar-ico" width="15" height="15" viewBox="0 0 16 16"><use href="#ic-search"/></svg>
+    <span class="disc-bar-ph" id="discBarPh">Search people</span>
+  </div>
+
   <div class="cur-row">
     <span class="cur-lbl" id="curLbl">Valuta</span>
     <div class="cur-dd" id="curDd">
@@ -1399,7 +1443,6 @@ body.cmp-mode .card{cursor:default}
   <div class="sb-hint" id="sbHint" style="display:none"><kbd>⌘K</kbd> aggiungi veloce · <kbd>V</kbd> vista</div>
   <button class="sb-plus-btn" id="plusSideBtn" onclick="plusSideBtnClick()"></button>
   <button class="newsec" id="profileBtn" onclick="openProfileMo()" style="border-style:solid;margin-top:0"><svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-id-card"/></svg> Profile</button>
-  <button class="newsec" id="discoverBtn" onclick="openDiscover()" style="border-style:solid;margin-top:0"><svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-globe"/></svg> Discover</button>
   <button class="newsec" id="themeBtn" onclick="toggleTheme()" style="border-style:solid;margin-top:0"><svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-sun"/></svg> Tema chiaro</button>
   <div id="itemLimitBar" style="display:none;padding:8px 12px 4px"></div>
   <button class="newsec" id="mapBtn" onclick="openMapMo()" style="border-style:solid;margin-top:0"><svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-globe"/></svg> Map</button>
@@ -1569,6 +1612,25 @@ body.cmp-mode .card{cursor:default}
   <div class="mo" style="max-width:400px">
     <div id="pubProfIn"></div>
     <div class="mo-acts"><button class="btn-s" onclick="closePubProf()">Close</button></div>
+  </div>
+</div>
+<!-- ═══ SOCIAL: AVATAR CROPPER ═══ -->
+<div class="ov" id="avatarCropOv">
+  <div class="mo" style="max-width:340px">
+    <div class="mo-hd"><svg class="ico" width="16" height="16" viewBox="0 0 16 16" style="margin-right:6px"><use href="#ic-camera"/></svg>Position your photo</div>
+    <div class="crop-stage">
+      <canvas id="cropCanvas" width="260" height="260" class="crop-canvas"></canvas>
+      <div class="crop-ring"></div>
+    </div>
+    <div class="crop-zoom-row">
+      <svg class="ico" width="13" height="13" viewBox="0 0 16 16" style="opacity:.5"><use href="#ic-search"/></svg>
+      <input type="range" id="cropZoom" min="1" max="3" step="0.01" value="1" class="crop-zoom" oninput="_cropSetZoom(this.value)">
+    </div>
+    <div class="crop-hint">Drag the photo to reposition · slide to zoom</div>
+    <div class="mo-acts">
+      <button class="btn-s" onclick="_cropCancel()">Cancel</button>
+      <button class="btn-p" onclick="_cropSave()">Use photo</button>
+    </div>
   </div>
 </div>
 
@@ -2006,7 +2068,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.04-social';
+const APP_BUILD='2026.09.05-social2';
 // ── SOCIAL LAYER (Phase 1) ──────────────────────────────────────────────
 // Master switch for the optional social profiles feature (public @nickname,
 // account search, public profile pages with avatar/bio/admin badges).
@@ -5669,7 +5731,7 @@ function _nickLiveCheck(){
   },350);
 }
 async function _socialInit(){
-  if(!SOCIAL_ON){const b=document.getElementById('discoverBtn');if(b)b.style.display='none';return;}
+  if(!SOCIAL_ON){const b=document.getElementById('discoverBar');if(b)b.style.display='none';return;}
   await _socialLoadMyProfile();
 }
 async function _socialLoadMyProfile(){
@@ -5704,6 +5766,8 @@ async function _doSearch(){
   }catch(e){box.innerHTML='<div class="disc-empty">Something went wrong. Try again.</div>';}
 }
 // ── Public profile view ──
+let _pubData=null;
+const _PUB_STATUS={voglio:'Want',ordinato:'Ordered',comprato:'Bought',visitare:'To visit',visitato:'Visited'};
 async function openPublicProfile(nick){
   if(!SOCIAL_ON) return;
   nick=_normNick(nick);
@@ -5714,17 +5778,56 @@ async function openPublicProfile(nick){
   try{
     if(!_sb){box.innerHTML='<div class="disc-empty">Needs a connection.</div>';return;}
     const {data}=await _sb.rpc('get_public_profile',{p_nick:nick});
-    if(!data||!data.ok){box.innerHTML='<div class="pub-notfound">🔒<div>This profile is private or doesn’t exist.</div></div>';return;}
-    const joined=data.joined?new Date(data.joined).toLocaleDateString(S.lang||'en',{year:'numeric',month:'long'}):'';
-    box.innerHTML=`<div class="pub-head">
-        <div class="pub-av">${data.avatar_url?`<img src="${esc(data.avatar_url)}" alt="">`:esc((data.nickname||'?').slice(0,1).toUpperCase())}</div>
-        <div class="pub-nick">@${esc(data.nickname)}</div>
-        <div class="pub-badges">${_badgesHTML(data.badges)}</div>
-        ${data.bio?`<div class="pub-bio">${esc(data.bio)}</div>`:''}
-        <div class="pub-meta">${data.item_count||0} saved${joined?' · Member since '+joined:''}</div>
-      </div>
-      <button class="pub-report" onclick="_reportProfile('${esc(data.nickname)}')">${ico('trash',11)} Report profile</button>`;
+    if(!data||!data.ok){box.innerHTML='<div class="pub-notfound">🔒<div>'+(data&&data.error==='private'?'This profile is private.':'This profile doesn’t exist.')+'</div></div>';return;}
+    _pubData=data;
+    _renderPubProfile();
   }catch(e){box.innerHTML='<div class="disc-empty">Something went wrong.</div>';}
+}
+function _renderPubProfile(){
+  const box=document.getElementById('pubProfIn'); const d=_pubData; if(!box||!d) return;
+  const av=d.avatar_url?`<img src="${esc(d.avatar_url)}" alt="">`:esc((d.nickname||'?').slice(0,1).toUpperCase());
+  const items=(d.items||[]).map(it=>{
+    const price=(it.price&&+it.price>0)?`<span class="pubi-price">${cur()}${fmt(+it.price)}</span>`:'';
+    const st=_PUB_STATUS[it.status]?`<span class="pubi-status">${_PUB_STATUS[it.status]}</span>`:'';
+    const img=it.img?`<img src="${esc(it.img)}" alt="" loading="lazy">`:`<div class="pubi-noimg">${ico(it.place?'map':'bag',20)}</div>`;
+    const open=it.url?`onclick="window.open('${esc(it.url)}','_blank','noopener')"`:'';
+    return `<div class="pubi-card" ${open}>
+      <div class="pubi-img">${img}</div>
+      <div class="pubi-body"><div class="pubi-title">${esc(it.title||'Item')}</div>
+        <div class="pubi-row">${price}${st}</div></div></div>`;
+  }).join('');
+  const action = d.is_me
+    ? `<button class="pub-act pub-act-edit" onclick="closePubProf();openProfileMo();">${ico('pencil',13)} Edit profile</button>`
+    : `<button class="pub-act ${d.is_following?'pub-act-following':'pub-act-follow'}" id="pubFollowBtn" onclick="_toggleFollow()">
+         ${ico(d.is_following?'user-check':'user-plus',13)} ${d.is_following?'Following':'Follow'}</button>`;
+  box.innerHTML=`
+    <div class="pub-head">
+      <div class="pub-av pub-av-lg">${av}</div>
+      <div class="pub-nick">@${esc(d.nickname)}</div>
+      <div class="pub-badges">${_badgesHTML(d.badges)}</div>
+      <div class="pub-stats">
+        <div class="pub-stat"><b>${d.item_count||0}</b><span>Saved</span></div>
+        <div class="pub-stat"><b id="pubFollowers">${d.follower_count||0}</b><span>Followers</span></div>
+        <div class="pub-stat"><b>${d.following_count||0}</b><span>Following</span></div>
+      </div>
+      ${d.bio?`<div class="pub-bio">${esc(d.bio)}</div>`:''}
+      <div class="pub-actrow">${action}</div>
+    </div>
+    ${items?`<div class="pub-items">${items}</div>`:'<div class="disc-empty" style="padding:22px">Nothing saved publicly yet.</div>'}
+    ${d.is_me?'':`<button class="pub-report" onclick="_reportProfile('${esc(d.nickname)}')">${ico('flag',11)} Report profile</button>`}`;
+}
+async function _toggleFollow(){
+  if(!_pubData) return;
+  if(!_sbUser){ closePubProf(); setAuthMode('login'); const o=document.getElementById('authOv'); if(o)o.style.display='flex'; return; }
+  const willFollow=!_pubData.is_following;
+  // optimistic
+  _pubData.is_following=willFollow;
+  _pubData.follower_count=(_pubData.follower_count||0)+(willFollow?1:-1);
+  _renderPubProfile();
+  try{
+    const {data}=await _sb.rpc(willFollow?'follow_user':'unfollow_user',{p_nick:_pubData.nickname});
+    if(!data||!data.ok){ _pubData.is_following=!willFollow; _pubData.follower_count=(_pubData.follower_count||0)+(willFollow?-1:1); _renderPubProfile(); }
+  }catch(e){ _pubData.is_following=!willFollow; _pubData.follower_count=(_pubData.follower_count||0)+(willFollow?-1:1); _renderPubProfile(); }
 }
 function closePubProf(){
   document.getElementById('pubProfOv').classList.remove('open');
@@ -5755,14 +5858,74 @@ function _renderSocialEditHTML(){
     ${(p.badges&&p.badges.length)?`<div style="margin-top:8px">${_badgesHTML(p.badges)}</div>`:''}
     <div class="soc-err" id="socErr"></div>
     <button class="prof-btn" style="width:100%;margin-top:8px;background:var(--accent);color:#111;border-color:var(--accent);font-weight:700" onclick="saveSocialProfile(this)">${ico('id-card',12)} Save social profile</button>
+    ${nick?`<button class="prof-btn" style="width:100%;margin-top:8px" onclick="closeProfileMo();openPublicProfile('${esc(nick)}')">${ico('eye',12)} View my profile</button>`:''}
   </div>`;
 }
 function _pickAvatar(input){
   const f=input.files&&input.files[0];if(!f) return;
   if(!/^image\//.test(f.type)){input.value='';return;}
   const r=new FileReader();
-  r.onload=e=>{_pendingAvatar=e.target.result;const pv=document.getElementById('socAvPrev');if(pv)pv.innerHTML=`<img src="${_pendingAvatar}" alt="">`;const b=document.querySelector('#socAvFile');if(b){}};
+  r.onload=e=>{ _cropOpen(e.target.result); };
   r.readAsDataURL(f);input.value='';
+}
+// ── Avatar cropper (drag to reposition + zoom, exported as a square) ──
+let _cropImg=null,_cropScale=1,_cropMin=1,_cropPanX=0,_cropPanY=0;
+const _CROP_V=260,_CROP_D=512;
+function _cropOpen(dataURL){
+  const img=new Image();
+  img.onload=()=>{
+    _cropImg=img;
+    _cropMin=Math.max(_CROP_V/img.width,_CROP_V/img.height);
+    _cropScale=_cropMin;
+    _cropPanX=(_CROP_V-img.width*_cropScale)/2;
+    _cropPanY=(_CROP_V-img.height*_cropScale)/2;
+    const z=document.getElementById('cropZoom'); if(z) z.value=1;
+    document.getElementById('avatarCropOv').classList.add('open');
+    _cropDraw();
+  };
+  img.src=dataURL;
+}
+function _cropClamp(){
+  const w=_cropImg.width*_cropScale, h=_cropImg.height*_cropScale;
+  _cropPanX=Math.min(0,Math.max(_CROP_V-w,_cropPanX));
+  _cropPanY=Math.min(0,Math.max(_CROP_V-h,_cropPanY));
+}
+function _cropDraw(){
+  const c=document.getElementById('cropCanvas'); if(!c||!_cropImg) return;
+  const ctx=c.getContext('2d'); _cropClamp();
+  ctx.clearRect(0,0,_CROP_V,_CROP_V);
+  ctx.drawImage(_cropImg,_cropPanX,_cropPanY,_cropImg.width*_cropScale,_cropImg.height*_cropScale);
+}
+function _cropSetZoom(v){
+  if(!_cropImg) return;
+  const cx=_CROP_V/2, cy=_CROP_V/2;
+  const oldS=_cropScale, newS=_cropMin*parseFloat(v);
+  // keep the viewport centre anchored while zooming
+  _cropPanX=cx-((cx-_cropPanX)/oldS)*newS;
+  _cropPanY=cy-((cy-_cropPanY)/oldS)*newS;
+  _cropScale=newS; _cropDraw();
+}
+(function _cropDragInit(){
+  const attach=()=>{
+    const c=document.getElementById('cropCanvas'); if(!c||c._dragBound) return; c._dragBound=1;
+    let drag=false,lx=0,ly=0;
+    const down=e=>{drag=true;const p=e.touches?e.touches[0]:e;lx=p.clientX;ly=p.clientY;};
+    const move=e=>{if(!drag)return;const p=e.touches?e.touches[0]:e;_cropPanX+=(p.clientX-lx);_cropPanY+=(p.clientY-ly);lx=p.clientX;ly=p.clientY;_cropDraw();if(e.cancelable)e.preventDefault();};
+    const up=()=>{drag=false;};
+    c.addEventListener('mousedown',down);window.addEventListener('mousemove',move);window.addEventListener('mouseup',up);
+    c.addEventListener('touchstart',down,{passive:true});c.addEventListener('touchmove',move,{passive:false});c.addEventListener('touchend',up);
+  };
+  if(document.readyState!=='loading')attach();else document.addEventListener('DOMContentLoaded',attach);
+})();
+function _cropCancel(){ document.getElementById('avatarCropOv').classList.remove('open'); _cropImg=null; }
+function _cropSave(){
+  if(!_cropImg){ _cropCancel(); return; }
+  const out=document.createElement('canvas'); out.width=_CROP_D; out.height=_CROP_D;
+  const ctx=out.getContext('2d'); const ratio=_CROP_D/_CROP_V;
+  ctx.drawImage(_cropImg,_cropPanX*ratio,_cropPanY*ratio,_cropImg.width*_cropScale*ratio,_cropImg.height*_cropScale*ratio);
+  _pendingAvatar=out.toDataURL('image/jpeg',0.9);
+  const pv=document.getElementById('socAvPrev'); if(pv) pv.innerHTML=`<img src="${_pendingAvatar}" alt="">`;
+  _cropImg=null; document.getElementById('avatarCropOv').classList.remove('open');
 }
 async function saveSocialProfile(btn){
   const err=document.getElementById('socErr');if(err)err.textContent='';
@@ -5787,7 +5950,7 @@ async function saveSocialProfile(btn){
     renderProfile();
   }catch(e){if(err)err.textContent='Something went wrong.';if(btn){btn.disabled=false;btn.style.opacity=1;}}
 }
-(function(){const _hide=()=>{if(!SOCIAL_ON){const b=document.getElementById('discoverBtn');if(b)b.style.display='none';}};if(document.readyState!=='loading')_hide();else document.addEventListener('DOMContentLoaded',_hide);})();
+(function(){const _hide=()=>{if(!SOCIAL_ON){const b=document.getElementById('discoverBar');if(b)b.style.display='none';}};if(document.readyState!=='loading')_hide();else document.addEventListener('DOMContentLoaded',_hide);})();
 
 // ── THEME AUTO ──
 const _mq=window.matchMedia('(prefers-color-scheme: light)');
