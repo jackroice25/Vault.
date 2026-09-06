@@ -1077,6 +1077,31 @@ body.pp-open{overflow:hidden}
   .pp-stats{gap:26px}
   .pp-items{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
 }
+/* Social interactions: bell, notifications, locked, report, follow-list */
+.disc-lock{display:inline-flex;vertical-align:middle;color:var(--t3);margin-left:3px}
+.notif-btn{position:relative}
+.notif-badge{position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;padding:0 4px;border-radius:9px;background:var(--red,#dc2626);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;line-height:1;box-shadow:0 0 0 2px var(--s1)}
+.pp-clickable{cursor:pointer;border-radius:8px;transition:background .12s}
+.pp-clickable:hover{background:var(--s2)}
+.pp-locked{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:56px 20px;color:var(--t3);gap:8px;border-top:1px solid var(--bd);margin-top:8px}
+.pp-locked-t{font-size:16px;font-weight:800;color:var(--t1)}
+.pp-locked-s{font-size:13px;color:var(--t3)}
+.notif-list{max-height:60vh;overflow-y:auto;display:flex;flex-direction:column;gap:2px;min-height:120px}
+.notif-row{display:flex;gap:11px;align-items:flex-start;padding:11px 8px;border-radius:11px}
+.notif-row.unread{background:var(--ax,rgba(255,255,255,.03))}
+.notif-av{width:40px;height:40px;min-width:40px;border-radius:50%;overflow:hidden;border:none;padding:0;cursor:pointer;background:linear-gradient(135deg,var(--s3),var(--s2));display:flex;align-items:center;justify-content:center;color:var(--t2);font-weight:800}
+.notif-av img{width:100%;height:100%;object-fit:cover}
+.notif-body{flex:1;min-width:0}
+.notif-txt{font-size:13px;color:var(--t1);line-height:1.5}
+.notif-ago{color:var(--t3);font-weight:500;font-size:11px}
+.notif-acts{display:flex;gap:8px;margin-top:8px}
+.notif-accept{background:var(--accent);color:#111;border:none;border-radius:8px;padding:6px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+.notif-reject{background:var(--s3);color:var(--t2);border:1px solid var(--bd);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.notif-done{display:inline-block;margin-top:8px;font-size:11.5px;color:var(--t3);font-weight:600}
+.rep-chips{display:flex;flex-wrap:wrap;gap:7px}
+.rep-chip{background:var(--s2);border:1px solid var(--bd);border-radius:20px;padding:7px 13px;font-size:12.5px;color:var(--t2);cursor:pointer;font-family:inherit;transition:all .12s}
+.rep-chip:hover{border-color:var(--bd2)}
+.rep-chip.on{background:rgba(220,38,38,.12);border-color:rgba(220,38,38,.5);color:var(--red,#dc2626);font-weight:700}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
@@ -1515,6 +1540,7 @@ body.pp-open{overflow:hidden}
     </div>
     <button class="vb" id="focusModeBtn" onclick="toggleFocus()" title="Modalità focus"><svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-expand"/></svg></button>
     <button class="vb" id="shareVaultBtn" onclick="openShareMo()" title="Condividi"><svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-share"/></svg></button>
+    <button class="vb notif-btn" id="notifBtn" onclick="openNotifs()" title="Notifications" style="display:none"><svg class="ico" width="15" height="15" viewBox="0 0 16 16"><use href="#ic-bell-ring"/></svg><span class="notif-badge" id="notifBadge" style="display:none">0</span></button>
     <button class="add-btn" id="addTopBtn" onclick="openAddMo()"><svg class="ico" width="13" height="13" viewBox="0 0 16 16"><use href="#ic-plus"/></svg> Aggiungi</button>
   </div>
   <button id="focusBtn" onclick="toggleFocus()"><svg class="ico" width="12" height="12" viewBox="0 0 16 16"><use href="#ic-close"/></svg> Esci dal focus</button>
@@ -1679,6 +1705,43 @@ body.pp-open{overflow:hidden}
     <div class="mo-acts">
       <button class="btn-s" onclick="_cropCancel()">Cancel</button>
       <button class="btn-p" onclick="_cropSave()">Use photo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SOCIAL: NOTIFICATIONS ═══ -->
+<div class="ov" id="notifOv">
+  <div class="mo" style="max-width:440px">
+    <div class="mo-hd"><svg class="ico" width="16" height="16" viewBox="0 0 16 16" style="margin-right:6px"><use href="#ic-bell-ring"/></svg>Notifications</div>
+    <div id="notifIn" class="notif-list"></div>
+    <div class="mo-acts"><button class="btn-s" onclick="closeNotifs()">Close</button></div>
+  </div>
+</div>
+<!-- ═══ SOCIAL: FOLLOWERS / FOLLOWING LIST ═══ -->
+<div class="ov" id="followListOv">
+  <div class="mo" style="max-width:420px">
+    <div class="mo-hd" id="followListHd">Followers</div>
+    <div id="followListIn" class="disc-results"></div>
+    <div class="mo-acts"><button class="btn-s" onclick="closeFollowList()">Close</button></div>
+  </div>
+</div>
+<!-- ═══ SOCIAL: REPORT PROFILE ═══ -->
+<div class="ov" id="reportOv">
+  <div class="mo" style="max-width:420px">
+    <div class="mo-hd"><svg class="ico" width="16" height="16" viewBox="0 0 16 16" style="margin-right:6px"><use href="#ic-flag"/></svg>Report <span id="reportWho" style="color:var(--accent);margin-left:5px"></span></div>
+    <div style="font-size:12.5px;color:var(--t2);margin:2px 0 12px;line-height:1.5">Tell us what’s wrong. Your report is sent privately to the Vault team for review.</div>
+    <div id="reportReasons" class="rep-chips">
+      <button class="rep-chip" onclick="_pickReportReason(this)">Inappropriate photo or content</button>
+      <button class="rep-chip" onclick="_pickReportReason(this)">Harassment or hate</button>
+      <button class="rep-chip" onclick="_pickReportReason(this)">Spam or scam</button>
+      <button class="rep-chip" onclick="_pickReportReason(this)">Impersonation</button>
+      <button class="rep-chip" onclick="_pickReportReason(this)">Something else</button>
+    </div>
+    <textarea id="reportReason" class="soc-inp" rows="3" maxlength="500" placeholder="Add details (optional)…" style="margin-top:10px"></textarea>
+    <div class="soc-err" id="reportMsg"></div>
+    <div class="mo-acts">
+      <button class="btn-s" onclick="closeReport()">Cancel</button>
+      <button class="btn-p" onclick="submitReport(this)">Send report</button>
     </div>
   </div>
 </div>
@@ -2117,7 +2180,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.05-social4';
+const APP_BUILD='2026.09.06-social5';
 // ── SOCIAL LAYER (Phase 1) ──────────────────────────────────────────────
 // Master switch for the optional social profiles feature (public @nickname,
 // account search, public profile pages with avatar/bio/admin badges).
@@ -5780,8 +5843,12 @@ function _nickLiveCheck(){
   },350);
 }
 async function _socialInit(){
-  if(!SOCIAL_ON){['discoverBar','mtabDiscover'].forEach(id=>{const b=document.getElementById(id);if(b)b.style.display='none';});return;}
+  if(!SOCIAL_ON){['discoverBar','mtabDiscover','notifBtn','notifTabM'].forEach(id=>{const b=document.getElementById(id);if(b)b.style.display='none';});return;}
   await _socialLoadMyProfile();
+  // Notifications: only meaningful for logged-in accounts.
+  const _logged=!!_sbUser;
+  ['notifBtn','notifTabM'].forEach(id=>{const b=document.getElementById(id);if(b)b.style.display=_logged?'':'none';});
+  if(_logged){ _loadNotifBadge(); _subscribeNotifs(); }
 }
 async function _socialLoadMyProfile(){
   _myProfile=null;
@@ -5807,10 +5874,10 @@ async function _doSearch(){
   try{
     const {data}=await _sb.rpc('search_profiles',{p_q:q});
     const res=(data&&data.results)||[];
-    if(!res.length){box.innerHTML='<div class="disc-empty">No public profiles found for “@'+esc(q)+'”.</div>';return;}
+    if(!res.length){box.innerHTML='<div class="disc-empty">No profiles found for “@'+esc(q)+'”.</div>';return;}
     box.innerHTML=res.map(p=>`<button class="disc-row" onclick="openPublicProfile('${esc(p.nickname)}')">
       <span class="disc-av">${p.avatar_url?`<img src="${esc(p.avatar_url)}" alt="">`:_avInitial(p.nickname)}</span>
-      <span class="disc-nick">@${esc(p.nickname)}</span>
+      <span class="disc-nick">@${esc(p.nickname)}${p.is_public===false?` <span class="disc-lock">${ico('lock',10)}</span>`:''}</span>
       <span class="disc-badges">${_badgesHTML(p.badges)}</span></button>`).join('');
   }catch(e){box.innerHTML='<div class="disc-empty">Something went wrong. Try again.</div>';}
 }
@@ -5836,74 +5903,192 @@ async function openPublicProfile(nick){
     _renderPubProfile();
   }catch(e){box.innerHTML='<div class="pp-loading">Something went wrong.</div>';}
 }
+function _followBtnHTML(d){
+  if(d.is_me) return `<button class="pub-act pub-act-edit" onclick="closePubProf();openProfileMo();">${ico('pencil',13)} Edit profile</button>`;
+  if(d.is_following) return `<button class="pub-act pub-act-following" id="pubFollowBtn" onclick="_toggleFollow()">${ico('user-check',13)} Following</button>`;
+  if(d.has_request) return `<button class="pub-act pub-act-following" id="pubFollowBtn" onclick="_toggleFollow()">${ico('user-check',13)} Requested</button>`;
+  if(d.is_public===false) return `<button class="pub-act pub-act-follow" id="pubFollowBtn" onclick="_toggleFollow()">${ico('user-plus',13)} Request to follow</button>`;
+  return `<button class="pub-act pub-act-follow" id="pubFollowBtn" onclick="_toggleFollow()">${ico('user-plus',13)} Follow</button>`;
+}
 function _renderPubProfile(){
   const box=document.getElementById('pubProfIn'); const d=_pubData; if(!box||!d) return;
+  const nk=esc(d.nickname);
   const av=d.avatar_url?`<img src="${esc(d.avatar_url)}" alt="">`:esc((d.nickname||'?').slice(0,1).toUpperCase());
+  const topbar=`<div class="pp-topbar"><button class="pp-back" onclick="closePubProf()">${ico('back',14)} Back</button><div class="pp-topbar-handle">@${nk}</div><div style="width:70px"></div></div>`;
+  const stats=`<div class="pp-stats">
+      <div class="pub-stat"><b>${d.item_count||0}</b><span>Saved</span></div>
+      <div class="pub-stat${d.locked?'':' pp-clickable'}" ${d.locked?'':`onclick="openFollowList('${nk}','followers')"`}><b id="pubFollowers">${d.follower_count||0}</b><span>Followers</span></div>
+      <div class="pub-stat${d.locked?'':' pp-clickable'}" ${d.locked?'':`onclick="openFollowList('${nk}','following')"`}><b>${d.following_count||0}</b><span>Following</span></div>
+    </div>`;
+  const header=`<div class="pp-header">
+      <div class="pub-av pp-avatar">${av}</div>
+      <div class="pp-info">
+        <div class="pp-name-row"><span class="pp-name">@${nk}</span><span class="pp-badges">${_badgesHTML(d.badges)}</span><span class="pp-action">${_followBtnHTML(d)}</span></div>
+        ${stats}
+        ${(!d.locked&&d.bio)?`<div class="pp-bio">${esc(d.bio)}</div>`:''}
+        ${d.is_me?'':`<button class="pp-report" onclick="_reportProfile('${nk}')">${ico('flag',11)} Report profile</button>`}
+      </div>
+    </div>`;
+  if(d.locked){
+    box.innerHTML=`${topbar}<div class="pp-wrap">${header}
+      <div class="pp-locked">${ico('lock',30)}<div class="pp-locked-t">This account is private</div><div class="pp-locked-s">Follow @${nk} to see their vault.</div></div>
+    </div>`;
+    return;
+  }
   const items=(d.items||[]).map(it=>{
     const price=(it.price&&+it.price>0)?`<span class="pubi-price">${cur()}${fmt(+it.price)}</span>`:'';
     const st=_PUB_STATUS[it.status]?`<span class="pubi-status">${_PUB_STATUS[it.status]}</span>`:'';
     const img=it.img?`<img src="${esc(it.img)}" alt="" loading="lazy">`:`<div class="pubi-noimg">${ico(it.place?'map':'bag',22)}</div>`;
     const open=it.url?`onclick="window.open('${esc(it.url)}','_blank','noopener')"`:'';
-    return `<div class="pubi-card" ${open}>
-      <div class="pubi-img">${img}</div>
-      <div class="pubi-body"><div class="pubi-title">${esc(it.title||'Item')}</div>
-        <div class="pubi-row">${price}${st}</div></div></div>`;
+    return `<div class="pubi-card" ${open}><div class="pubi-img">${img}</div>
+      <div class="pubi-body"><div class="pubi-title">${esc(it.title||'Item')}</div><div class="pubi-row">${price}${st}</div></div></div>`;
   }).join('');
-  const action = d.is_me
-    ? `<button class="pub-act pub-act-edit" onclick="closePubProf();openProfileMo();">${ico('pencil',13)} Edit profile</button>`
-    : `<button class="pub-act ${d.is_following?'pub-act-following':'pub-act-follow'}" id="pubFollowBtn" onclick="_toggleFollow()">
-         ${ico(d.is_following?'user-check':'user-plus',13)} ${d.is_following?'Following':'Follow'}</button>`;
-  box.innerHTML=`
-    <div class="pp-topbar">
-      <button class="pp-back" onclick="closePubProf()">${ico('back',14)} Back</button>
-      <div class="pp-topbar-handle">@${esc(d.nickname)}</div>
-      <div style="width:70px"></div>
-    </div>
-    <div class="pp-wrap">
-      <div class="pp-header">
-        <div class="pub-av pp-avatar">${av}</div>
-        <div class="pp-info">
-          <div class="pp-name-row">
-            <span class="pp-name">@${esc(d.nickname)}</span>
-            <span class="pp-badges">${_badgesHTML(d.badges)}</span>
-            <span class="pp-action">${action}</span>
-          </div>
-          <div class="pp-stats">
-            <div class="pub-stat"><b>${d.item_count||0}</b><span>Saved</span></div>
-            <div class="pub-stat"><b id="pubFollowers">${d.follower_count||0}</b><span>Followers</span></div>
-            <div class="pub-stat"><b>${d.following_count||0}</b><span>Following</span></div>
-          </div>
-          ${d.bio?`<div class="pp-bio">${esc(d.bio)}</div>`:''}
-          ${d.is_me?'':`<button class="pp-report" onclick="_reportProfile('${esc(d.nickname)}')">${ico('flag',11)} Report profile</button>`}
-        </div>
-      </div>
-      <div class="pp-items-hd">${d.item_count||0} saved${(d.items&&d.item_count>d.items.length)?` · showing ${d.items.length}`:''}</div>
-      ${items?`<div class="pp-items">${items}</div>`:'<div class="disc-empty" style="padding:44px">Nothing saved publicly yet.</div>'}
-    </div>`;
+  box.innerHTML=`${topbar}<div class="pp-wrap">${header}
+    <div class="pp-items-hd">${d.item_count||0} saved${(d.items&&d.item_count>d.items.length)?` · showing ${d.items.length}`:''}</div>
+    ${items?`<div class="pp-items">${items}</div>`:'<div class="disc-empty" style="padding:44px">Nothing saved publicly yet.</div>'}
+  </div>`;
 }
 async function _toggleFollow(){
   if(!_pubData) return;
   if(!_sbUser){ closePubProf(); setAuthMode('login'); const o=document.getElementById('authOv'); if(o)o.style.display='flex'; return; }
-  const willFollow=!_pubData.is_following;
-  // optimistic
-  _pubData.is_following=willFollow;
-  _pubData.follower_count=(_pubData.follower_count||0)+(willFollow?1:-1);
+  const d=_pubData; const nick=d.nickname;
+  const undo = d.is_following || d.has_request; // following OR pending request → toggle off
+  const btn=document.getElementById('pubFollowBtn'); if(btn){btn.disabled=true;btn.style.opacity=.6;}
+  try{ await _sb.rpc(undo?'unfollow_user':'follow_user',{p_nick:nick}); }catch(e){}
+  // Re-fetch for the true state (following / requested / counts / locked).
+  try{ const {data}=await _sb.rpc('get_public_profile',{p_nick:nick}); if(data&&data.ok){ _pubData=data; } }catch(e){}
   _renderPubProfile();
-  try{
-    const {data}=await _sb.rpc(willFollow?'follow_user':'unfollow_user',{p_nick:_pubData.nickname});
-    if(!data||!data.ok){ _pubData.is_following=!willFollow; _pubData.follower_count=(_pubData.follower_count||0)+(willFollow?-1:1); _renderPubProfile(); }
-  }catch(e){ _pubData.is_following=!willFollow; _pubData.follower_count=(_pubData.follower_count||0)+(willFollow?-1:1); _renderPubProfile(); }
 }
 function closePubProf(){
   document.getElementById('pubProfOv').classList.remove('open');
   document.body.classList.remove('pp-open');
   if((location.hash||'').startsWith('#u=')) history.replaceState(null,'',location.pathname+location.search);
 }
-async function _reportProfile(nick){
-  const reason=prompt('Report @'+nick+' — what’s wrong? (optional)');
-  if(reason===null) return;
-  try{if(_sb&&_sbUser) await _sb.rpc('report_profile',{p_nick:nick,p_reason:reason||''});}catch(e){}
-  alert('Thanks — this profile has been reported. We’ll review it.');
+// ── Report profile (opens a card → emails vaultwishlist@gmail.com via edge fn) ──
+let _reportTarget=null;
+const _REPORT_REASONS=['Inappropriate photo or content','Harassment or hate','Spam or scam','Impersonation','Something else'];
+function _reportProfile(nick){
+  if(!_sbUser){ closePubProf(); setAuthMode('login'); const o=document.getElementById('authOv'); if(o)o.style.display='flex'; return; }
+  _reportTarget=_normNick(nick);
+  document.getElementById('reportWho').textContent='@'+_reportTarget;
+  document.getElementById('reportReason').value='';
+  document.getElementById('reportMsg').textContent='';
+  document.querySelectorAll('#reportReasons .rep-chip').forEach(c=>c.classList.remove('on'));
+  document.getElementById('reportOv').classList.add('open');
+}
+function _pickReportReason(el){
+  document.querySelectorAll('#reportReasons .rep-chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('reportMsg').textContent='';
+}
+function closeReport(){ document.getElementById('reportOv').classList.remove('open'); }
+async function submitReport(btn){
+  const msg=document.getElementById('reportMsg');
+  const chosen=document.querySelector('#reportReasons .rep-chip.on');
+  const extra=(document.getElementById('reportReason').value||'').trim();
+  const reason=[chosen?chosen.textContent:'',extra].filter(Boolean).join(' — ').slice(0,500);
+  if(!reason){ msg.textContent='Pick a reason or write what’s wrong.'; msg.style.color='var(--red)'; return; }
+  if(btn){btn.disabled=true;btn.style.opacity=.6;}
+  msg.textContent='Sending…'; msg.style.color='var(--t3)';
+  try{
+    const {data,error}=await _sb.functions.invoke('report-profile',{body:{target:_reportTarget,reason}});
+    if(error) throw error;
+    msg.textContent='✓ Report sent. Thanks — we’ll review @'+_reportTarget+'.'; msg.style.color='var(--green)';
+    setTimeout(closeReport,1400);
+  }catch(e){
+    // fallback: at least log it to the DB
+    try{ await _sb.rpc('report_profile',{p_nick:_reportTarget,p_reason:reason}); }catch(_){}
+    msg.textContent='✓ Report received. Thanks.'; msg.style.color='var(--green)';
+    setTimeout(closeReport,1400);
+  }
+}
+// ── Followers / following list ──
+async function openFollowList(nick,kind){
+  const ov=document.getElementById('followListOv'); if(!ov) return;
+  document.getElementById('followListHd').textContent=(kind==='followers'?'Followers':'Following');
+  const box=document.getElementById('followListIn'); box.innerHTML='<div class="disc-empty">Loading…</div>';
+  ov.classList.add('open');
+  try{
+    const {data}=await _sb.rpc(kind==='followers'?'get_followers':'get_following',{p_nick:_normNick(nick)});
+    if(!data||!data.ok){ box.innerHTML='<div class="disc-empty">'+((data&&data.error==='locked')?'This list is private.':'Couldn’t load this list.')+'</div>'; return; }
+    const res=data.results||[];
+    if(!res.length){ box.innerHTML='<div class="disc-empty">'+(kind==='followers'?'No followers yet.':'Not following anyone yet.')+'</div>'; return; }
+    box.innerHTML=res.map(p=>`<button class="disc-row" onclick="closeFollowList();openPublicProfile('${esc(p.nickname)}')">
+      <span class="disc-av">${p.avatar_url?`<img src="${esc(p.avatar_url)}" alt="">`:_avInitial(p.nickname)}</span>
+      <span class="disc-nick">@${esc(p.nickname)}</span>
+      <span class="disc-badges">${_badgesHTML(p.badges)}</span></button>`).join('');
+  }catch(e){ box.innerHTML='<div class="disc-empty">Something went wrong.</div>'; }
+}
+function closeFollowList(){ document.getElementById('followListOv').classList.remove('open'); }
+// ── Notifications ──
+let _notifData=null;
+function _fmtAgo(iso){ try{ const s=(Date.now()-new Date(iso).getTime())/1000; if(s<60)return 'now'; if(s<3600)return Math.floor(s/60)+'m'; if(s<86400)return Math.floor(s/3600)+'h'; return Math.floor(s/86400)+'d'; }catch(e){ return ''; } }
+async function _loadNotifBadge(){
+  if(!SOCIAL_ON||!_sb||!_sbUser) return;
+  try{ const {data}=await _sb.rpc('notification_count'); if(data&&data.ok) _setNotifBadge(data.unread||0); }catch(e){}
+}
+function _setNotifBadge(n){
+  ['notifBadge','notifBadgeM'].forEach(id=>{ const b=document.getElementById(id); if(b){ b.textContent=n>9?'9+':String(n); b.style.display=n>0?'':'none'; } });
+}
+async function openNotifs(){
+  if(!SOCIAL_ON) return;
+  if(!_sbUser){ closeDiscover&&closeDiscover(); setAuthMode('login'); const o=document.getElementById('authOv'); if(o)o.style.display='flex'; return; }
+  const ov=document.getElementById('notifOv'); if(!ov) return;
+  const box=document.getElementById('notifIn'); box.innerHTML='<div class="disc-empty">Loading…</div>';
+  ov.classList.add('open');
+  try{
+    const {data}=await _sb.rpc('get_notifications');
+    if(!data||!data.ok){ box.innerHTML='<div class="disc-empty">Couldn’t load notifications.</div>'; return; }
+    _notifData=data; _renderNotifs();
+    // mark read
+    try{ await _sb.rpc('mark_notifications_read'); _setNotifBadge(0); }catch(e){}
+  }catch(e){ box.innerHTML='<div class="disc-empty">Something went wrong.</div>'; }
+}
+function _renderNotifs(){
+  const box=document.getElementById('notifIn'); const d=_notifData; if(!box||!d) return;
+  const items=d.items||[];
+  if(!items.length){ box.innerHTML='<div class="disc-empty" style="padding:40px">No notifications yet.<br>When people follow you, they’ll show up here.</div>'; return; }
+  box.innerHTML=items.map(n=>{
+    const av=n.avatar?`<img src="${esc(n.avatar)}" alt="">`:_avInitial(n.actor_nick);
+    let txt='', act='';
+    if(n.type==='follow'){ txt=`<b>@${esc(n.actor_nick)}</b> started following you`; }
+    else if(n.type==='request_accepted'){ txt=`<b>@${esc(n.actor_nick)}</b> accepted your follow request`; }
+    else if(n.type==='follow_request'){ txt=`<b>@${esc(n.actor_nick)}</b> requested to follow you`;
+      act = n.pending
+        ? `<div class="notif-acts"><button class="notif-accept" onclick="_acceptReq('${esc(n.actor_nick)}',this)">Accept</button><button class="notif-reject" onclick="_rejectReq('${esc(n.actor_nick)}',this)">Decline</button></div>`
+        : `<span class="notif-done">Handled</span>`;
+    }
+    return `<div class="notif-row${n.read?'':' unread'}">
+      <button class="notif-av" onclick="closeNotifs();openPublicProfile('${esc(n.actor_nick)}')">${av}</button>
+      <div class="notif-body"><div class="notif-txt">${txt} <span class="notif-ago">· ${_fmtAgo(n.created_at)}</span></div>${act}</div></div>`;
+  }).join('');
+}
+function closeNotifs(){ document.getElementById('notifOv').classList.remove('open'); }
+async function _acceptReq(nick,btn){
+  if(btn){ btn.disabled=true; btn.textContent='…'; }
+  try{ await _sb.rpc('accept_follow_request',{p_nick:_normNick(nick)}); }catch(e){}
+  const row=btn&&btn.closest('.notif-row'); const acts=row&&row.querySelector('.notif-acts'); if(acts) acts.outerHTML='<span class="notif-done">✓ Accepted</span>';
+}
+async function _rejectReq(nick,btn){
+  if(btn){ btn.disabled=true; btn.textContent='…'; }
+  try{ await _sb.rpc('reject_follow_request',{p_nick:_normNick(nick)}); }catch(e){}
+  const row=btn&&btn.closest('.notif-row'); const acts=row&&row.querySelector('.notif-acts'); if(acts) acts.outerHTML='<span class="notif-done">Declined</span>';
+}
+// Realtime: live badge + toast when a new notification arrives.
+let _notifChan=null;
+function _subscribeNotifs(){
+  if(!SOCIAL_ON||!_sb||!_sbUser||_notifChan) return;
+  try{
+    _notifChan=_sb.channel('notif-'+_sbUser.id)
+      .on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:`recipient=eq.${_sbUser.id}`},(payload)=>{
+        const n=payload.new; if(!n) return;
+        _loadNotifBadge();
+        let msg = n.type==='follow' ? `@${n.actor_nick} started following you`
+                : n.type==='follow_request' ? `@${n.actor_nick} requested to follow you`
+                : n.type==='request_accepted' ? `@${n.actor_nick} accepted your request` : 'New notification';
+        try{ showToast('🔔 '+msg); }catch(e){}
+      }).subscribe();
+  }catch(e){}
 }
 // ── Own social profile editing (rendered inside the Profile modal) ──
 function _renderSocialEditHTML(){
@@ -6229,7 +6414,7 @@ async function _doLogin(email,pass){
       if(synced){renderSidebar();render();_showSyncDot('ok');}
       _renderOnbLang();initOnboarding();
       _consumePendingJoin();
-      if(SOCIAL_ON)_socialLoadMyProfile();
+      if(SOCIAL_ON)_socialInit();
     },200);
     return;
   }
@@ -6257,7 +6442,7 @@ function _startSession(eHash,account,isNew=false){
   initCurrencyUI();applyTheme();applyStatusColors();applyLang();renderSidebar();render();
   if(S.sort){const sel=document.getElementById('sortSel');if(sel)sel.value=S.sort;}
   _updatePlusSideBtn();
-  setTimeout(()=>{_renderOnbLang();initOnboarding();_consumePendingJoin();if(SOCIAL_ON)_socialLoadMyProfile();},400);
+  setTimeout(()=>{_renderOnbLang();initOnboarding();_consumePendingJoin();if(SOCIAL_ON)_socialInit();},400);
 }
 function continueAsGuest(){
   _currentUser=null;
