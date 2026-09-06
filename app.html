@@ -1046,6 +1046,8 @@ body.cmp-mode .card{cursor:default}
 .profile-page{position:fixed;inset:0;z-index:1000000;background:var(--bg);overflow-y:auto;display:none}
 .profile-page.open{display:block}
 body.pp-open{overflow:hidden}
+/* These overlays can be opened FROM the full-screen profile page → must sit above it */
+#followListOv,#reportOv{z-index:1000020}
 .pp-loading{text-align:center;color:var(--t3);font-size:14px;padding:80px 20px}
 .pp-topbar{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 20px;background:color-mix(in srgb,var(--bg) 88%,transparent);border-bottom:1px solid var(--bd);backdrop-filter:blur(10px)}
 .pp-back{display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:var(--t2);font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;padding:4px 6px;border-radius:8px}
@@ -2180,7 +2182,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.06-social5';
+const APP_BUILD='2026.09.06-social6';
 // ── SOCIAL LAYER (Phase 1) ──────────────────────────────────────────────
 // Master switch for the optional social profiles feature (public @nickname,
 // account search, public profile pages with avatar/bio/admin badges).
