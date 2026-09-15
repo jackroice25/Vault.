@@ -2209,7 +2209,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.15-social8';
+const APP_BUILD='2026.09.15-social9';
 // ── SOCIAL LAYER (Phase 1) ──────────────────────────────────────────────
 // Master switch for the optional social profiles feature (public @nickname,
 // account search, public profile pages with avatar/bio/admin badges).
@@ -4887,6 +4887,12 @@ function showToast(msg,withUndo){
   _toastTimer=setTimeout(()=>{toast.classList.remove('show');_deletedItem=null;},withUndo?5000:3000);
 }
 function _dismissToast(){const t=document.getElementById('toast');if(t)t.classList.remove('show');if(_toastTimer)clearTimeout(_toastTimer);}
+// Bulletproof: the toast can NEVER get stuck — any interaction OUTSIDE it dismisses it.
+(function(){
+  const _bye=e=>{ if(e&&e.target&&e.target.closest&&e.target.closest('#toast')) return; const t=document.getElementById('toast'); if(t&&t.classList.contains('show')) _dismissToast(); };
+  ['pointerdown','touchstart','keydown'].forEach(ev=>document.addEventListener(ev,_bye,{capture:true,passive:true}));
+  window.addEventListener('scroll',()=>{ const t=document.getElementById('toast'); if(t&&t.classList.contains('show')) _dismissToast(); },{capture:true,passive:true});
+})();
 // iOS/WKWebView pauses timers in background → a toast could linger; clear it when we return.
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){const t=document.getElementById('toast');if(t)t.classList.remove('show');}});
 function undoDelete(){
