@@ -229,6 +229,9 @@ button,a,.card,.chip,.si,.sb-util,.mtab,.newsec,.disc-row,.pubi-card,[onclick]{t
 .ca:hover{color:var(--t1);background:rgba(255,255,255,.1)}
 .ca.del:hover{color:var(--red);border-color:var(--red)}
 .c-star{position:absolute;bottom:8px;right:8px;width:25px;height:25px;border-radius:6px;background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;transition:all .13s}
+.c-pubbadge{position:absolute;height:22px;padding:0 6px;border-radius:6px;background:rgba(0,0,0,.6);display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;pointer-events:none}
+.c-pubbadge.feat{bottom:8px;left:8px;color:#ffce4d}
+.c-pubbadge.hid{top:8px;right:8px;color:#cfcfcf}
 .c-star:hover,.c-star.on{background:rgba(245,158,11,.3);border-color:var(--yellow)}
 
 /* card body */
@@ -1071,8 +1074,20 @@ body.cmp-mode .card{cursor:default}
 .pub-items{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px;max-height:44vh;overflow-y:auto;padding-top:2px}
 .pubi-card{background:var(--s2);border:1px solid var(--bd);border-radius:10px;overflow:hidden;cursor:pointer;transition:border-color .12s}
 .pubi-card:hover{border-color:var(--bd2)}
-.pubi-img{aspect-ratio:1;background:var(--s3);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.pubi-img{aspect-ratio:1;background:var(--s3);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
 .pubi-img img{width:100%;height:100%;object-fit:cover}
+.pubi-fstar{position:absolute;top:6px;left:6px;width:20px;height:20px;border-radius:6px;background:rgba(0,0,0,.55);color:#ffce4d;display:flex;align-items:center;justify-content:center}
+/* Featured row (up to 5 highlighted items) */
+.pp-featured-hd{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--t3);margin:4px 0 10px}
+.pp-featured-hd svg{color:#ffce4d}
+.pp-featured{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:22px}
+.ppf-cell{cursor:pointer}
+.ppf-img{aspect-ratio:1;background:var(--s3);border:1px solid var(--bd);border-radius:12px;display:flex;align-items:center;justify-content:center;overflow:hidden;transition:border-color .12s,transform .12s}
+.ppf-cell:hover .ppf-img{border-color:var(--accent);transform:translateY(-2px)}
+.ppf-img img{width:100%;height:100%;object-fit:cover}
+.ppf-noimg{color:var(--t3)}
+.ppf-t{font-size:10px;color:var(--t2);text-align:center;margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:560px){.pp-featured{gap:7px}.ppf-t{font-size:9px}}
 .pubi-noimg{color:var(--t3);display:flex;align-items:center;justify-content:center;width:100%;height:100%}
 .pubi-body{padding:6px 8px}
 .pubi-title{font-size:11px;font-weight:600;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -2231,7 +2246,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.15-social12';
+const APP_BUILD='2026.09.16-social13';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -3269,6 +3284,8 @@ function cardHTML(item){
       <div class="c-car-track" data-carid="${item.id}" data-idx="0">${slides}</div>
       ${dots}${arrows}
       ${dlBadge}${staleBadge}
+      ${SOCIAL_ON&&item.featured?`<span class="c-pubbadge feat" title="Featured on your profile">${ico('star',11)}</span>`:''}
+      ${SOCIAL_ON&&item.pubHidden?`<span class="c-pubbadge hid" title="Hidden from your public profile">${ico('eye-off',11)}</span>`:''}
       <div class="c-st ${st.cls}">${st.label}</div>
       <button class="c-star ${item.star?'on':''}" onclick="event.stopPropagation();star('${item.id}')">${item.star?ico('star-filled',13):ico('star',13)}</button>
     </div>
@@ -4082,6 +4099,9 @@ function showCtxCard(e,id){
     <div class="ctx-item" onclick="hideCtx();_openExt('${esc(item.url)}')"><span class="ctx-ico">${ico('external',13)}</span> ${t('ctxOpen')}</div>
     <div class="ctx-item" onclick="hideCtx();shareItem('${id}')"><span class="ctx-ico">${ico('share',13)}</span> ${t('shareLink')}</div>
     <div class="ctx-item" onclick="hideCtx();${item.archived?`unarchiveItem('${id}')`:`archiveItem('${id}')`}"><span class="ctx-ico">${item.archived?ico('upload',13):ico('archive',13)}</span> ${item.archived?t('unarchive'):t('archive')}</div>
+    ${SOCIAL_ON?`<div class="ctx-div"></div>
+    <div class="ctx-item" onclick="hideCtx();toggleFeatured('${id}');"><span class="ctx-ico">${ico(item.featured?'star':'star-filled',13)}</span> ${item.featured?'Unfeature on profile':'Feature on profile'}</div>
+    <div class="ctx-item" onclick="hideCtx();togglePubHidden('${id}');"><span class="ctx-ico">${ico(item.pubHidden?'eye':'eye-off',13)}</span> ${item.pubHidden?'Show on profile':'Hide from profile'}</div>`:''}
     <div class="ctx-div"></div>
     <div class="ctx-item danger" onclick="hideCtx();del('${id}')"><span class="ctx-ico">${ico('trash',13)}</span> ${t('ctxDelete')}</div>`;
   posCtx(m,e);
@@ -4211,6 +4231,24 @@ function delSec(id){
 function star(id){
   const item=S.items.find(i=>i.id===id);if(!item)return;
   item.star=!item.star;item.mod=Date.now();save();render();
+}
+// ── Public-profile per-item controls (social) ──
+const FEATURED_MAX=5;
+function featuredCount(){return S.items.filter(i=>i.featured&&!i.archived).length;}
+function toggleFeatured(id){
+  const item=S.items.find(i=>i.id===id);if(!item)return;
+  if(!item.featured&&featuredCount()>=FEATURED_MAX){showToast('You can feature up to '+FEATURED_MAX+' items on your profile.');return;}
+  item.featured=!item.featured;
+  if(item.featured)item.pubHidden=false; // a featured item must be visible
+  item.mod=Date.now();save();render();
+  showToast(item.featured?'★ Featured on your profile':'Removed from featured');
+}
+function togglePubHidden(id){
+  const item=S.items.find(i=>i.id===id);if(!item)return;
+  item.pubHidden=!item.pubHidden;
+  if(item.pubHidden)item.featured=false; // a hidden item can't be featured
+  item.mod=Date.now();save();render();
+  showToast(item.pubHidden?'Hidden from your public profile':'Visible on your public profile');
 }
 
 // ── THEME ──
@@ -6080,10 +6118,19 @@ function _renderPubProfile(){
     const st=_PUB_STATUS[it.status]?`<span class="pubi-status">${_PUB_STATUS[it.status]}</span>`:'';
     const img=it.img?`<img src="${esc(it.img)}" alt="" loading="lazy">`:`<div class="pubi-noimg">${ico(it.place?'map':'bag',22)}</div>`;
     const open=it.url?`onclick="window.open('${esc(it.url)}','_blank','noopener')"`:'';
-    return `<div class="pubi-card" ${open}><div class="pubi-img">${img}</div>
+    const fstar=it.featured?`<span class="pubi-fstar" title="Featured">${ico('star',11)}</span>`:'';
+    return `<div class="pubi-card" ${open}><div class="pubi-img">${img}${fstar}</div>
       <div class="pubi-body"><div class="pubi-title">${esc(it.title||'Item')}</div><div class="pubi-row">${price}${st}</div></div></div>`;
   }).join('');
+  // Featured row (up to 5 highlighted items) at the top of the profile.
+  const feat=(d.featured||[]).map(it=>{
+    const img=it.img?`<img src="${esc(it.img)}" alt="" loading="lazy">`:`<div class="ppf-noimg">${ico(it.place?'map':'bag',18)}</div>`;
+    const open=it.url?`onclick="window.open('${esc(it.url)}','_blank','noopener')"`:'';
+    return `<div class="ppf-cell" ${open}><div class="ppf-img">${img}</div><div class="ppf-t">${esc(it.title||'')}</div></div>`;
+  }).join('');
+  const featRow=feat?`<div class="pp-featured-hd">${ico('star',12)} Featured</div><div class="pp-featured">${feat}</div>`:'';
   box.innerHTML=`${topbar}<div class="pp-wrap">${header}
+    ${featRow}
     <div class="pp-items-hd">${d.item_count||0} saved${(d.items&&d.item_count>d.items.length)?` · showing ${d.items.length}`:''}</div>
     ${items?`<div class="pp-items">${items}</div>`:'<div class="disc-empty" style="padding:44px">Nothing saved publicly yet.</div>'}
   </div>`;
