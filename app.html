@@ -123,6 +123,15 @@ body{background:var(--bg);color:var(--t1);display:flex}
 .srch{background:var(--s2);border:1px solid var(--bd);color:var(--t1);padding:7px 12px 7px 32px;border-radius:7px;font-size:13px;width:170px;outline:none;font-family:'Inter',sans-serif;transition:border .13s;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' stroke='%234a4a4a' stroke-width='2' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:10px center}
 .srch::placeholder{color:var(--t3)}
 .srch:focus{border-color:var(--accent)}
+.srch-wrap{position:relative;width:230px;flex-shrink:1}
+.srch-wrap .srch{width:100%}
+.omni-drop{position:absolute;top:calc(100% + 6px);left:0;width:min(340px,86vw);max-height:340px;overflow-y:auto;background:var(--s1);border:1px solid var(--bd2);border-radius:12px;box-shadow:0 14px 44px rgba(0,0,0,.55);z-index:1000;padding:6px;display:none}
+.omni-drop.open{display:block}
+.omni-row{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:none;border-radius:9px;padding:9px 10px;cursor:pointer;color:var(--t1);font-family:inherit;font-size:13px}
+.omni-row:hover{background:var(--s3)}
+.omni-add{color:var(--accent);font-weight:700}
+.omni-add span{color:var(--t1)}
+.omni-empty{padding:14px 12px;color:var(--t3);font-size:12.5px;text-align:center}
 .vbtns{display:flex;gap:3px}
 .vb{background:var(--s2);border:1px solid var(--bd);color:var(--t2);width:38px;height:38px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .12s}
 .vb:hover,.vb.on{background:var(--s3);color:var(--t1);border-color:var(--bd2)}
@@ -157,7 +166,7 @@ body{background:var(--bg);color:var(--t1);display:flex}
 .sb-backdrop{display:none}
 .mtabs{display:none}
 @media(max-width:768px){
-  .mtabs{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:115;justify-content:space-around;align-items:stretch;background:color-mix(in srgb,var(--s1) 94%,transparent);border-top:1px solid var(--bd);backdrop-filter:blur(14px);padding-bottom:env(safe-area-inset-bottom)}
+  .mtabs{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:115;justify-content:space-around;align-items:stretch;background:var(--s1);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom)}
   .mtab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;color:var(--t3);font-family:inherit;font-size:9.5px;font-weight:700;letter-spacing:.2px;cursor:pointer;padding:9px 0 8px;-webkit-tap-highlight-color:transparent;transition:color .12s}
   .mtab .ico{width:24px;height:24px}
   .mtab:active{color:var(--accent);transform:scale(.94)}
@@ -169,7 +178,8 @@ body{background:var(--bg);color:var(--t1);display:flex}
   .sb-toggle{display:flex;align-items:center;justify-content:center;width:36px;height:36px;flex-shrink:0;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--t1);cursor:pointer;padding:0}
   .tb{padding:10px 12px;gap:6px}
   .tb-title{display:none}
-  .srch{flex:1;width:auto;min-width:0}
+  .srch-wrap{flex:1;width:auto;min-width:0}
+  .srch{flex:1;width:100%;min-width:0}
   .sort-sel{display:none}
   #focusModeBtn,#shareVaultBtn{display:none}
   .vb{width:34px;height:34px}
@@ -198,7 +208,7 @@ body{background:var(--bg);color:var(--t1);display:flex}
 .c-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:42px;background:var(--s2)}
 
 /* status pill on image */
-.c-st{position:absolute;top:8px;left:8px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.2px;backdrop-filter:blur(10px)}
+.c-st{position:absolute;top:8px;left:8px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.2px;}
 .st-voglio{background:rgba(210,210,210,.90);color:#111}
 .st-ordinato{background:rgba(140,140,140,.85);color:#111}
 .st-comprato{background:rgba(255,255,255,.92);color:#111}
@@ -210,10 +220,10 @@ body{background:var(--bg);color:var(--t1);display:flex}
 .card:hover .c-acts{display:flex}
 /* Touch devices have no hover → always show the card actions (edit/open/delete) */
 @media(hover:none){.c-acts{display:flex}}
-.ca{width:27px;height:27px;border-radius:6px;background:rgba(0,0,0,.78);border:1px solid rgba(255,255,255,.1);color:var(--t2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;text-decoration:none;transition:all .12s;backdrop-filter:blur(8px)}
+.ca{width:27px;height:27px;border-radius:6px;background:rgba(0,0,0,.78);border:1px solid rgba(255,255,255,.1);color:var(--t2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;text-decoration:none;transition:all .12s;}
 .ca:hover{color:var(--t1);background:rgba(255,255,255,.1)}
 .ca.del:hover{color:var(--red);border-color:var(--red)}
-.c-star{position:absolute;bottom:8px;right:8px;width:25px;height:25px;border-radius:6px;background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;backdrop-filter:blur(8px);transition:all .13s}
+.c-star{position:absolute;bottom:8px;right:8px;width:25px;height:25px;border-radius:6px;background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;transition:all .13s}
 .c-star:hover,.c-star.on{background:rgba(245,158,11,.3);border-color:var(--yellow)}
 
 /* card body */
@@ -273,7 +283,7 @@ body{background:var(--bg);color:var(--t1);display:flex}
 .prof-btn:hover{background:var(--s3);color:var(--t1);border-color:var(--accent)}
 .prof-btn.danger{border-color:rgba(220,60,60,.3);color:rgba(220,80,80,.85)}
 .prof-btn.danger:hover{background:rgba(220,60,60,.1);border-color:rgba(220,60,60,.6);color:rgb(220,70,70)}
-#authOv{position:fixed;inset:0;background:rgba(0,0,0,.96);backdrop-filter:blur(20px);z-index:1000000;display:none;align-items:center;justify-content:center;padding:16px}
+#authOv{position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:1000000;display:none;align-items:center;justify-content:center;padding:16px}
 .auth-box{background:var(--s2);border:1px solid var(--bd2);border-radius:22px;width:380px;max-width:100%;padding:36px 32px 28px;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,.9)}
 .auth-logo{font-size:52px;margin-bottom:10px;line-height:1}
 .auth-title{font-size:22px;font-weight:800;letter-spacing:-.4px;margin-bottom:4px;color:var(--t1)}
@@ -416,7 +426,7 @@ select.inp{cursor:pointer}
 .c-car-slide img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .3s}
 .card:hover .c-car-slide img{transform:scale(1.05)}
 .c-car-slide .c-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:42px}
-.c-car-btn{position:absolute;top:50%;transform:translateY(-50%);width:26px;height:26px;background:rgba(0,0,0,.72);border:none;border-radius:50%;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;z-index:4;opacity:0;transition:opacity .15s;backdrop-filter:blur(6px);pointer-events:none}
+.c-car-btn{position:absolute;top:50%;transform:translateY(-50%);width:26px;height:26px;background:rgba(0,0,0,.72);border:none;border-radius:50%;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;z-index:4;opacity:0;transition:opacity .15s;pointer-events:none}
 .card:hover .c-car-btn{opacity:1;pointer-events:auto}
 .c-car-prev{left:6px}
 .c-car-next{right:6px}
@@ -428,11 +438,11 @@ select.inp{cursor:pointer}
 .gallery-wrap{margin-bottom:14px}
 .gallery-main{position:relative;width:100%;height:260px;border-radius:10px;overflow:hidden;background:var(--s2);margin-bottom:7px}
 .gallery-main img{width:100%;height:100%;object-fit:cover;display:block}
-.gal-btn{position:absolute;top:50%;transform:translateY(-50%);width:34px;height:34px;background:rgba(0,0,0,.68);border:none;border-radius:50%;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;z-index:2;backdrop-filter:blur(6px);transition:background .13s}
+.gal-btn{position:absolute;top:50%;transform:translateY(-50%);width:34px;height:34px;background:rgba(0,0,0,.68);border:none;border-radius:50%;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;z-index:2;transition:background .13s}
 .gal-btn:hover{background:rgba(0,0,0,.9)}
 .gal-prev{left:10px}
 .gal-next{right:10px}
-.gal-count{position:absolute;bottom:9px;right:11px;font-size:11px;background:rgba(0,0,0,.65);color:#fff;padding:2px 9px;border-radius:20px;backdrop-filter:blur(6px)}
+.gal-count{position:absolute;bottom:9px;right:11px;font-size:11px;background:rgba(0,0,0,.65);color:#fff;padding:2px 9px;border-radius:20px;}
 .gal-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:56px}
 .gallery-thumbs{display:flex;gap:5px;overflow-x:auto;padding-bottom:3px}
 .gallery-thumbs::-webkit-scrollbar{height:3px}
@@ -629,7 +639,7 @@ body.light{--bg:#f0f0f2;--s1:#ffffff;--s2:#f5f5f7;--s3:#e8e8ec;--bd:#d0d0d6;--bd
 .st-color-inp{width:34px;height:34px;border-radius:8px;border:1px solid var(--bd);padding:2px;cursor:pointer;background:var(--s2)}
 
 /* ── ONBOARDING ── */
-#onbOv{position:fixed;inset:0;background:rgba(0,0,0,.92);backdrop-filter:blur(16px);z-index:999999;display:none;align-items:center;justify-content:center;padding:16px}
+#onbOv{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:999999;display:none;align-items:center;justify-content:center;padding:16px}
 #onbOv.open{display:flex}
 .onb-box{background:var(--s2);border:1px solid var(--bd2);border-radius:24px;width:480px;max-width:100%;padding:32px 36px 28px;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,.9);overflow:hidden}
 .onb-visual{height:160px;border-radius:14px;background:var(--s3);border:1px solid var(--bd);margin-bottom:22px;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0}
@@ -679,7 +689,7 @@ body.light{--bg:#f0f0f2;--s1:#ffffff;--s2:#f5f5f7;--s3:#e8e8ec;--bd:#d0d0d6;--bd
 #toast button:hover{background:var(--ax)}
 
 /* ── ⌘K SPOTLIGHT ── */
-#kbarOv{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);z-index:99998;display:none;align-items:flex-start;justify-content:center;padding-top:80px}
+#kbarOv{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:99998;display:none;align-items:flex-start;justify-content:center;padding-top:80px}
 #kbarOv.open{display:flex}
 #kbarBox{background:var(--s2);border:1px solid var(--bd2);border-radius:14px;width:560px;max-width:calc(100vw - 32px);box-shadow:0 24px 64px rgba(0,0,0,.85);overflow:hidden}
 #kbarInp{width:100%;background:transparent;border:none;border-bottom:1px solid var(--bd);color:var(--t1);padding:16px 20px;font-size:16px;font-family:'Inter',sans-serif;outline:none}
@@ -771,7 +781,7 @@ body.cmp-mode .card{cursor:default}
 .mood-fs-ov{position:fixed;inset:0;z-index:9200;display:none;flex-direction:column}
 .mood-fs-ov.open{display:flex}
 .mood-fs-body{flex:1;overflow-y:auto;padding:20px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.15) transparent}
-.mood-fs-bar{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:rgba(0,0,0,.35);backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.07);gap:10px}
+.mood-fs-bar{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:rgba(0,0,0,.35);border-top:1px solid rgba(255,255,255,.07);gap:10px}
 .mood-fs-title{font-size:13px;font-weight:600;color:rgba(255,255,255,.7)}
 .mood-fs-actions{display:flex;gap:6px}
 .mood-fs-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);color:#fff;cursor:pointer;border-radius:8px;padding:7px 13px;font-size:11px;font-weight:600;font-family:inherit;transition:all .13s;display:flex;align-items:center;gap:5px}
@@ -855,7 +865,7 @@ body.cmp-mode .card{cursor:default}
 .sb-plus-btn.active{background:linear-gradient(135deg,rgba(201,162,39,.18),rgba(232,200,74,.1));border-color:rgba(201,162,39,.5)}
 .plus-locked-section{margin-top:14px;padding:14px;background:var(--s2);border:1px solid var(--bd);border-radius:12px;position:relative;overflow:hidden}
 .plus-locked-blur{filter:blur(2px);pointer-events:none;user-select:none;opacity:.4}
-.plus-locked-gate{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:2;backdrop-filter:blur(1px);background:rgba(5,5,5,.35)}
+.plus-locked-gate{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:2;background:rgba(5,5,5,.35)}
 .plus-unlock-btn{font-size:11px;font-weight:700;padding:5px 13px;background:linear-gradient(135deg,#c9a227,#e8c84a);color:#1a1000;border:none;border-radius:20px;cursor:pointer;font-family:inherit;white-space:nowrap;transition:opacity .12s}
 .plus-unlock-btn:hover{opacity:.85}
 .plan-info-row{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--s2);border:1px solid var(--bd);border-radius:12px;margin-bottom:12px}
@@ -1071,7 +1081,7 @@ body.pp-open{overflow:hidden}
 /* These overlays can be opened FROM the full-screen profile page → must sit above it */
 #followListOv,#reportOv{z-index:1000020}
 .pp-loading{text-align:center;color:var(--t3);font-size:14px;padding:80px 20px}
-.pp-topbar{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 20px;background:color-mix(in srgb,var(--bg) 88%,transparent);border-bottom:1px solid var(--bd);backdrop-filter:blur(10px)}
+.pp-topbar{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 20px;background:var(--bg);border-bottom:1px solid var(--bd);}
 .pp-back{display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:var(--t2);font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;padding:4px 6px;border-radius:8px}
 .pp-back:hover{color:var(--t1);background:var(--s2)}
 .pp-topbar-handle{font-size:14.5px;font-weight:800;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -1494,10 +1504,6 @@ body.pp-open{overflow:hidden}
     <div class="logo-text" style="display:none">vault<span>.</span><span class="logo-sub">Wishlist</span></div>
   </div>
 
-  <div class="disc-bar" id="discoverBar" onclick="openDiscover()" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openDiscover()">
-    <svg class="ico disc-bar-ico" width="15" height="15" viewBox="0 0 16 16"><use href="#ic-search"/></svg>
-    <span class="disc-bar-ph" id="discBarPh">Search people</span>
-  </div>
 
   <div class="cur-row">
     <span class="cur-lbl" id="curLbl">Valuta</span>
@@ -1550,7 +1556,10 @@ body.pp-open{overflow:hidden}
     <button class="sb-toggle" id="sbToggle" onclick="toggleSidebar()" aria-label="Menu"><svg class="ico" width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M2 4h12M2 8h12M2 12h12"/></svg></button>
     <button id="secBackBtn" onclick="setActive(null)" style="display:none;background:none;border:none;color:var(--t2);cursor:pointer;font-size:13px;padding:4px 8px;border-radius:7px;font-family:inherit;flex-shrink:0;transition:background .12s;display:none;align-items:center;gap:5px" onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background='none'"><svg class="ico" width="13" height="13" viewBox="0 0 16 16"><use href="#ic-back"/></svg> All</button>
     <div class="tb-title" id="tbTitle">All items</div>
-    <input class="srch" type="text" placeholder="Cerca..." id="srch" oninput="render()">
+    <div class="srch-wrap">
+      <input class="srch" type="text" placeholder="Cerca oggetti, @persone o incolla un link…" id="srch" autocomplete="off" oninput="_omni()" onkeydown="if(event.key==='Enter')_omniEnter()">
+      <div id="omniDrop" class="omni-drop"></div>
+    </div>
     <select class="sort-sel" id="sortSel" onchange="setSort(this.value)" title="Ordina per">
       <option value="manual">Ordine manuale</option>
       <option value="date-desc">Più recenti</option>
@@ -1591,14 +1600,7 @@ body.pp-open{overflow:hidden}
   </div>
 
   <!-- quick paste bar -->
-  <div class="paste-bar">
-    <input class="paste-input" type="url" id="quickUrl" placeholder="Incolla un link prodotto o URL lista Amazon..." onkeydown="if(event.key==='Enter')quickAdd()">
-    <button class="paste-go" id="pasteGoBtn" onclick="quickAdd()">Add →</button>
-    <div id="srvBadge" style="display:none">
-      <span id="srvDot"></span>
-      <span id="srvTxt" data-state="init"></span>
-    </div>
-  </div>
+  <div id="srvBadge" style="display:none"><span id="srvDot"></span><span id="srvTxt" data-state="init"></span></div>
 
   <!-- status chips -->
   <div class="chips" id="chips">
@@ -1623,7 +1625,7 @@ body.pp-open{overflow:hidden}
   <button class="mtab" onclick="openMapMo()" aria-label="Map">
     <svg class="ico" viewBox="0 0 16 16"><use href="#ic-map"/></svg><span>Map</span>
   </button>
-  <button class="mtab" id="mtabDiscover" onclick="openDiscover()" aria-label="Search people">
+  <button class="mtab" id="mtabDiscover" onclick="_focusOmniPeople()" aria-label="Search people">
     <svg class="ico" viewBox="0 0 16 16"><use href="#ic-search"/></svg><span>People</span>
   </button>
   <button class="mtab" onclick="openProfileMo()" aria-label="Profile">
@@ -1670,7 +1672,7 @@ body.pp-open{overflow:hidden}
   <button id="pnOkBtn" onclick="dismissPrivacyNotice()" style="background:var(--accent,#c9a227);color:#111;border:none;border-radius:9px;padding:8px 16px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit">OK</button>
 </div>
 <!-- Set-new-password screen (shown after clicking the reset link in the email) -->
-<div id="pwResetOv" style="position:fixed;inset:0;background:rgba(0,0,0,.96);backdrop-filter:blur(20px);z-index:1000001;display:none;align-items:center;justify-content:center;padding:16px">
+<div id="pwResetOv" style="position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:1000001;display:none;align-items:center;justify-content:center;padding:16px">
   <div class="auth-box">
     <div class="auth-logo"><svg width="52" height="52" viewBox="0 0 16 16" style="display:block;margin:0 auto;color:var(--accent)"><use href="#ic-lock"/></svg></div>
     <div class="auth-title">Set a new password</div>
@@ -1803,9 +1805,9 @@ body.pp-open{overflow:hidden}
 </div>
 
 <!-- ═══ TOAST ═══ -->
-<div id="toast">
+<div id="toast" onclick="_dismissToast()">
   <span id="toastMsg"></span>
-  <button onclick="undoDelete()">Annulla</button>
+  <button id="toastUndo" onclick="event.stopPropagation();undoDelete()">Annulla</button>
 </div>
 
 <!-- ═══ COMPARE BAR ═══ -->
@@ -2207,7 +2209,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.15-social7';
+const APP_BUILD='2026.09.15-social8';
 // ── SOCIAL LAYER (Phase 1) ──────────────────────────────────────────────
 // Master switch for the optional social profiles feature (public @nickname,
 // account search, public profile pages with avatar/bio/admin badges).
@@ -3125,7 +3127,10 @@ function setChip(v){
 // ── RENDER GRID ──
 function render(){
   const grid=document.getElementById('grid');
-  const q=document.getElementById('srch').value.toLowerCase().trim();
+  let q=document.getElementById('srch').value.toLowerCase().trim();
+  // Omni-search: when the query is a URL or an @username it's handled by the
+  // dropdown (add-link / people), so it must NOT filter the item list.
+  if(q.startsWith('@')||/^(https?:\/\/|www\.)/.test(q)||/^[^\s]+\.[^\s]{2,}(\/|$)/.test(q)) q='';
   let items=S.items.slice();
   if(S.chip==='archivio'){
     items=items.filter(i=>i.archived);
@@ -3416,11 +3421,13 @@ function chStatus(id,st){
   item.status=st;item.mod=Date.now();save();closeDetMo();renderSidebar();render();
 }
 
-// ── QUICK ADD (paste bar) ──
+// ── QUICK ADD (via the unified omni search bar) ──
 function quickAdd(){
-  const url=document.getElementById('quickUrl').value.trim();
+  const el=document.getElementById('srch'); if(!el) return;
+  let url=(el.value||'').trim();
   if(!url) return;
-  document.getElementById('quickUrl').value='';
+  if(!/^https?:\/\//i.test(url) && /^[^\s@]+\.[^\s]{2,}/.test(url)) url='https://'+url.replace(/^www\./i,'');
+  el.value=''; _omniClose(); render();
   if(isAmazonWishlist(url)){importAmazonWishlist(url);return;}
   if(/\.(jpe?g|png|gif|webp|avif|svg|heic|bmp)(\?.*)?$/i.test(url)){
     openAddMo();
@@ -3433,6 +3440,44 @@ function quickAdd(){
   if(!validUrl(url)) return;
   _quickAddFromUrl(url);
 }
+// ── OMNI SEARCH: one bar for items + @people + paste-a-link ──
+let _omniT=null;
+function _isUrlLike(s){ return /^(https?:\/\/|www\.)\S+/i.test(s) || /^[^\s@]+\.[^\s]{2,}(\/|\?|$)/.test(s); }
+let _omniRenderT=null;
+function _omniRender(){ clearTimeout(_omniRenderT); _omniRenderT=setTimeout(render,140); } // debounce: don't rebuild the grid on every keystroke
+function _omni(){
+  const raw=(document.getElementById('srch').value||'').trim();
+  const drop=document.getElementById('omniDrop'); if(!drop) return;
+  if(_isUrlLike(raw)){
+    drop.innerHTML=`<button class="omni-row omni-add" onclick="quickAdd()">${ico('plus',14)} <span>Add this link to your vault</span></button>`;
+    drop.classList.add('open'); _omniRender(); return;
+  }
+  if(SOCIAL_ON && raw[0]==='@'){
+    drop.classList.add('open'); drop.innerHTML='<div class="omni-empty">Searching people…</div>';
+    clearTimeout(_omniT); _omniT=setTimeout(()=>_omniPeople(raw.slice(1)),260); _omniRender(); return;
+  }
+  drop.classList.remove('open'); drop.innerHTML=''; _omniRender();
+}
+async function _omniPeople(q){
+  const drop=document.getElementById('omniDrop'); if(!drop) return;
+  q=(q||'').toLowerCase().replace(/[^a-z0-9_]/g,'');
+  if(q.length<2){ drop.innerHTML='<div class="omni-empty">Keep typing a username…</div>'; return; }
+  if(!_sb){ drop.innerHTML='<div class="omni-empty">People search needs a connection.</div>'; return; }
+  try{
+    const {data}=await _sb.rpc('search_profiles',{p_q:q});
+    const res=(data&&data.results)||[];
+    if(!res.length){ drop.innerHTML='<div class="omni-empty">No people found for “@'+esc(q)+'”.</div>'; return; }
+    drop.innerHTML=res.map(p=>`<button class="omni-row" onclick="_omniOpen('${esc(p.nickname)}')">
+      <span class="disc-av">${p.avatar_url?`<img src="${esc(p.avatar_url)}" alt="">`:_avInitial(p.nickname)}</span>
+      <span class="disc-nick">@${esc(p.nickname)}${p.is_public===false?` <span class="disc-lock">${ico('lock',10)}</span>`:''}</span>
+      <span class="disc-badges">${_badgesHTML(p.badges)}</span></button>`).join('');
+  }catch(e){ drop.innerHTML='<div class="omni-empty">Something went wrong.</div>'; }
+}
+function _omniOpen(nick){ const el=document.getElementById('srch'); if(el)el.value=''; _omniClose(); render(); openPublicProfile(nick); }
+function _omniClose(){ const d=document.getElementById('omniDrop'); if(d){ d.classList.remove('open'); d.innerHTML=''; } }
+function _omniEnter(){ const raw=(document.getElementById('srch').value||'').trim(); if(_isUrlLike(raw)){ quickAdd(); } else if(raw[0]==='@'){ const b=document.querySelector('#omniDrop .omni-row'); if(b) b.click(); } }
+function _focusOmniPeople(){ const el=document.getElementById('srch'); if(!el) return; try{closeAddMo&&closeAddMo();}catch(e){} el.value='@'; el.focus(); _omni(); }
+document.addEventListener('click',e=>{ if(!e.target.closest('.srch-wrap')) _omniClose(); });
 
 // Auto-add from a pasted/shared link with the FEWEST steps: scrape in the
 // background and save directly (no modal). Used by the paste bar AND the iOS
@@ -4831,15 +4876,19 @@ function del(id){
   S.items.splice(idx,1);
   if(!S.tomb)S.tomb={}; S.tomb[id]=Date.now(); // tombstone so the deletion propagates across devices (merge respects it)
   save();render();renderSidebar();
-  showToast(t('ctxDelete')+' ✓');
+  showToast(t('ctxDelete')+' ✓', true);
 }
-function showToast(msg){
+function showToast(msg,withUndo){
   const toast=document.getElementById('toast');
   document.getElementById('toastMsg').textContent=msg;
+  const ub=document.getElementById('toastUndo'); if(ub) ub.style.display=withUndo?'':'none';
   toast.classList.add('show');
   if(_toastTimer)clearTimeout(_toastTimer);
-  _toastTimer=setTimeout(()=>{toast.classList.remove('show');_deletedItem=null;},5000);
+  _toastTimer=setTimeout(()=>{toast.classList.remove('show');_deletedItem=null;},withUndo?5000:3000);
 }
+function _dismissToast(){const t=document.getElementById('toast');if(t)t.classList.remove('show');if(_toastTimer)clearTimeout(_toastTimer);}
+// iOS/WKWebView pauses timers in background → a toast could linger; clear it when we return.
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){const t=document.getElementById('toast');if(t)t.classList.remove('show');}});
 function undoDelete(){
   if(!_deletedItem)return;
   const it=_deletedItem.item; if(it){ it.mod=Date.now(); if(S.tomb)delete S.tomb[it.id]; } // un-tombstone so the restore sticks through sync
@@ -5221,7 +5270,7 @@ function applyLang(){
   s('bl1',t('statusWant'));s('bl2',t('statusOrdered'));s('bl3',t('statusBought'));
   s('bl-tot',t('total'));s('sbSecLbl',t('sections'));s('curLbl',t('currency'));
   const nb=g('newSecBtn');if(nb)nb.innerHTML=ico('plus',13)+' '+t('newSection');
-  const sb=g('settingsBtn');if(sb)sb.innerHTML=ico('sliders',14)+' '+t('settingsTitle');
+  const sb=g('settingsBtn');if(sb){sb.innerHTML=ico('sliders',15);sb.title=t('settingsTitle');}
   const sh=g('sbHint');
   if(sh){const parts=t('hint').split('·');sh.innerHTML=`<kbd>⌘K</kbd> ${parts[0].trim()} · <kbd>V</kbd> ${(parts[1]||'').trim()}`;}
   // chips
@@ -5260,8 +5309,7 @@ function applyLang(){
   // top bar
   const tbTitle=g('tbTitle');
   if(tbTitle&&!S.active) tbTitle.textContent=t('allItemsTitle');
-  p('srch',t('searchPh'));
-  p('quickUrl',t('quickPh'));
+  p('srch',_lbl({it:'Cerca oggetti, @persone o incolla un link…',en:'Search items, @people or paste a link…',es:'Busca objetos, @gente o pega un enlace…',fr:'Cherchez objets, @gens ou collez un lien…',de:'Objekte, @Leute suchen oder Link einfügen…',pt:'Busque itens, @pessoas ou cole um link…',nl:'Zoek items, @mensen of plak een link…'}));
   // kbar hints
   s('kbarHintOpen',t('kbarOpen'));s('kbarHintNav',t('kbarNav'));s('kbarHintClose',t('kbarClose'));
   // toast undo button
@@ -5286,7 +5334,7 @@ function applyLang(){
   {const e=g('profileMoHd');if(e)e.innerHTML=`<svg class="ico" width="16" height="16" viewBox="0 0 16 16" style="margin-right:6px"><use href="#ic-user"/></svg>${t('profileTitle')}`;}
   s('checkoutBackBtn',t('back'));
   // static elements added later (stats, paste bar, detail link, mood toolbar, privacy notice, legal footer)
-  {const e=g('statsBtn');if(e)e.innerHTML=`<svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-line-chart"/></svg> ${t('statsTitle')}`;}
+  {const e=g('statsBtn');if(e){e.innerHTML='<svg class="ico" width="15" height="15" viewBox="0 0 16 16"><use href="#ic-line-chart"/></svg>';e.title=t('statsTitle');}}
   {const e=g('statsMoHd');if(e)e.innerHTML=`<svg class="ico" width="16" height="16" viewBox="0 0 16 16" style="margin-right:6px"><use href="#ic-chart"/></svg>${t('statsTitle')}`;}
   {const e=g('qaMoHdTitle');if(e)e.innerHTML=`<svg class="ico" width="14" height="14" viewBox="0 0 16 16" style="margin-right:5px"><use href="#ic-plus"/></svg>${t('addWishTitle')}`;}
   s('pasteGoBtn',t('quickAdd'));
@@ -5325,7 +5373,7 @@ function applyLang(){
   // other buttons
   const fbtn=g('focusBtn');if(fbtn)fbtn.innerHTML=ico('close',12)+' '+t('focusExit');
   const qgo=document.querySelector('.paste-go');if(qgo)qgo.textContent=t('quickAdd');
-  const statsBtn=g('statsBtn');if(statsBtn)statsBtn.innerHTML=ico('line-chart',14)+' '+t('statsTitle');
+  const statsBtn=g('statsBtn');if(statsBtn){statsBtn.innerHTML=ico('line-chart',15);statsBtn.title=t('statsTitle');}
   // stats modal header
   const statsMoHd=document.querySelector('#statsOv .mo-hd');if(statsMoHd)statsMoHd.innerHTML=ico('line-chart',16)+' '+t('statsTitle');
   // close buttons in modals (stats, detail, link picker, compare)
@@ -7776,7 +7824,7 @@ async function _initGlobe(){
 </div>
 
 <!-- ═══ VAULT PLUS CHECKOUT MODAL ═══ -->
-<div id="cancelSubOv" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.7);align-items:center;justify-content:center;backdrop-filter:blur(4px)" onclick="if(event.target===this)closeCancelSubModal()">
+<div id="cancelSubOv" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.7);align-items:center;justify-content:center;" onclick="if(event.target===this)closeCancelSubModal()">
   <div style="background:var(--s1);border:1px solid rgba(220,60,60,.25);border-radius:18px;width:380px;max-width:92vw;padding:28px 26px 24px;box-shadow:0 32px 80px rgba(0,0,0,.8);animation:plusIn .2s ease">
     <div style="text-align:center;margin-bottom:6px">
       <div style="width:44px;height:44px;border-radius:50%;background:rgba(220,60,60,.12);border:1px solid rgba(220,60,60,.25);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:20px">✕</div>
@@ -7977,7 +8025,7 @@ async function _initGlobe(){
 
 <!-- ═══ MAP MODAL ═══ -->
 <div id="mapOv" style="display:none;position:fixed;inset:0;z-index:9000;flex-direction:column;background:#000">
-  <div style="display:flex;align-items:center;gap:10px;padding:12px 18px;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0">
+  <div style="display:flex;align-items:center;gap:10px;padding:12px 18px;background:rgba(0,0,0,.7);border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0">
     <svg class="ico" width="16" height="16" viewBox="0 0 16 16" style="color:#c9a227"><use href="#ic-globe"/></svg>
     <span style="font-size:15px;font-weight:700;color:#fff;flex:1" id="mapMoTitle">Map</span>
     <div id="mapGeoStatus" style="font-size:11px;color:rgba(255,255,255,.4);margin-right:8px"></div>
@@ -7985,7 +8033,7 @@ async function _initGlobe(){
     <button onclick="closeMapMo()" style="background:rgba(255,255,255,.1);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">✕</button>
   </div>
   <!-- colour palette bar -->
-  <div id="mapColorBar" data-open="0" style="position:absolute;bottom:0;left:0;right:0;z-index:10;background:linear-gradient(to top,rgba(0,0,0,.92) 60%,rgba(0,0,0,.7));backdrop-filter:blur(16px);padding:20px 24px 28px;transform:translateY(100%);transition:transform .32s cubic-bezier(.4,0,.2,1);border-top:1px solid rgba(255,255,255,.07)">
+  <div id="mapColorBar" data-open="0" style="position:absolute;bottom:0;left:0;right:0;z-index:10;background:linear-gradient(to top,rgba(0,0,0,.92) 60%,rgba(0,0,0,.7));padding:20px 24px 28px;transform:translateY(100%);transition:transform .32s cubic-bezier(.4,0,.2,1);border-top:1px solid rgba(255,255,255,.07)">
     <div style="max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:18px">
       <div style="display:flex;align-items:center;gap:14px">
         <div style="flex:1">
