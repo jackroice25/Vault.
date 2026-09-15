@@ -1659,6 +1659,10 @@ body.pp-open{overflow:hidden}
       <input class="auth-inp" type="text" id="authNick" placeholder="Username" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="20" style="padding-left:28px" oninput="_nickLiveCheck()" onkeydown="if(event.key==='Enter')doAuth()">
     </div>
     <div id="authNickHint" style="display:none;font-size:10.5px;color:var(--t3);margin:-4px 2px 6px;min-height:14px"></div>
+    <label id="authConsentWrap" style="display:none;align-items:flex-start;gap:8px;margin:2px 2px 8px;font-size:11px;color:var(--t2);line-height:1.5;cursor:pointer">
+      <input type="checkbox" id="authConsent" style="margin-top:1px;width:15px;height:15px;flex-shrink:0;accent-color:var(--accent);cursor:pointer">
+      <span>Confermo di avere almeno <b>16 anni</b> e accetto i <a href="terms.html" target="_blank" rel="noopener" style="color:var(--t1);font-weight:600">Termini</a> e la <a href="privacy.html" target="_blank" rel="noopener" style="color:var(--t1);font-weight:600">Privacy Policy</a>.</span>
+    </label>
     <div style="text-align:right;margin:-4px 0 6px"><button id="forgotBtn" onclick="doForgotPass()" style="background:none;border:none;color:var(--t3);font-size:11px;cursor:pointer;font-family:inherit;padding:0">Forgot password?</button></div>
     <div class="auth-err" id="authErr"></div>
     <button class="auth-btn" id="authSubmitBtn" onclick="doAuth()">Sign in</button>
@@ -1774,6 +1778,19 @@ body.pp-open{overflow:hidden}
     <div class="mo-acts">
       <button class="btn-s" onclick="closeReport()">Cancel</button>
       <button class="btn-p" onclick="submitReport(this)">Send report</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ RE-CONSENT (updated Terms/Privacy) ═══ -->
+<div class="ov" id="reconsentOv">
+  <div class="mo" style="max-width:420px">
+    <div class="mo-hd"><svg class="ico" width="16" height="16" viewBox="0 0 16 16" style="margin-right:6px"><use href="#ic-lock"/></svg>Terms &amp; Privacy</div>
+    <div style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:14px">
+      Please review and accept our <a href="terms.html" target="_blank" rel="noopener" style="color:var(--t1);font-weight:600">Terms of Service</a> and <a href="privacy.html" target="_blank" rel="noopener" style="color:var(--t1);font-weight:600">Privacy Policy</a> to continue using Vault.
+    </div>
+    <div class="mo-acts">
+      <button class="btn-p" style="width:100%" onclick="_acceptPolicy(this)">I've read and accept</button>
     </div>
   </div>
 </div>
@@ -2214,7 +2231,11 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.15-social11';
+const APP_BUILD='2026.09.15-social12';
+// Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
+// whenever the policies change materially → logged-in users are prompted to re-accept,
+// and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
+const POLICY_VERSION='2026-07-03';
 // ── SOCIAL LAYER (Phase 1) ──────────────────────────────────────────────
 // Master switch for the optional social profiles feature (public @nickname,
 // account search, public profile pages with avatar/bio/admin badges).
@@ -5823,7 +5844,8 @@ function renderProfile(){
     <div class="prof-sec-hd">${ico('trash',11)} Danger zone</div>
     <div class="prof-btn-row">
       <button class="prof-btn danger" onclick="resetVault()">${ico('trash',12)} Clear all data</button>
-    </div>`;
+    </div>
+    ${_currentUser?`<div class="prof-btn-row"><button class="prof-btn danger" onclick="_deleteAccount()">${ico('trash',12)} Delete account &amp; all data</button></div>`:''}`;
 }
 function toggleProfEmojiPicker(){
   const w=document.getElementById('profEmojiWrap');
@@ -5935,7 +5957,38 @@ async function _socialInit(){
   // Notifications: only meaningful for logged-in accounts.
   const _logged=!!_sbUser;
   ['notifBtn','notifTabM'].forEach(id=>{const b=document.getElementById(id);if(b)b.style.display=_logged?'':'none';});
-  if(_logged){ _loadNotifBadge(); _subscribeNotifs(); }
+  if(_logged){ _loadNotifBadge(); _subscribeNotifs(); _checkPolicyConsent(); }
+}
+// ── PRIVACY: versioned re-consent + account deletion ──
+async function _checkPolicyConsent(){
+  if(!_sb||!_sbUser) return;
+  try{
+    const {data}=await _sb.rpc('get_policy_status');
+    if(data&&data.ok&&data.policy_version!==POLICY_VERSION){
+      const ov=document.getElementById('reconsentOv'); if(ov) ov.classList.add('open');
+    }
+  }catch(e){}
+}
+async function _acceptPolicy(btn){
+  if(btn){btn.disabled=true;btn.style.opacity=.6;}
+  try{ if(_sb&&_sbUser) await _sb.rpc('accept_policy',{p_version:POLICY_VERSION}); }catch(e){}
+  try{ localStorage.setItem('vault_policy',POLICY_VERSION); }catch(e){}
+  const ov=document.getElementById('reconsentOv'); if(ov) ov.classList.remove('open');
+  if(btn){btn.disabled=false;btn.style.opacity=1;}
+}
+async function _deleteAccount(){
+  if(!_sbUser) return;
+  if(!confirm(_lbl({it:'Eliminare DEFINITIVAMENTE il tuo account e TUTTI i dati? Non è reversibile.',en:'Permanently delete your account and ALL your data? This cannot be undone.'}))) return;
+  if(!confirm(_lbl({it:'Sei proprio sicuro? Tutto verrà cancellato per sempre.',en:'Are you absolutely sure? Everything will be erased forever.'}))) return;
+  try{
+    showToast(_lbl({it:'Eliminazione…',en:'Deleting…'}));
+    const {error}=await _sb.functions.invoke('delete-account',{});
+    if(error) throw error;
+  }catch(e){ alert(_lbl({it:'Errore durante l\'eliminazione. Riprova o scrivi a vaultwishlist@gmail.com.',en:'Deletion failed. Try again or email vaultwishlist@gmail.com.'})); return; }
+  try{ if(_sb) await _sb.auth.signOut(); }catch(e){}
+  try{ Object.keys(localStorage).filter(k=>k.toLowerCase().startsWith('vault')).forEach(k=>localStorage.removeItem(k)); }catch(e){}
+  alert(_lbl({it:'Account e dati eliminati.',en:'Account and all data deleted.'}));
+  location.replace(location.pathname);
 }
 async function _socialLoadMyProfile(){
   _myProfile=null;
@@ -6367,6 +6420,8 @@ function setAuthMode(mode){
   const _nw=document.getElementById('authNickWrap'), _nh=document.getElementById('authNickHint');
   if(_nw) _nw.style.display=(isReg&&SOCIAL_ON)?'':'none';
   if(_nh){ _nh.style.display=(isReg&&SOCIAL_ON)?'':'none'; _nh.textContent=''; _nh.style.color='var(--t3)'; }
+  const _cw=document.getElementById('authConsentWrap'); if(_cw) _cw.style.display=isReg?'flex':'none';
+  const _cc=document.getElementById('authConsent'); if(_cc) _cc.checked=false;
   document.getElementById('authSubmitBtn').textContent=isReg?_as('reg'):_as('btn');
   document.getElementById('authDivider').textContent=_as('div');
   document.getElementById('authSwitch').innerHTML=isReg
@@ -6440,6 +6495,8 @@ async function doAuth(){
   if(_authMode==='register'){
     if(pass.length<6){_authErr('Password must be at least 6 characters.');return;}
     if(pass!==pass2){_authErr('Passwords do not match.');return;}
+    const _consent=document.getElementById('authConsent');
+    if(!_consent||!_consent.checked){_authErr(_as('consentReq')||'Conferma l\'età e accetta Termini e Privacy per continuare.');return;}
     let nick=null;
     if(SOCIAL_ON){
       nick=_normNick(document.getElementById('authNick').value);
