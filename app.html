@@ -13,11 +13,11 @@
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
   --bg:#050505;
-  --s1:#0d0d0d;
+  --s1:#0a0a0a;
   --s2:#141414;
-  --s3:#1a1a1a;
-  --bd:#2e2e2e;
-  --bd2:#3c3c3c;
+  --s3:#1c1c1c;
+  --bd:#343434;
+  --bd2:#454545;
   --accent:#b8b8b8;
   --ax:rgba(184,184,184,.10);
   --ax2:rgba(184,184,184,.20);
@@ -30,9 +30,9 @@
   --bx:rgba(96,96,96,.10);
   --purple:#707070;
   --purplex:rgba(112,112,112,.10);
-  --t1:#f0f0f0;
-  --t2:#aeaeae;
-  --t3:#7a7a7a;
+  --t1:#f4f4f4;
+  --t2:#c8c8c8;
+  --t3:#969696;
   --r:10px;
 }
 html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif}
@@ -41,6 +41,21 @@ body{background:var(--bg);color:var(--t1);display:flex}
 ::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:4px}
 ::-webkit-scrollbar-track{background:transparent}
 .ico{display:inline-block;vertical-align:middle;pointer-events:none;flex-shrink:0}
+/* ── SMOOTH TRANSITIONS (Instagram-like motion) ── */
+@media (prefers-reduced-motion: no-preference){
+  .ov.open{animation:ovFade .18s ease both}
+  .ov.open .mo{animation:moPop .24s cubic-bezier(.2,.85,.25,1) both}
+  .profile-page.open{animation:ppSlide .26s cubic-bezier(.2,.85,.25,1) both}
+  button,.chip,.disc-row,.pubi-card,.newsec,.si,.rep-chip,.pub-act,.vb,.mtab,.cur-btn{transition:transform .12s ease, background .16s ease, border-color .16s ease, color .16s ease, opacity .16s ease, box-shadow .16s ease}
+  button:active,.chip:active,.disc-row:active,.pubi-card:active,.newsec:active,.si:active,.rep-chip:active,.pub-act:active,.mtab:active{transform:scale(.975)}
+  .card{transition:transform .16s ease, box-shadow .16s ease}
+  .card:hover{transform:translateY(-2px)}
+  #toast,.toast{animation:toastUp .26s cubic-bezier(.2,.85,.25,1) both}
+}
+@keyframes ovFade{from{opacity:0}to{opacity:1}}
+@keyframes moPop{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes ppSlide{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes toastUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 
 /* ── SIDEBAR ── */
 .sb{width:236px;min-width:236px;background:var(--s1);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden}
@@ -91,6 +106,9 @@ body{background:var(--bg);color:var(--t1);display:flex}
 .cur-item.on{color:var(--accent);font-weight:700;background:var(--ax)}
 
 .newsec{display:flex;align-items:center;gap:8px;margin:6px 10px 10px;padding:8px 10px;border:1px dashed var(--bd);border-radius:8px;cursor:pointer;font-size:12px;color:var(--t3);background:transparent;font-family:'Inter',sans-serif;transition:all .13s;width:calc(100% - 20px);text-align:left}
+.sb-util-row{display:flex;gap:6px;padding:0 12px 4px;margin-top:6px}
+.sb-util{flex:1;display:flex;align-items:center;justify-content:center;height:38px;background:var(--s2);border:1px solid var(--bd);border-radius:9px;color:var(--t2);cursor:pointer}
+.sb-util:hover{background:var(--s3);color:var(--t1);border-color:var(--bd2)}
 .newsec:hover{border-color:var(--accent);color:var(--accent)}
 
 .sb-hint{padding:0 16px 12px;font-size:11px;color:var(--t3)}
@@ -232,6 +250,10 @@ body{background:var(--bg);color:var(--t1);display:flex}
 .mo{background:var(--s1);border:1px solid var(--bd2);border-radius:16px;width:480px;max-width:92vw;padding:24px;max-height:88vh;overflow-x:hidden;overflow-y:auto}
 .mo.wide{width:580px}
 .mo-hd{font-size:16px;font-weight:800;margin-bottom:18px;letter-spacing:-.3px}
+.mo-hd-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:3;background:var(--s1);padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--bd)}
+.mo-hd-bar #qaMoHdTitle{display:flex;align-items:center;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mo-hd-btns{display:flex;gap:8px;flex-shrink:0}
+.mo-hd-btns .btn-s,.mo-hd-btns .btn-p{padding:8px 18px;font-size:13px;margin:0}
 .prof-head{text-align:center;padding:8px 0 22px;border-bottom:1px solid var(--bd)}
 .prof-av{font-size:60px;line-height:1;cursor:pointer;display:inline-block;padding:6px;border-radius:16px;transition:background .15s,transform .1s;margin-bottom:6px}
 .prof-av:hover{background:var(--s3);transform:scale(1.08)}
@@ -1511,11 +1533,13 @@ body.pp-open{overflow:hidden}
   <div class="sb-hint" id="sbHint" style="display:none"><kbd>⌘K</kbd> aggiungi veloce · <kbd>V</kbd> vista</div>
   <button class="sb-plus-btn" id="plusSideBtn" onclick="plusSideBtnClick()"></button>
   <button class="newsec" id="profileBtn" onclick="openProfileMo()" style="border-style:solid;margin-top:0"><svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-id-card"/></svg> Profile</button>
-  <button class="newsec" id="themeBtn" onclick="toggleTheme()" style="border-style:solid;margin-top:0"><svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-sun"/></svg> Tema chiaro</button>
   <div id="itemLimitBar" style="display:none;padding:8px 12px 4px"></div>
-  <button class="newsec" id="mapBtn" onclick="openMapMo()" style="border-style:solid;margin-top:0"><svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-globe"/></svg> Map</button>
-  <button class="newsec" id="statsBtn" onclick="openStats()" style="border-style:solid;margin-top:0"><svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-line-chart"/></svg> Statistiche</button>
-  <button class="newsec" id="settingsBtn" onclick="openSettings(this)" style="border-style:solid;margin-top:0"><svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-sliders"/></svg> Impostazioni</button>
+  <div class="sb-util-row">
+    <button class="sb-util" id="mapBtn" onclick="openMapMo()" title="Map"><svg class="ico" width="15" height="15" viewBox="0 0 16 16"><use href="#ic-globe"/></svg></button>
+    <button class="sb-util" id="statsBtn" onclick="openStats()" title="Statistiche"><svg class="ico" width="15" height="15" viewBox="0 0 16 16"><use href="#ic-line-chart"/></svg></button>
+    <button class="sb-util" id="themeBtn" onclick="toggleTheme()" title="Tema"><svg class="ico" width="15" height="15" viewBox="0 0 16 16"><use href="#ic-sun"/></svg></button>
+    <button class="sb-util" id="settingsBtn" onclick="openSettings(this)" title="Impostazioni"><svg class="ico" width="15" height="15" viewBox="0 0 16 16"><use href="#ic-sliders"/></svg></button>
+  </div>
 </aside>
 
 <!-- ═══ MAIN ═══ -->
@@ -1540,7 +1564,6 @@ body.pp-open{overflow:hidden}
       <button class="vb" id="lBtn" onclick="setView('list')" title="Lista"><svg class="ico" width="15" height="15" viewBox="0 0 16 16"><use href="#ic-list"/></svg></button>
       <button class="vb" id="mBtn" onclick="setView('mood')" title="Mood board"><svg class="ico" width="15" height="15" viewBox="0 0 16 16"><use href="#ic-layers"/></svg></button>
     </div>
-    <button class="vb" id="focusModeBtn" onclick="toggleFocus()" title="Modalità focus"><svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-expand"/></svg></button>
     <button class="vb" id="shareVaultBtn" onclick="openShareMo()" title="Condividi"><svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-share"/></svg></button>
     <button class="vb notif-btn" id="notifBtn" onclick="openNotifs()" title="Notifications" style="display:none"><svg class="ico" width="15" height="15" viewBox="0 0 16 16"><use href="#ic-bell-ring"/></svg><span class="notif-badge" id="notifBadge" style="display:none">0</span></button>
     <button class="add-btn" id="addTopBtn" onclick="openAddMo()"><svg class="ico" width="13" height="13" viewBox="0 0 16 16"><use href="#ic-plus"/></svg> Aggiungi</button>
@@ -1805,7 +1828,13 @@ body.pp-open{overflow:hidden}
 <!-- ═══ ADD MODAL ═══ -->
 <div class="ov" id="addOv">
   <div class="mo">
-    <div class="mo-hd" id="qaMoHd"><svg class="ico" width="14" height="14" viewBox="0 0 16 16" style="margin-right:5px"><use href="#ic-plus"/></svg>Add to wishlist</div>
+    <div class="mo-hd mo-hd-bar" id="qaMoHd">
+      <span id="qaMoHdTitle"><svg class="ico" width="14" height="14" viewBox="0 0 16 16" style="margin-right:5px"><use href="#ic-plus"/></svg>Add to wishlist</span>
+      <span class="mo-hd-btns">
+        <button class="btn-s" id="addCancelBtn" onclick="closeAddMo()">Annulla</button>
+        <button class="btn-p" id="saveBtn" onclick="saveItem()" disabled>Salva</button>
+      </span>
+    </div>
 
     <div class="ttabs">
       <button class="tt on" id="tt-p" onclick="setType('prodotto')"><svg class="ico" width="13" height="13" viewBox="0 0 16 16"><use href="#ic-bag"/></svg> Prodotto</button>
@@ -1930,10 +1959,6 @@ body.pp-open{overflow:hidden}
       </div>
     </div>
 
-    <div class="mo-acts">
-      <button class="btn-s" id="addCancelBtn" onclick="closeAddMo()">Annulla</button>
-      <button class="btn-p" id="saveBtn" onclick="saveItem()" disabled>Salva</button>
-    </div>
   </div>
 </div>
 
@@ -2182,7 +2207,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.06-social6';
+const APP_BUILD='2026.09.15-social7';
 // ── SOCIAL LAYER (Phase 1) ──────────────────────────────────────────────
 // Master switch for the optional social profiles feature (public @nickname,
 // account search, public profile pages with avatar/bio/admin badges).
@@ -3508,7 +3533,7 @@ function closeAddMo(){
   document.getElementById('fbar').classList.remove('show');
   document.getElementById('errMsg').classList.remove('show');
   document.getElementById('saveBtn').disabled=true;
-  document.querySelector('#addOv .mo-hd').textContent=t('addTitle');
+  document.querySelector('#qaMoHdTitle').textContent=t('addTitle');
   extraImages=[];renderImgStrip();
   editTags=[];renderTagPills();
   fetched=null;if(ftimer)clearTimeout(ftimer);
@@ -4083,7 +4108,7 @@ function editItem(id){
     if(pvWrap)pvWrap.classList.add('show');
   }
   document.getElementById('addOv').classList.add('open');
-  document.querySelector('#addOv .mo-hd').textContent=t('editTitle');
+  document.querySelector('#qaMoHdTitle').textContent=t('editTitle');
 }
 
 // ── EDIT SECTION ──
@@ -4264,8 +4289,9 @@ function applyTheme(){
   applyCustomTheme();
   const btn=document.getElementById('themeBtn');
   if(btn){
-    const labels={dark:ico('sun')+' '+t('lightMode'),light:ico('moon')+' '+t('darkMode'),auto:ico('refresh')+' Auto'};
-    btn.innerHTML=labels[S.theme||'dark'];
+    const _ic={dark:'sun',light:'moon',auto:'refresh'}[S.theme||'dark'];
+    const _lbl={dark:t('lightMode'),light:t('darkMode'),auto:'Auto'}[S.theme||'dark'];
+    btn.innerHTML=ico(_ic); btn.title=_lbl;
   }
 }
 
@@ -5210,7 +5236,7 @@ function applyLang(){
   // top bar add button
   const atb=g('addTopBtn');if(atb)atb.innerHTML=ico('plus',13)+' '+t('addBtn');
   // add modal
-  if(!editingItemId){const mh=document.querySelector('#addOv .mo-hd');if(mh)mh.innerHTML=ico('plus',14)+' '+t('addTitle');}
+  if(!editingItemId){const mh=document.querySelector('#qaMoHdTitle');if(mh)mh.innerHTML=ico('plus',14)+' '+t('addTitle');}
   s('lbl-title',t('titleLabel'));s('lbl-status',t('statusLabel'));
   s('lbl-section',t('sectionLabel'));s('lbl-foto',t('photosLabel'));
   s('lbl-your-rating',t('yourRating'));
@@ -5262,7 +5288,7 @@ function applyLang(){
   // static elements added later (stats, paste bar, detail link, mood toolbar, privacy notice, legal footer)
   {const e=g('statsBtn');if(e)e.innerHTML=`<svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-line-chart"/></svg> ${t('statsTitle')}`;}
   {const e=g('statsMoHd');if(e)e.innerHTML=`<svg class="ico" width="16" height="16" viewBox="0 0 16 16" style="margin-right:6px"><use href="#ic-chart"/></svg>${t('statsTitle')}`;}
-  {const e=g('qaMoHd');if(e)e.innerHTML=`<svg class="ico" width="14" height="14" viewBox="0 0 16 16" style="margin-right:5px"><use href="#ic-plus"/></svg>${t('addWishTitle')}`;}
+  {const e=g('qaMoHdTitle');if(e)e.innerHTML=`<svg class="ico" width="14" height="14" viewBox="0 0 16 16" style="margin-right:5px"><use href="#ic-plus"/></svg>${t('addWishTitle')}`;}
   s('pasteGoBtn',t('quickAdd'));
   {const e=g('detLink');if(e)e.textContent=t('visitSite')+' ↗';}
   {const e=g('fbarLbl');if(e)e.textContent=t('fbarAnalyzing');}
