@@ -50,7 +50,6 @@ body{background:var(--bg);color:var(--t1);display:flex}
   button:active,.chip:active,.disc-row:active,.pubi-card:active,.newsec:active,.si:active,.rep-chip:active,.pub-act:active,.mtab:active{transform:scale(.975)}
   .card{transition:transform .16s ease, box-shadow .16s ease}
   .card:hover{transform:translateY(-2px)}
-  #toast,.toast{animation:toastUp .26s cubic-bezier(.2,.85,.25,1) both}
 }
 @keyframes ovFade{from{opacity:0}to{opacity:1}}
 @keyframes moPop{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
@@ -2209,7 +2208,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.15-social9';
+const APP_BUILD='2026.09.15-social10';
 // ── SOCIAL LAYER (Phase 1) ──────────────────────────────────────────────
 // Master switch for the optional social profiles feature (public @nickname,
 // account search, public profile pages with avatar/bio/admin badges).
