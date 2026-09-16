@@ -1088,6 +1088,15 @@ body.cmp-mode .card{cursor:default}
 .ppf-noimg{color:var(--t3)}
 .ppf-t{font-size:10px;color:var(--t2);text-align:center;margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:560px){.pp-featured{gap:7px}.ppf-t{font-size:9px}}
+/* Detail modal: public-profile controls */
+.det-pub{margin:14px 0 2px;padding:12px;border:1px solid var(--bd);border-radius:12px;background:var(--s2)}
+.det-pub-hd{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--t3);margin-bottom:9px}
+.det-pub-btns{display:flex;gap:8px}
+.det-pub-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 10px;border-radius:9px;border:1px solid var(--bd2);background:var(--s3);color:var(--t2);font-size:13px;font-weight:600;cursor:pointer;transition:all .13s}
+.det-pub-btn:hover{border-color:var(--t3);color:var(--t1)}
+.det-pub-btn.on{background:rgba(255,206,77,.14);border-color:#ffce4d;color:#ffce4d}
+.det-pub-btn.hid{background:rgba(255,255,255,.06);border-color:var(--t3);color:var(--t1)}
+.det-pub-hint{font-size:11.5px;color:var(--t3);margin-top:8px;line-height:1.4}
 .pubi-noimg{color:var(--t3);display:flex;align-items:center;justify-content:center;width:100%;height:100%}
 .pubi-body{padding:6px 8px}
 .pubi-title{font-size:11px;font-weight:600;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -2246,7 +2255,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.16-social13';
+const APP_BUILD='2026.09.17-social14';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -3436,6 +3445,17 @@ function openDetMo(id){
   else if(item.qty>1) h+=`<div style="font-size:13px;color:var(--t2);margin:4px 0">${t('lbl_qty')}: <strong>${item.qty}</strong></div>`;
   // voice memo
   if(item.voiceMemo) h+=`<div class="sh" style="display:flex;align-items:center;gap:6px">${ico('mic',13)} ${t('lbl_voice')}</div><audio controls src="${esc(item.voiceMemo)}" style="width:100%;border-radius:8px;margin-bottom:8px"></audio>`;
+  // public-profile controls (feature / hide) — social only, owner's own items
+  if(SOCIAL_ON && !item.archived){
+    h+=`<div class="det-pub">
+      <div class="det-pub-hd">${ico('user',12)} Public profile</div>
+      <div class="det-pub-btns">
+        <button class="det-pub-btn${item.featured?' on':''}" onclick="toggleFeatured('${item.id}');openDetMo('${item.id}')">${ico(item.featured?'star':'star-filled',14)} ${item.featured?'Featured ✓':'Feature'}</button>
+        <button class="det-pub-btn${item.pubHidden?' hid':''}" onclick="togglePubHidden('${item.id}');openDetMo('${item.id}')">${ico(item.pubHidden?'eye-off':'eye',14)} ${item.pubHidden?'Hidden':'Visible'}</button>
+      </div>
+      <div class="det-pub-hint">${item.pubHidden?'Only you can see this — hidden from your public profile.':(item.featured?'Pinned to the top of your profile (up to 5).':'Shown on your public profile. Tap ★ to feature it.')}</div>
+    </div>`;
+  }
   // share + link buttons
   h+=`<div style="display:flex;gap:8px;margin-top:14px">
     <button class="btn-s" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px" onclick="openLinkPick('${item.id}')">${ico('link',13)} ${t('linkItems')}</button>
