@@ -232,11 +232,16 @@ button,a,.card,.chip,.si,.sb-util,.mtab,.newsec,.disc-row,.pubi-card,[onclick]{t
 .card:hover .c-acts{display:flex}
 /* Touch devices have no hover → always show the card actions (edit/open/delete) */
 @media(hover:none){.c-acts{display:flex}
-  /* On touch, a :hover style makes the browser require a first "hover" tap → open needs two taps. Kill card hover on touch so one tap opens. */
+  /* On touch, a :hover style that reveals/animates makes the browser require a
+     first "hover" tap → open needs two taps. Kill ALL card hover-reveals on touch. */
   .card:hover{transform:none;box-shadow:none;border-color:var(--bd)}
-  .card:hover .c-img img{transform:none}}
-.ca{width:27px;height:27px;border-radius:6px;background:rgba(0,0,0,.78);border:1px solid rgba(255,255,255,.1);color:var(--t2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;text-decoration:none;transition:all .12s;}
-.ca:hover{color:var(--t1);background:rgba(255,255,255,.1)}
+  .card:hover .c-img img{transform:none}
+  .card:hover .c-car-slide img{transform:none}
+  .card:hover .c-car-btn{opacity:0;pointer-events:none}}
+.ca{width:27px;height:27px;border-radius:6px;background:rgba(0,0,0,.92);border:1px solid rgba(255,255,255,.28);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;font-weight:700;text-decoration:none;transition:all .12s;box-shadow:0 1px 4px rgba(0,0,0,.5)}
+.ca svg{stroke-width:2}
+.ca:hover{color:#fff;background:#000;border-color:rgba(255,255,255,.45)}
+.ca.del:hover{background:var(--red,#dc2626);border-color:var(--red,#dc2626)}
 .ca.del:hover{color:var(--red);border-color:var(--red)}
 .c-star{position:absolute;bottom:8px;right:8px;width:25px;height:25px;border-radius:6px;background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;transition:all .13s}
 .c-pubbadge{position:absolute;height:22px;padding:0 6px;border-radius:6px;background:rgba(0,0,0,.6);display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;pointer-events:none}
@@ -396,6 +401,13 @@ select.inp{cursor:pointer}
 .img-field.show{display:block}
 
 .mo-acts{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+/* Detail sheet: Close + Visit-site pinned to the TOP as a sticky bar */
+.det-topbar{position:sticky;top:0;z-index:6;justify-content:space-between;align-items:center;margin:-24px -24px 10px;padding:15px 24px 12px;background:var(--s1);border-bottom:1px solid var(--bd);border-radius:16px 16px 0 0}
+.det-grabber{display:none}
+@media(max-width:768px){
+  .det-grabber{display:block;width:40px;height:4px;border-radius:3px;background:var(--bd2);margin:-10px auto 8px}
+  .det-topbar{margin-top:-14px}
+}
 .btn-s{background:var(--s2);border:1px solid var(--bd);color:var(--t2);padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;transition:all .13s;font-family:'Inter',sans-serif}
 .btn-s:hover{color:var(--t1);border-color:var(--bd2)}
 .btn-p{background:var(--accent);border:none;color:#fff;padding:9px 20px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .13s;display:inline-flex;align-items:center;gap:6px;text-decoration:none}
@@ -2138,11 +2150,12 @@ body.pp-open{overflow:hidden}
 <!-- ═══ DETAIL MODAL ═══ -->
 <div class="ov" id="detOv">
   <div class="mo wide">
-    <div id="detIn"></div>
-    <div class="mo-acts">
+    <div class="det-grabber" aria-hidden="true"></div>
+    <div class="mo-acts det-topbar">
       <button class="btn-s" onclick="closeDetMo()">Close</button>
       <a class="btn-p" id="detLink" href="#" target="_blank" rel="noopener">Visit site ↗</a>
     </div>
+    <div id="detIn"></div>
   </div>
 </div>
 
@@ -2268,7 +2281,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.17-social15';
+const APP_BUILD='2026.09.17-social16';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -3297,7 +3310,7 @@ function cardHTML(item){
     priceLine=`<div class="c-price">${cur()}${fmt(total)}${qty}${diffHtml}</div>`;
   }
 
-  return `<div class="card${isSpotlight?' spotlight':''}${item.archived?' archived-card':''}${cmpSelected.has(item.id)?' cmp-sel':''}" draggable="true"
+  return `<div class="card${isSpotlight?' spotlight':''}${item.archived?' archived-card':''}${cmpSelected.has(item.id)?' cmp-sel':''}" draggable="true" data-id="${item.id}"
     onclick="if(document.body.classList.contains('cmp-mode')){toggleCmpItem('${item.id}')}else{openDetMo('${item.id}')}" oncontextmenu="showCtxCard(event,'${item.id}')"
     ondragstart="onDragStart(event,'${item.id}')" ondragend="onDragEnd(event)"
     ondragover="onDragOver(event,'${item.id}')" ondrop="onDrop(event,'${item.id}')">
@@ -3492,6 +3505,79 @@ function galGo(idx){
 }
 
 function closeDetMo(){document.getElementById('detOv').classList.remove('open');}
+
+// ── Touch gestures: single-tap open, swipe sidebar, swipe-to-close sheet ──
+(function _touchGestures(){
+  const isTouch=()=>matchMedia('(hover:none)').matches;
+  const isMobile=()=>window.innerWidth<=768;
+
+  // 1) SINGLE-TAP to open a card. iOS can swallow the first tap on elements with
+  //    :hover styles; we open on a clean touchend and cancel the ghost click.
+  let tsx=0,tsy=0,tst=0,tMoved=false;
+  document.addEventListener('touchstart',e=>{
+    const t=e.touches[0]; tsx=t.clientX; tsy=t.clientY; tst=Date.now(); tMoved=false;
+  },{passive:true});
+  document.addEventListener('touchmove',e=>{
+    const t=e.touches[0]; if(Math.abs(t.clientX-tsx)>8||Math.abs(t.clientY-tsy)>8) tMoved=true;
+  },{passive:true});
+  document.addEventListener('touchend',e=>{
+    if(tMoved||Date.now()-tst>500) return;
+    const card=e.target.closest&&e.target.closest('.card'); if(!card) return;
+    // let interactive children handle their own taps
+    if(e.target.closest('button,a,input,.ca,.c-star,.c-car-btn,.c-car-dots,.cmp-chk,.c-pubbadge,.drag-handle')) return;
+    const id=card.dataset.id; if(!id) return;
+    e.preventDefault(); // cancel the delayed ghost click so it opens on ONE tap
+    if(document.body.classList.contains('cmp-mode')) toggleCmpItem(id); else openDetMo(id);
+  },{passive:false});
+
+  // 2) SWIPE to open/close the categories sidebar (left-edge swipe → open, swipe-left → close)
+  let sbx=0,sby=0,sbTrack=false,sbEdge=false;
+  document.addEventListener('touchstart',e=>{
+    if(!isMobile()) return;
+    // don't hijack edge-swipes while a modal / overlay / profile page is open
+    if(document.querySelector('.ov.open, .profile-page.open, #pubProfOv.open')){ sbTrack=false; return; }
+    const t=e.touches[0]; sbx=t.clientX; sby=t.clientY;
+    const open=document.body.classList.contains('sb-open');
+    sbEdge=sbx<=26; sbTrack=open||sbEdge;
+  },{passive:true});
+  document.addEventListener('touchend',e=>{
+    if(!sbTrack||!isMobile()){sbTrack=false;return;}
+    sbTrack=false;
+    const t=e.changedTouches[0]; const dx=t.clientX-sbx, dy=t.clientY-sby;
+    if(Math.abs(dx)<55||Math.abs(dy)>Math.abs(dx)) return; // needs a clear horizontal swipe
+    const open=document.body.classList.contains('sb-open');
+    if(!open&&sbEdge&&dx>55) document.body.classList.add('sb-open');
+    else if(open&&dx<-55) document.body.classList.remove('sb-open');
+  },{passive:true});
+
+  // 3) SWIPE-DOWN to close the product sheet, with the sheet following the finger
+  function bindSheetSwipe(){
+    const ov=document.getElementById('detOv'); if(!ov) return;
+    const mo=ov.querySelector('.mo'); if(!mo||mo._swipeBound) return; mo._swipeBound=1;
+    let dy=0,dx=0,sy=0,sx=0,drag=false;
+    mo.addEventListener('touchstart',e=>{
+      if(mo.scrollTop>0){drag=false;return;} // only when scrolled to top
+      const t=e.touches[0]; sy=t.clientY; sx=t.clientX; dy=0; dx=0; drag=true; mo.style.transition='none';
+    },{passive:true});
+    mo.addEventListener('touchmove',e=>{
+      if(!drag) return;
+      const t=e.touches[0]; dy=t.clientY-sy; dx=t.clientX-sx;
+      if(dy>0&&Math.abs(dx)<Math.abs(dy)+20){
+        mo.style.transform=`translateY(${dy}px)`;
+        mo.style.opacity=String(Math.max(.35,1-dy/520));
+        if(e.cancelable) e.preventDefault();
+      }
+    },{passive:false});
+    mo.addEventListener('touchend',()=>{
+      if(!drag) return; drag=false; mo.style.transition='';
+      if(dy>110){
+        mo.style.transform='translateY(100%)'; mo.style.opacity='0';
+        setTimeout(()=>{closeDetMo(); mo.style.transform=''; mo.style.opacity='';},230);
+      } else { mo.style.transform=''; mo.style.opacity=''; }
+    });
+  }
+  if(document.readyState!=='loading') bindSheetSwipe(); else document.addEventListener('DOMContentLoaded',bindSheetSwipe);
+})();
 function chStatus(id,st){
   const item=S.items.find(i=>i.id===id);if(!item)return;
   item.status=st;item.mod=Date.now();save();closeDetMo();renderSidebar();render();
