@@ -170,16 +170,17 @@ button,a,.card,.chip,.si,.sb-util,.mtab,.newsec,.disc-row,.pubi-card,[onclick]{t
 .mtabs{display:none}
 @media(max-width:768px){
   /* Floating "liquid glass" pill footer (icon-only, active tab gets a glass bubble) */
-  .mtabs{display:flex;position:fixed;left:16px;right:16px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:9500;justify-content:space-around;align-items:center;gap:4px;background:rgba(24,24,27,.7);-webkit-backdrop-filter:blur(24px) saturate(170%);backdrop-filter:blur(24px) saturate(170%);border:1px solid rgba(255,255,255,.1);border-radius:30px;padding:7px 8px;box-shadow:0 12px 36px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.06)}
+  .mtabs{display:flex;position:fixed;left:22px;right:22px;bottom:calc(5px + env(safe-area-inset-bottom));z-index:9500;justify-content:space-around;align-items:center;gap:4px;background:rgba(26,26,29,.5);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.12);border-radius:30px;padding:6px 12px;box-shadow:0 10px 28px rgba(0,0,0,.4);transform:translateZ(0)}
+  body.sheet-open .mtabs{display:none} /* hide footer while the product sheet is open */
   /* Only the full-screen Map section sits BELOW the footer (footer stays usable);
      all modals (.ov=9600, incl. Profile) cover it normally so their content isn't clipped. */
   #mapOv{z-index:9400!important}
   #mapOv .map-wrap,#mapOv #map{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
-  .mtab{flex:1;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--t3);font-family:inherit;cursor:pointer;padding:11px 4px;border-radius:22px;-webkit-tap-highlight-color:transparent;transition:color .2s,background .28s,transform .12s}
+  .mtab{flex:1;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--t2);font-family:inherit;cursor:pointer;padding:11px 4px;border-radius:22px;-webkit-tap-highlight-color:transparent;transition:color .2s,background .28s,transform .12s}
   .mtab>span:not(.mtab-ico-wrap){display:none} /* icon-only like the reference */
   .mtab .ico{width:25px;height:25px}
   .mtab:active{transform:scale(.88)}
-  .mtab.on{color:#fff;background:rgba(255,255,255,.16);-webkit-backdrop-filter:blur(10px) saturate(150%);backdrop-filter:blur(10px) saturate(150%);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 2px 10px rgba(0,0,0,.35)}
+  .mtab.on{color:#fff;background:rgba(255,255,255,.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 2px 10px rgba(0,0,0,.3)}
   .mtab-ico-wrap{position:relative;display:inline-flex}
   /* Notifications bell lives in the bottom footer on mobile, not the top toolbar */
   #notifBtn{display:none!important}
@@ -2296,7 +2297,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.18-social18';
+const APP_BUILD='2026.09.18-social19';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -3511,6 +3512,7 @@ function openDetMo(id){
   document.getElementById('detIn').innerHTML=h;
   {const _dl=document.getElementById('detLink'); _dl.href=safeUrl(item.url); _dl.onclick=()=>_biTrackClick(item.id);} // Vault Business: outbound click
   document.getElementById('detOv').classList.add('open');
+  document.body.classList.add('sheet-open');
 }
 
 function galGo(idx){
@@ -3524,7 +3526,7 @@ function galGo(idx){
   document.querySelectorAll('.gal-th').forEach((th,i)=>th.classList.toggle('on',i===galCurIdx));
 }
 
-function closeDetMo(){document.getElementById('detOv').classList.remove('open');}
+function closeDetMo(){document.getElementById('detOv').classList.remove('open');document.body.classList.remove('sheet-open');}
 
 // ── Touch gestures: single-tap open, swipe sidebar, swipe-to-close sheet ──
 (function _touchGestures(){
@@ -7931,7 +7933,12 @@ function goSection(which){
   document.body.classList.remove('sb-open');
   if(which==='map') openMapMo();
   else if(which==='people'){ const c=document.querySelector('.content'); if(c)c.scrollTop=0; _focusOmniPeople(); }
-  else if(which==='profile') openProfileMo();
+  else if(which==='profile'){
+    // open the user's REAL public profile page (how others see it); fall back to
+    // profile settings if there's no nickname yet or not signed in.
+    if(_myProfile&&_myProfile.nickname) openPublicProfile(_myProfile.nickname);
+    else openProfileMo();
+  }
   _setTab(which);
 }
 function closeMapMo(){
@@ -8302,7 +8309,7 @@ async function _initGlobe(){
 
 <!-- ═══ MAP MODAL ═══ -->
 <div id="mapOv" style="display:none;position:fixed;inset:0;z-index:9000;flex-direction:column;background:#000">
-  <div style="display:flex;align-items:center;gap:10px;padding:12px 18px;background:rgba(0,0,0,.7);border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0">
+  <div style="display:flex;align-items:center;gap:10px;padding:calc(12px + env(safe-area-inset-top)) 18px 12px;background:rgba(0,0,0,.7);border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0">
     <svg class="ico" width="16" height="16" viewBox="0 0 16 16" style="color:#c9a227"><use href="#ic-globe"/></svg>
     <span style="font-size:15px;font-weight:700;color:#fff;flex:1" id="mapMoTitle">Map</span>
     <div id="mapGeoStatus" style="font-size:11px;color:rgba(255,255,255,.4);margin-right:8px"></div>
