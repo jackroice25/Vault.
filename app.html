@@ -169,15 +169,17 @@ button,a,.card,.chip,.si,.sb-util,.mtab,.newsec,.disc-row,.pubi-card,[onclick]{t
 .sb-backdrop{display:none}
 .mtabs{display:none}
 @media(max-width:768px){
-  .mtabs{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:9500;justify-content:space-around;align-items:stretch;background:var(--s1);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom)}
-  /* Section views (Map / Profile) sit BELOW the footer so you can always navigate;
-     action modals (add/detail/etc, .ov=9600) cover it. */
-  #mapOv,#profileOv{z-index:9400!important}
-  #mapOv .map-wrap,#mapOv #map,#profileOv .mo{padding-bottom:calc(64px + env(safe-area-inset-bottom))}
-  .mtab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;color:var(--t3);font-family:inherit;font-size:9.5px;font-weight:700;letter-spacing:.2px;cursor:pointer;padding:9px 0 8px;-webkit-tap-highlight-color:transparent;transition:color .12s}
-  .mtab .ico{width:24px;height:24px}
-  .mtab:active{color:var(--accent);transform:scale(.94)}
-  .mtab.on{color:var(--t1)}
+  /* Floating "liquid glass" pill footer (icon-only, active tab gets a glass bubble) */
+  .mtabs{display:flex;position:fixed;left:16px;right:16px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:9500;justify-content:space-around;align-items:center;gap:4px;background:rgba(24,24,27,.7);-webkit-backdrop-filter:blur(24px) saturate(170%);backdrop-filter:blur(24px) saturate(170%);border:1px solid rgba(255,255,255,.1);border-radius:30px;padding:7px 8px;box-shadow:0 12px 36px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.06)}
+  /* Only the full-screen Map section sits BELOW the footer (footer stays usable);
+     all modals (.ov=9600, incl. Profile) cover it normally so their content isn't clipped. */
+  #mapOv{z-index:9400!important}
+  #mapOv .map-wrap,#mapOv #map{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+  .mtab{flex:1;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--t3);font-family:inherit;cursor:pointer;padding:11px 4px;border-radius:22px;-webkit-tap-highlight-color:transparent;transition:color .2s,background .28s,transform .12s}
+  .mtab>span:not(.mtab-ico-wrap){display:none} /* icon-only like the reference */
+  .mtab .ico{width:25px;height:25px}
+  .mtab:active{transform:scale(.88)}
+  .mtab.on{color:#fff;background:rgba(255,255,255,.16);-webkit-backdrop-filter:blur(10px) saturate(150%);backdrop-filter:blur(10px) saturate(150%);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 2px 10px rgba(0,0,0,.35)}
   .mtab-ico-wrap{position:relative;display:inline-flex}
   /* Notifications bell lives in the bottom footer on mobile, not the top toolbar */
   #notifBtn{display:none!important}
@@ -202,6 +204,7 @@ button,a,.card,.chip,.si,.sb-util,.mtab,.newsec,.disc-row,.pubi-card,[onclick]{t
   .chips{padding:9px 12px 0}
   .content{padding:12px 12px calc(78px + env(safe-area-inset-bottom))}
   .grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .grid .card .c-img{padding-top:100%} /* squarer = bigger, less squished product photos */
   /* iOS auto-zooms into any focused field whose font-size is < 16px, then can
      get stuck zoomed. Forcing 16px on every input kills the auto-zoom entirely. */
   input, textarea, select{font-size:16px !important}
@@ -236,9 +239,9 @@ button,a,.card,.chip,.si,.sb-util,.mtab,.newsec,.disc-row,.pubi-card,[onclick]{t
 .c-acts{position:absolute;top:8px;right:8px;display:none;gap:5px}
 .card:hover .c-acts{display:flex}
 /* Touch devices have no hover → always show the card actions (edit/open/delete) */
-@media(hover:none){.c-acts{display:flex}
-  /* On touch, a :hover style that reveals/animates makes the browser require a
-     first "hover" tap → open needs two taps. Kill ALL card hover-reveals on touch. */
+@media(hover:none){.c-acts{display:none}
+  /* On touch the edit/link/delete buttons are hidden on the card (they live in the
+     product sheet that opens on tap). Also kill hover-reveals that caused two-tap. */
   .card:hover{transform:none;box-shadow:none;border-color:var(--bd)}
   .card:hover .c-img img{transform:none}
   .card:hover .c-car-slide img{transform:none}
@@ -1683,19 +1686,19 @@ body.pp-open{overflow:hidden}
 
 <!-- ═══ MOBILE BOTTOM TAB BAR (Instagram-style) ═══ -->
 <nav class="mtabs" id="mtabs">
-  <button class="mtab" onclick="goHome()" aria-label="Home">
+  <button class="mtab on" data-tab="home" onclick="goHome()" aria-label="Home">
     <svg class="ico" viewBox="0 0 16 16"><use href="#ic-home"/></svg><span>Home</span>
   </button>
-  <button class="mtab" onclick="goSection('map')" aria-label="Map">
+  <button class="mtab" data-tab="map" onclick="goSection('map')" aria-label="Map">
     <svg class="ico" viewBox="0 0 16 16"><use href="#ic-map"/></svg><span>Map</span>
   </button>
-  <button class="mtab" id="mtabDiscover" onclick="goSection('people')" aria-label="Search people">
+  <button class="mtab" data-tab="people" id="mtabDiscover" onclick="goSection('people')" aria-label="Search people">
     <svg class="ico" viewBox="0 0 16 16"><use href="#ic-search"/></svg><span>People</span>
   </button>
-  <button class="mtab" id="notifTabM" onclick="openNotifs()" aria-label="Notifications" style="display:none">
+  <button class="mtab" data-tab="alerts" id="notifTabM" onclick="_setTab('alerts');openNotifs()" aria-label="Notifications" style="display:none">
     <span class="mtab-ico-wrap"><svg class="ico" viewBox="0 0 16 16"><use href="#ic-bell-ring"/></svg><span class="notif-badge" id="notifBadgeM" style="display:none">0</span></span><span>Alerts</span>
   </button>
-  <button class="mtab" onclick="goSection('profile')" aria-label="Profile">
+  <button class="mtab" data-tab="profile" onclick="goSection('profile')" aria-label="Profile">
     <svg class="ico" viewBox="0 0 16 16"><use href="#ic-id-card"/></svg><span>Profile</span>
   </button>
 </nav>
@@ -2163,7 +2166,6 @@ body.pp-open{overflow:hidden}
 <!-- ═══ DETAIL MODAL ═══ -->
 <div class="ov" id="detOv">
   <div class="mo wide">
-    <div class="det-grabber" aria-hidden="true"></div>
     <div class="mo-acts det-topbar">
       <button class="btn-s" onclick="closeDetMo()">Close</button>
       <a class="btn-p" id="detLink" href="#" target="_blank" rel="noopener">Visit site ↗</a>
@@ -2294,7 +2296,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.17-social17';
+const APP_BUILD='2026.09.18-social18';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -3495,8 +3497,13 @@ function openDetMo(id){
       <div class="det-pub-hint">${item.pubHidden?'Only you can see this — hidden from your public profile.':(item.featured?'Pinned to the top of your profile (up to 5).':'Shown on your public profile. Tap ★ to feature it.')}</div>
     </div>`;
   }
-  // share + link buttons
+  // edit + delete (primary actions — moved off the card into the sheet)
   h+=`<div style="display:flex;gap:8px;margin-top:14px">
+    <button class="btn-s" style="flex:2;display:flex;align-items:center;justify-content:center;gap:6px;font-weight:700" onclick="closeDetMo();editItem('${item.id}')">${ico('pencil',13)} ${t('ctxEdit')||'Edit'}</button>
+    <button class="btn-s" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--red);border-color:rgba(220,60,60,.35)" onclick="del('${item.id}');closeDetMo()">${ico('trash',13)} ${t('ctxDelete')||'Delete'}</button>
+  </div>`;
+  // share + link buttons
+  h+=`<div style="display:flex;gap:8px;margin-top:8px">
     <button class="btn-s" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px" onclick="openLinkPick('${item.id}')">${ico('link',13)} ${t('linkItems')}</button>
     <button class="btn-s" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px" onclick="shareItem('${item.id}')">${ico('share',13)} ${t('shareLink')}</button>
     ${item.archived?`<button class="btn-s" style="flex:1" onclick="unarchiveItem('${item.id}');closeDetMo()">${ico('upload',13)} ${t('unarchive')}</button>`:`<button class="btn-s" style="flex:1" onclick="archiveItem('${item.id}');closeDetMo()">${ico('archive',13)} ${t('archive')}</button>`}
@@ -7911,11 +7918,13 @@ function _closeSections(){
   document.getElementById('pubProfOv')?.classList.remove('open');
   document.body.classList.remove('pp-open');
 }
+function _setTab(name){ document.querySelectorAll('#mtabs .mtab').forEach(b=>b.classList.toggle('on', b.dataset.tab===name)); }
 function goHome(){
   _closeSections();
   ['detOv','addOv','notifOv','statsOv','shareOv'].forEach(id=>document.getElementById(id)?.classList.remove('open'));
   document.body.classList.remove('sb-open');
   const c=document.querySelector('.content'); if(c) c.scrollTop=0;
+  _setTab('home');
 }
 function goSection(which){
   _closeSections();
@@ -7923,6 +7932,7 @@ function goSection(which){
   if(which==='map') openMapMo();
   else if(which==='people'){ const c=document.querySelector('.content'); if(c)c.scrollTop=0; _focusOmniPeople(); }
   else if(which==='profile') openProfileMo();
+  _setTab(which);
 }
 function closeMapMo(){
   document.getElementById('mapOv').style.display='none';
