@@ -153,8 +153,9 @@ button,a,.card,.chip,.si,.sb-util,.mtab,.newsec,.disc-row,.pubi-card,[onclick]{t
 .paste-go:hover{opacity:.85}
 
 /* chips */
-.chips{padding:10px 20px 0;display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap}
-.chip{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--bd);background:transparent;color:var(--t2);transition:all .12s;user-select:none;font-family:'Inter',sans-serif}
+.chips{padding:10px 20px 0;display:flex;gap:6px;flex-shrink:0;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;white-space:nowrap;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--bd);background:transparent;color:var(--t2);transition:all .12s;user-select:none;font-family:'Inter',sans-serif}
 .chip:hover{border-color:var(--bd2);color:var(--t1)}
 .chip.on{border-color:var(--accent);background:var(--ax);color:var(--accent)}
 
@@ -173,6 +174,12 @@ button,a,.card,.chip,.si,.sb-util,.mtab,.newsec,.disc-row,.pubi-card,[onclick]{t
   .mtab .ico{width:24px;height:24px}
   .mtab:active{color:var(--accent);transform:scale(.94)}
   .mtab.on{color:var(--t1)}
+  .mtab-ico-wrap{position:relative;display:inline-flex}
+  /* Notifications bell lives in the bottom footer on mobile, not the top toolbar */
+  #notifBtn{display:none!important}
+  /* Settings popup: on mobile anchor it as a full-width bottom sheet so its
+     content never runs off-screen (JS sets inline left/top → override them) */
+  .lang-popup{left:12px!important;right:12px!important;top:auto!important;bottom:calc(12px + env(safe-area-inset-bottom))!important;width:auto!important;min-width:0!important;max-width:none!important;max-height:72vh;overflow-y:auto}
   .sb{position:fixed;top:0;left:0;bottom:0;z-index:120;width:82vw;max-width:300px;transform:translateX(-100%);transition:transform .26s cubic-bezier(.4,0,.2,1);box-shadow:2px 0 26px rgba(0,0,0,.55)}
   body.sb-open .sb{transform:none}
   .sb-backdrop{display:block;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:110;opacity:0;pointer-events:none;transition:opacity .26s}
@@ -224,7 +231,10 @@ button,a,.card,.chip,.si,.sb-util,.mtab,.newsec,.disc-row,.pubi-card,[onclick]{t
 .c-acts{position:absolute;top:8px;right:8px;display:none;gap:5px}
 .card:hover .c-acts{display:flex}
 /* Touch devices have no hover → always show the card actions (edit/open/delete) */
-@media(hover:none){.c-acts{display:flex}}
+@media(hover:none){.c-acts{display:flex}
+  /* On touch, a :hover style makes the browser require a first "hover" tap → open needs two taps. Kill card hover on touch so one tap opens. */
+  .card:hover{transform:none;box-shadow:none;border-color:var(--bd)}
+  .card:hover .c-img img{transform:none}}
 .ca{width:27px;height:27px;border-radius:6px;background:rgba(0,0,0,.78);border:1px solid rgba(255,255,255,.1);color:var(--t2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;text-decoration:none;transition:all .12s;}
 .ca:hover{color:var(--t1);background:rgba(255,255,255,.1)}
 .ca.del:hover{color:var(--red);border-color:var(--red)}
@@ -1657,6 +1667,9 @@ body.pp-open{overflow:hidden}
   <button class="mtab" id="mtabDiscover" onclick="_focusOmniPeople()" aria-label="Search people">
     <svg class="ico" viewBox="0 0 16 16"><use href="#ic-search"/></svg><span>People</span>
   </button>
+  <button class="mtab" id="notifTabM" onclick="openNotifs()" aria-label="Notifications" style="display:none">
+    <span class="mtab-ico-wrap"><svg class="ico" viewBox="0 0 16 16"><use href="#ic-bell-ring"/></svg><span class="notif-badge" id="notifBadgeM" style="display:none">0</span></span><span>Alerts</span>
+  </button>
   <button class="mtab" onclick="openProfileMo()" aria-label="Profile">
     <svg class="ico" viewBox="0 0 16 16"><use href="#ic-id-card"/></svg><span>Profile</span>
   </button>
@@ -2255,7 +2268,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.17-social14';
+const APP_BUILD='2026.09.17-social15';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
