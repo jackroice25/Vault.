@@ -414,7 +414,11 @@ select.inp{cursor:pointer}
 
 .mo-acts{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
 /* Detail sheet: Close + Visit-site pinned to the TOP (sticky on desktop) */
-.det-topbar{position:sticky;top:0;z-index:6;justify-content:space-between;align-items:center;margin:-24px -24px 12px;padding:16px 24px 12px;background:var(--s1);border-bottom:1px solid var(--bd);border-radius:16px 16px 0 0}
+/* Detail modal: fixed header + scrollable body on ALL sizes (no image bleeding
+   behind the Close/Visit bar). Desktop = flex column inside the centered card. */
+#detOv .mo{padding:0;display:flex;flex-direction:column;overflow:hidden}
+.det-topbar{flex-shrink:0;justify-content:space-between;align-items:center;margin:0;padding:16px 22px 12px;background:var(--s1);border-bottom:1px solid var(--bd);border-radius:16px 16px 0 0}
+#detOv #detIn{flex:1;min-height:0;overflow-y:auto;padding:18px 22px 22px}
 .det-grabber{display:none}
 @keyframes sheetInRight{from{transform:translateX(100%);opacity:.5}to{transform:none;opacity:1}}
 @media(max-width:768px){
@@ -2300,7 +2304,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.18-social20';
+const APP_BUILD='2026.09.18-social21';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
