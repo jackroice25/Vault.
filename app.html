@@ -47,7 +47,7 @@ button,a,.card,.chip,.si,.sb-util,.mtab,.newsec,.disc-row,.pubi-card,[onclick]{t
 /* ── SMOOTH TRANSITIONS (Instagram-like motion) ── */
 @media (prefers-reduced-motion: no-preference){
   .ov.open{animation:ovFade .18s ease both}
-  .ov.open .mo{animation:moPop .24s cubic-bezier(.2,.85,.25,1) both}
+  .ov.open .mo{animation:moPop .34s cubic-bezier(.34,1.56,.64,1) both}
   .profile-page.open{animation:ppSlide .26s cubic-bezier(.2,.85,.25,1) both}
   button,.chip,.disc-row,.pubi-card,.newsec,.si,.rep-chip,.pub-act,.vb,.mtab,.cur-btn{transition:transform .12s ease, background .16s ease, border-color .16s ease, color .16s ease, opacity .16s ease, box-shadow .16s ease}
   button:active,.chip:active,.disc-row:active,.pubi-card:active,.newsec:active,.si:active,.rep-chip:active,.pub-act:active,.mtab:active{transform:scale(.975)}
@@ -184,6 +184,9 @@ button,a,.card,.chip,.si,.sb-util,.mtab,.newsec,.disc-row,.pubi-card,[onclick]{t
   .mtab:active{transform:scale(.88)}
   .mtab.on,.mtab.drag-on{color:#fff;background:rgba(255,255,255,.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 2px 10px rgba(0,0,0,.3)}
   .mtab.drag-on{transform:scale(1.06)}
+  /* while dragging, release the fixed active highlight so only the finger-followed one shows */
+  .mtabs.dragging .mtab.on:not(.drag-on){background:transparent;box-shadow:none;color:var(--t2)}
+  .mtab .ico{transition:transform .1s ease}
   .mtab-ico-wrap{position:relative;display:flex;align-items:center;justify-content:center}
   /* Notifications bell lives in the bottom footer on mobile, not the top toolbar */
   #notifBtn{display:none!important}
@@ -223,6 +226,11 @@ button,a,.card,.chip,.si,.sb-util,.mtab,.newsec,.disc-row,.pubi-card,[onclick]{t
 /* Fluidity: skip rendering off-screen cards (huge for long lists) */
 .grid .card{content-visibility:auto;contain-intrinsic-size:auto 340px}
 .lv .card{content-visibility:auto;contain-intrinsic-size:auto 82px}
+/* Gentle gravity/wave: cards settle in as they enter the scroll viewport */
+@media (prefers-reduced-motion: no-preference){
+  #grid.wobble .card{opacity:0;transform:translateY(18px)}
+  #grid.wobble .card.card-in{opacity:1;transform:none;transition:transform .55s cubic-bezier(.2,.85,.35,1.12),opacity .4s ease}
+}
 .card:hover{border-color:var(--bd2);transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.35)}
 
 /* image area */
@@ -427,7 +435,7 @@ select.inp{cursor:pointer}
   #detOv .det-grabber{display:block;width:40px;height:4px;border-radius:3px;background:var(--bd2);margin:8px auto 4px;flex-shrink:0}
   #detOv .det-topbar{position:static;flex-shrink:0;margin:0;padding:4px 16px 12px;border-radius:0;border-bottom:1px solid var(--bd)}
   #detOv #detIn{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px calc(24px + env(safe-area-inset-bottom))}
-  #detOv.open .mo{animation:sheetInRight .27s cubic-bezier(.2,.85,.25,1) both}
+  #detOv.open .mo{animation:sheetInRight .38s cubic-bezier(.3,1.3,.5,1) both}
 }
 .btn-s{background:var(--s2);border:1px solid var(--bd);color:var(--t2);padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;transition:all .13s;font-family:'Inter',sans-serif}
 .btn-s:hover{color:var(--t1);border-color:var(--bd2)}
@@ -1213,9 +1221,22 @@ body.pp-open{overflow:hidden}
 </head>
 <body>
 <div id="bootLoader" style="position:fixed;inset:0;z-index:99999;background:var(--bg,#0a0a0a);display:flex;align-items:center;justify-content:center;transition:opacity .25s">
-  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" style="animation:spin 1s linear infinite"><circle cx="16" cy="16" r="13" stroke="rgba(201,162,39,.25)" stroke-width="3"/><path d="M16 3a13 13 0 0 1 13 13" stroke="#c9a227" stroke-width="3" stroke-linecap="round"/></svg>
+  <div id="bootLogo" style="display:flex;align-items:center;justify-content:center">
+    <svg width="34" height="34" viewBox="0 0 32 32" fill="none" style="animation:spin 1s linear infinite"><circle cx="16" cy="16" r="13" stroke="rgba(201,162,39,.25)" stroke-width="3"/><path d="M16 3a13 13 0 0 1 13 13" stroke="#c9a227" stroke-width="3" stroke-linecap="round"/></svg>
+  </div>
 </div>
-<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+<style>@keyframes spin{to{transform:rotate(360deg)}}@keyframes bspin{to{transform:rotate(360deg)}}</style>
+<script>
+/* Swap the boot spinner for the real Vault logo, spinning 360°. Cloned from the
+   in-page logo so we don't duplicate the (large) SVG markup. Falls back to the
+   spinner if anything goes wrong. */
+document.addEventListener('DOMContentLoaded',function(){try{
+  var l=document.querySelector('.vault-logo'),bl=document.getElementById('bootLogo');
+  if(l&&bl){var c=l.cloneNode(true);c.removeAttribute('class');c.setAttribute('width','82');c.setAttribute('height','82');
+    c.style.animation='bspin 1.8s cubic-bezier(.45,.05,.55,.95) infinite';c.style.transformOrigin='50% 50%';c.style.transformBox='fill-box';
+    bl.innerHTML='';bl.appendChild(c);}
+}catch(e){}});
+</script>
 <script>
 /* Boot failsafe: if the main script throws before it can boot the app, don't leave the
    user staring at a black screen with a spinner. Show the auth screen (or a reload prompt). */
@@ -2304,7 +2325,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.18-social21';
+const APP_BUILD='2026.09.18-social22';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -3283,7 +3304,29 @@ function render(){
     grid.innerHTML=sortedItems(items).map(item=>cardHTML(item)).join('');
   }
   renderRemBanner();
+  _wobbleCards();
 }
+// Gentle "gravity" settle: cards ease in as they scroll into view (both directions).
+// IntersectionObserver-driven → compositor-friendly, no per-frame scroll work.
+let _cardIO=null;
+function _wobbleCards(){
+  try{
+    if(typeof IntersectionObserver==='undefined') return;
+    if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const grid=document.getElementById('grid'); if(!grid||grid.className==='mood') return;
+    if(!_cardIO){
+      // root:null = viewport → reliable even inside a scroll container
+      _cardIO=new IntersectionObserver(es=>{es.forEach(en=>en.target.classList.toggle('card-in',en.isIntersecting));},
+        {threshold:0.04, rootMargin:'0px 0px -4% 0px'});
+    }
+    grid.classList.add('wobble');
+    grid.querySelectorAll('.card:not([data-wob])').forEach(c=>{ c.setAttribute('data-wob','1'); _cardIO.observe(c); });
+    // safety net: if the observer never fires (total failure), never leave cards hidden
+    clearTimeout(_wobbleSafety);
+    _wobbleSafety=setTimeout(()=>{ try{ if(grid.classList.contains('wobble') && grid.querySelectorAll('.card').length && !grid.querySelectorAll('.card.card-in').length) grid.classList.remove('wobble'); }catch(e){} },1500);
+  }catch(e){}
+}
+let _wobbleSafety=null;
 
 // Card images load EAGERLY (plain src). Lazy-loading was removed: iOS WKWebView
 // fails to trigger below-the-fold lazy loads in this scroll container, so most
@@ -3559,24 +3602,39 @@ function closeDetMo(){document.getElementById('detOv').classList.remove('open');
     if(document.body.classList.contains('cmp-mode')) toggleCmpItem(id); else openDetMo(id);
   },{passive:false});
 
-  // 2) SWIPE to open/close the categories sidebar (left-edge swipe → open, swipe-left → close)
-  let sbx=0,sby=0,sbTrack=false,sbEdge=false;
+  // 2) DRAG the categories sidebar with the finger (edge-drag to open, drag it back to close).
+  //    The drawer follows the finger 1:1, then snaps open/closed on release.
+  let sbEl=null,sbBd=null,sbW=300,sx2=0,sy2=0,sbArmed=false,sbDrag=false,sbOpenStart=false,sbCurX=0;
   document.addEventListener('touchstart',e=>{
-    if(!isMobile()) return;
-    // don't hijack edge-swipes while a modal / overlay / profile page is open
-    if(document.querySelector('.ov.open, .profile-page.open, #pubProfOv.open')){ sbTrack=false; return; }
-    const t=e.touches[0]; sbx=t.clientX; sby=t.clientY;
-    const open=document.body.classList.contains('sb-open');
-    sbEdge=sbx<=26; sbTrack=open||sbEdge;
+    if(!isMobile()){ sbArmed=false; return; }
+    if(document.querySelector('.ov.open, .profile-page.open')){ sbArmed=false; return; }
+    sbEl=document.querySelector('.sb'); if(!sbEl){ sbArmed=false; return; }
+    const t=e.touches[0]; sx2=t.clientX; sy2=t.clientY; sbDrag=false;
+    sbOpenStart=document.body.classList.contains('sb-open');
+    sbW=sbEl.offsetWidth||300;
+    sbArmed = sbOpenStart || sx2<=26; // open drawer: drag anywhere; closed: only from left edge
   },{passive:true});
-  document.addEventListener('touchend',e=>{
-    if(!sbTrack||!isMobile()){sbTrack=false;return;}
-    sbTrack=false;
-    const t=e.changedTouches[0]; const dx=t.clientX-sbx, dy=t.clientY-sby;
-    if(Math.abs(dx)<55||Math.abs(dy)>Math.abs(dx)) return; // needs a clear horizontal swipe
-    const open=document.body.classList.contains('sb-open');
-    if(!open&&sbEdge&&dx>55) document.body.classList.add('sb-open');
-    else if(open&&dx<-55) document.body.classList.remove('sb-open');
+  document.addEventListener('touchmove',e=>{
+    if(!sbArmed||!isMobile()||!sbEl) return;
+    const t=e.touches[0]; const dx=t.clientX-sx2, dy=t.clientY-sy2;
+    if(!sbDrag){
+      if(Math.abs(dx)>8 && Math.abs(dx)>Math.abs(dy)+2){ sbDrag=true; sbEl.style.transition='none'; sbBd=document.querySelector('.sb-backdrop'); if(sbBd){sbBd.style.transition='none';sbBd.style.display='block';} }
+      else if(Math.abs(dy)>10){ sbArmed=false; return; }
+      else return;
+    }
+    const base=sbOpenStart?0:-sbW;
+    sbCurX=Math.max(-sbW,Math.min(0,base+dx));
+    sbEl.style.transform='translateX('+sbCurX+'px)';
+    if(sbBd){ const p=(sbCurX+sbW)/sbW; sbBd.style.opacity=String(p*0.9); sbBd.style.pointerEvents=p>0?'auto':'none'; }
+    if(e.cancelable) e.preventDefault();
+  },{passive:false});
+  document.addEventListener('touchend',()=>{
+    if(!sbDrag){ sbArmed=false; return; }
+    sbDrag=false; sbArmed=false;
+    sbEl.style.transition=''; sbEl.style.transform='';
+    if(sbBd){ sbBd.style.transition=''; sbBd.style.opacity=''; sbBd.style.pointerEvents=''; sbBd.style.display=''; }
+    const openRatio=(sbCurX+sbW)/sbW; // snap: keep open if pulled past ~40%
+    document.body.classList.toggle('sb-open', openRatio>0.4);
   },{passive:true});
 
   // 3) SWIPE-RIGHT (horizontal) to close the product sheet, sheet follows the finger
@@ -3620,22 +3678,32 @@ function closeDetMo(){document.getElementById('detOv').classList.remove('open');
     let dragging=false, sx=0, sy=0;
     const visTabs=()=>[...nav.querySelectorAll('.mtab')].filter(b=>b.offsetParent!==null);
     const tabAt=x=>{ let hit=null; visTabs().forEach(b=>{const r=b.getBoundingClientRect(); if(x>=r.left&&x<=r.right) hit=b;}); return hit; };
-    const highlight=b=>{ nav.querySelectorAll('.mtab').forEach(t=>t.classList.remove('drag-on')); if(b) b.classList.add('drag-on'); };
+    const clearIcons=()=>nav.querySelectorAll('.mtab .ico').forEach(ic=>ic.style.transform='');
+    const follow=(b,x)=>{
+      nav.querySelectorAll('.mtab').forEach(t=>t.classList.remove('drag-on'));
+      clearIcons();
+      if(!b) return;
+      b.classList.add('drag-on');
+      const r=b.getBoundingClientRect();
+      const dx=Math.max(-15,Math.min(15,x-(r.left+r.width/2))); // icon leans toward the finger
+      const ic=b.querySelector('.ico'); if(ic) ic.style.transform='translateX('+dx+'px)';
+    };
+    const end=()=>{ dragging=false; nav.classList.remove('dragging'); nav.querySelectorAll('.mtab').forEach(t=>t.classList.remove('drag-on')); clearIcons(); };
     nav.addEventListener('touchstart',e=>{ e.stopPropagation(); const t=e.touches[0]; sx=t.clientX; sy=t.clientY; dragging=false; },{passive:true});
     nav.addEventListener('touchmove',e=>{
       e.stopPropagation();
-      const t=e.touches[0]; if(!dragging && (Math.abs(t.clientX-sx)>6||Math.abs(t.clientY-sy)>6)) dragging=true;
-      if(dragging){ if(e.cancelable) e.preventDefault(); highlight(tabAt(t.clientX)); }
+      const t=e.touches[0]; if(!dragging && (Math.abs(t.clientX-sx)>5||Math.abs(t.clientY-sy)>5)){ dragging=true; nav.classList.add('dragging'); }
+      if(dragging){ if(e.cancelable) e.preventDefault(); follow(tabAt(t.clientX), t.clientX); }
     },{passive:false});
     nav.addEventListener('touchend',e=>{
       e.stopPropagation();
-      highlight(null);
-      if(!dragging) return; // plain tap → the button's own onclick fires
+      if(!dragging){ end(); return; } // plain tap → the button's own onclick fires
       if(e.cancelable) e.preventDefault();
-      dragging=false;
       const b=tabAt(e.changedTouches[0].clientX);
+      end();
       if(b) _activateTab(b);
     },{passive:false});
+    nav.addEventListener('touchcancel',end,{passive:true});
   }
   if(document.readyState!=='loading') bindFooterDrag(); else document.addEventListener('DOMContentLoaded',bindFooterDrag);
 })();
@@ -4488,19 +4556,30 @@ function _darkVars(lightBg,accent){
 function _deriveVars(bg,accent){
   return _isDark(bg)?_buildPresetVars(bg,accent):_buildPresetVarsLight(bg,accent);
 }
+// HSL-based surface stepping → clean, consistent tints for ANY custom bg (no muddy
+// RGB overflow). Surfaces keep the bg hue and step lightness; text/borders derive
+// for guaranteed contrast.
 function _buildPresetVars(bg,accent){
-  const[r,g,b]=_h2r(bg);const s=12;const[ar,ag,ab]=_h2r(accent);
-  return{'--bg':bg,'--s1':_r2h(r+s,g+s,b+s),'--s2':_r2h(r+s*2,g+s*2,b+s*2),'--s3':_r2h(r+s*3,g+s*3,b+s*3),
-    '--bd':_r2h(r+s*3+6,g+s*3+6,b+s*3+6),'--bd2':_r2h(r+s*4+4,g+s*4+4,b+s*4+4),
-    '--accent':accent,'--ax':`rgba(${ar},${ag},${ab},.10)`,'--ax2':`rgba(${ar},${ag},${ab},.20)`,
-    '--t1':'#f0f0f0','--t2':'#a8a8a8','--t3':'#606060'};
+  const[r,g,b]=_h2r(bg);const[h,s,l]=_rgb2hsl(r,g,b);const sat=Math.min(s,32);
+  const[ar,ag,ab]=_h2r(accent);const[ah,as,al]=_rgb2hsl(ar,ag,ab);
+  const acc=_hsl2hex(ah,Math.max(as,40),Math.max(al,52)); // keep accent vivid enough
+  const[cr,cg,cb]=_h2r(acc);
+  const surf=(dl)=>_hsl2hex(h,sat,Math.min(100,l+dl));
+  return{'--bg':bg,'--s1':surf(3.5),'--s2':surf(7),'--s3':surf(10.5),
+    '--bd':surf(15),'--bd2':surf(21),
+    '--accent':acc,'--ax':`rgba(${cr},${cg},${cb},.12)`,'--ax2':`rgba(${cr},${cg},${cb},.22)`,
+    '--t1':'#f2f2f2','--t2':_hsl2hex(h,Math.min(sat,14),70),'--t3':_hsl2hex(h,Math.min(sat,10),44)};
 }
 function _buildPresetVarsLight(bg,accent){
-  const[r,g,b]=_h2r(bg);const s=-9;const[ar,ag,ab]=_h2r(accent);
-  return{'--bg':bg,'--s1':_r2h(r+s,g+s,b+s),'--s2':_r2h(r+s*2,g+s*2,b+s*2),'--s3':_r2h(r+s*3,g+s*3,b+s*3),
-    '--bd':_r2h(r+s*3-4,g+s*3-4,b+s*3-4),'--bd2':_r2h(r+s*4-4,g+s*4-4,b+s*4-4),
-    '--accent':accent,'--ax':`rgba(${ar},${ag},${ab},.10)`,'--ax2':`rgba(${ar},${ag},${ab},.20)`,
-    '--t1':'#111111','--t2':'#505050','--t3':'#a0a0a0'};
+  const[r,g,b]=_h2r(bg);const[h,s,l]=_rgb2hsl(r,g,b);const sat=Math.min(s,18);
+  const[ar,ag,ab]=_h2r(accent);const[ah,as,al]=_rgb2hsl(ar,ag,ab);
+  const acc=_hsl2hex(ah,Math.min(as+5,90),Math.min(al,42)); // darken accent for contrast on light
+  const[cr,cg,cb]=_h2r(acc);
+  const surf=(dl)=>_hsl2hex(h,sat,Math.max(0,Math.min(100,l+dl)));
+  return{'--bg':bg,'--s1':surf(3),'--s2':surf(5.5),'--s3':surf(1.5),
+    '--bd':surf(-9),'--bd2':surf(-16),
+    '--accent':acc,'--ax':`rgba(${cr},${cg},${cb},.10)`,'--ax2':`rgba(${cr},${cg},${cb},.20)`,
+    '--t1':_hsl2hex(h,22,9),'--t2':_hsl2hex(h,12,34),'--t3':_hsl2hex(h,8,60)};
 }
 function _wantLight(){return S.theme==='light'||(S.theme==='auto'&&window.matchMedia('(prefers-color-scheme: light)').matches);}
 function applyCustomTheme(){
@@ -7963,7 +8042,11 @@ function _setTab(name){ document.querySelectorAll('#mtabs .mtab').forEach(b=>b.c
 function goHome(){
   _closeSections();
   ['detOv','addOv','notifOv','statsOv','shareOv'].forEach(id=>document.getElementById(id)?.classList.remove('open'));
-  document.body.classList.remove('sb-open');
+  document.body.classList.remove('sheet-open','sb-open');
+  // Land on the "Tutti" (All) view: clear section filter + reset chip to all items
+  S.active=null;
+  try{ if(typeof renderSidebar==='function') renderSidebar(); }catch(e){}
+  setChip('tutti'); // sets S.chip='tutti', updates chip UI + re-renders the grid
   const c=document.querySelector('.content'); if(c) c.scrollTop=0;
   _setTab('home');
 }
