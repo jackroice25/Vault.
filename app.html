@@ -186,7 +186,6 @@ button,a,.card,.chip,.si,.sb-util,.mtab,.newsec,.disc-row,.pubi-card,[onclick]{t
   .mtab.drag-on{transform:scale(1.06)}
   /* while dragging, release the fixed active highlight so only the finger-followed one shows */
   .mtabs.dragging .mtab.on:not(.drag-on){background:transparent;box-shadow:none;color:var(--t2)}
-  .mtab .ico{transition:transform .1s ease}
   .mtab-ico-wrap{position:relative;display:flex;align-items:center;justify-content:center}
   /* Notifications bell lives in the bottom footer on mobile, not the top toolbar */
   #notifBtn{display:none!important}
@@ -226,11 +225,6 @@ button,a,.card,.chip,.si,.sb-util,.mtab,.newsec,.disc-row,.pubi-card,[onclick]{t
 /* Fluidity: skip rendering off-screen cards (huge for long lists) */
 .grid .card{content-visibility:auto;contain-intrinsic-size:auto 340px}
 .lv .card{content-visibility:auto;contain-intrinsic-size:auto 82px}
-/* Gentle gravity/wave: cards settle in as they enter the scroll viewport */
-@media (prefers-reduced-motion: no-preference){
-  #grid.wobble .card{opacity:0;transform:translateY(18px)}
-  #grid.wobble .card.card-in{opacity:1;transform:none;transition:transform .55s cubic-bezier(.2,.85,.35,1.12),opacity .4s ease}
-}
 .card:hover{border-color:var(--bd2);transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.35)}
 
 /* image area */
@@ -1161,6 +1155,30 @@ body.pp-open{overflow:hidden}
 /* These overlays can be opened FROM the full-screen profile page → must sit above it */
 #followListOv,#reportOv{z-index:1000020}
 .pp-loading{text-align:center;color:var(--t3);font-size:14px;padding:80px 20px}
+/* ── Help / guide center ── */
+.help-wrap{max-width:760px;margin:0 auto;padding:20px 20px 90px}
+.help-hero{text-align:center;padding:14px 0 8px}
+.help-hero-title{font-size:26px;font-weight:900;color:var(--t1);letter-spacing:-.5px}
+.help-hero-sub{font-size:14px;color:var(--t3);margin-top:6px}
+.help-search-wrap{display:flex;align-items:center;gap:8px;max-width:460px;margin:18px auto 0;background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:11px 14px;color:var(--t3)}
+.help-search{flex:1;background:none;border:none;outline:none;color:var(--t1);font-size:15px;font-family:inherit}
+.help-cat{margin-top:26px}
+.help-cat-title{font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin:0 0 10px 4px}
+.help-q{background:var(--s1);border:1px solid var(--bd);border-radius:12px;margin-bottom:8px;overflow:hidden;transition:border-color .15s}
+.help-q.open{border-color:var(--bd2)}
+.help-q-head{display:flex;align-items:flex-start;gap:10px;padding:14px 16px;cursor:pointer;font-size:14.5px;font-weight:600;color:var(--t1);user-select:none}
+.help-q-head .chev{margin-left:auto;color:var(--t3);transition:transform .2s;flex-shrink:0;margin-top:2px}
+.help-q.open .chev{transform:rotate(90deg)}
+.help-a{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.help-q.open .help-a{max-height:1600px}
+.help-a-inner{padding:0 16px 16px;font-size:14px;line-height:1.65;color:var(--t2)}
+.help-a-inner strong{color:var(--t1)}
+.help-a-inner ol,.help-a-inner ul{margin:8px 0 8px 18px;padding:0}
+.help-a-inner li{margin:5px 0}
+.help-a-inner .tip{margin-top:10px;padding:10px 12px;background:var(--ax);border-radius:9px;font-size:13px;color:var(--t2)}
+.help-empty{text-align:center;color:var(--t3);padding:40px 20px}
+.help-contact{text-align:center;color:var(--t3);font-size:13.5px;margin-top:34px;padding-top:20px;border-top:1px solid var(--bd)}
+.help-contact a{color:var(--accent);font-weight:700}
 .pp-topbar{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:calc(13px + env(safe-area-inset-top)) 20px 13px;background:var(--bg);border-bottom:1px solid var(--bd);}
 .pp-back{display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:var(--t2);font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;padding:4px 6px;border-radius:8px}
 .pp-back:hover{color:var(--t1);background:var(--s2)}
@@ -1819,6 +1837,29 @@ document.addEventListener('DOMContentLoaded',function(){try{
 </div>
 <!-- ═══ SOCIAL: PUBLIC PROFILE (full page) ═══ -->
 <div id="pubProfOv" class="profile-page"><div id="pubProfIn"></div></div>
+
+<!-- ═══ HELP / GUIDE CENTER ═══ -->
+<div id="helpOv" class="profile-page">
+  <div class="pp-topbar">
+    <button class="pp-back" onclick="closeHelp()"><svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-back"/></svg> Indietro</button>
+    <div class="pp-topbar-handle">Guida &amp; aiuto</div>
+    <div style="width:70px"></div>
+  </div>
+  <div class="help-wrap">
+    <div class="help-hero">
+      <div class="help-hero-title">Come possiamo aiutarti?</div>
+      <div class="help-hero-sub">Guide, tutorial e risposte per usare Vault al meglio.</div>
+      <div class="help-search-wrap">
+        <svg class="ico" width="15" height="15" viewBox="0 0 16 16"><use href="#ic-search"/></svg>
+        <input id="helpSearch" class="help-search" type="text" placeholder="Cerca nella guida…" oninput="_renderHelp(this.value)">
+      </div>
+    </div>
+    <div id="helpContent"></div>
+    <div class="help-contact">
+      Non hai trovato la risposta? Scrivici a <a href="mailto:vaultwishlist@gmail.com">vaultwishlist@gmail.com</a>
+    </div>
+  </div>
+</div>
 <!-- ═══ SOCIAL: AVATAR CROPPER ═══ -->
 <div class="ov" id="avatarCropOv">
   <div class="mo" style="max-width:340px">
@@ -2325,7 +2366,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.18-social22';
+const APP_BUILD='2026.09.18-social23';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -3304,29 +3345,7 @@ function render(){
     grid.innerHTML=sortedItems(items).map(item=>cardHTML(item)).join('');
   }
   renderRemBanner();
-  _wobbleCards();
 }
-// Gentle "gravity" settle: cards ease in as they scroll into view (both directions).
-// IntersectionObserver-driven → compositor-friendly, no per-frame scroll work.
-let _cardIO=null;
-function _wobbleCards(){
-  try{
-    if(typeof IntersectionObserver==='undefined') return;
-    if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const grid=document.getElementById('grid'); if(!grid||grid.className==='mood') return;
-    if(!_cardIO){
-      // root:null = viewport → reliable even inside a scroll container
-      _cardIO=new IntersectionObserver(es=>{es.forEach(en=>en.target.classList.toggle('card-in',en.isIntersecting));},
-        {threshold:0.04, rootMargin:'0px 0px -4% 0px'});
-    }
-    grid.classList.add('wobble');
-    grid.querySelectorAll('.card:not([data-wob])').forEach(c=>{ c.setAttribute('data-wob','1'); _cardIO.observe(c); });
-    // safety net: if the observer never fires (total failure), never leave cards hidden
-    clearTimeout(_wobbleSafety);
-    _wobbleSafety=setTimeout(()=>{ try{ if(grid.classList.contains('wobble') && grid.querySelectorAll('.card').length && !grid.querySelectorAll('.card.card-in').length) grid.classList.remove('wobble'); }catch(e){} },1500);
-  }catch(e){}
-}
-let _wobbleSafety=null;
 
 // Card images load EAGERLY (plain src). Lazy-loading was removed: iOS WKWebView
 // fails to trigger below-the-fold lazy loads in this scroll container, so most
@@ -3678,22 +3697,17 @@ function closeDetMo(){document.getElementById('detOv').classList.remove('open');
     let dragging=false, sx=0, sy=0;
     const visTabs=()=>[...nav.querySelectorAll('.mtab')].filter(b=>b.offsetParent!==null);
     const tabAt=x=>{ let hit=null; visTabs().forEach(b=>{const r=b.getBoundingClientRect(); if(x>=r.left&&x<=r.right) hit=b;}); return hit; };
-    const clearIcons=()=>nav.querySelectorAll('.mtab .ico').forEach(ic=>ic.style.transform='');
-    const follow=(b,x)=>{
+    // Only the translucent pill (.drag-on highlight) follows the finger — icons stay put.
+    const follow=(b)=>{
       nav.querySelectorAll('.mtab').forEach(t=>t.classList.remove('drag-on'));
-      clearIcons();
-      if(!b) return;
-      b.classList.add('drag-on');
-      const r=b.getBoundingClientRect();
-      const dx=Math.max(-15,Math.min(15,x-(r.left+r.width/2))); // icon leans toward the finger
-      const ic=b.querySelector('.ico'); if(ic) ic.style.transform='translateX('+dx+'px)';
+      if(b) b.classList.add('drag-on');
     };
-    const end=()=>{ dragging=false; nav.classList.remove('dragging'); nav.querySelectorAll('.mtab').forEach(t=>t.classList.remove('drag-on')); clearIcons(); };
+    const end=()=>{ dragging=false; nav.classList.remove('dragging'); nav.querySelectorAll('.mtab').forEach(t=>t.classList.remove('drag-on')); };
     nav.addEventListener('touchstart',e=>{ e.stopPropagation(); const t=e.touches[0]; sx=t.clientX; sy=t.clientY; dragging=false; },{passive:true});
     nav.addEventListener('touchmove',e=>{
       e.stopPropagation();
       const t=e.touches[0]; if(!dragging && (Math.abs(t.clientX-sx)>5||Math.abs(t.clientY-sy)>5)){ dragging=true; nav.classList.add('dragging'); }
-      if(dragging){ if(e.cancelable) e.preventDefault(); follow(tabAt(t.clientX), t.clientX); }
+      if(dragging){ if(e.cancelable) e.preventDefault(); follow(tabAt(t.clientX)); }
     },{passive:false});
     nav.addEventListener('touchend',e=>{
       e.stopPropagation();
@@ -5765,6 +5779,11 @@ function openSettings(btn){
       <span class="lang-opt-icon">${ico('tag',17)}</span>
       <span class="lang-opt-name">${t('settingsColors')}</span>
       <span style="color:var(--t3);font-size:12px;margin-left:auto">›</span>
+    </div>
+    <div class="lang-opt" onclick="hideLangPopup();openHelp()">
+      <span class="lang-opt-icon">${ico('book',17)}</span>
+      <span class="lang-opt-name">Guida &amp; aiuto</span>
+      <span style="color:var(--t3);font-size:12px;margin-left:auto">›</span>
     </div>`;
   _positionPopup(popup, _settingsBtn);
 }
@@ -5791,6 +5810,113 @@ function openLangPanel(){
 }
 
 function hideLangPopup(){document.getElementById('langPopup').classList.remove('open');}
+
+// ══════════════════ HELP / GUIDE CENTER ══════════════════
+const HELP_DATA=[
+ {cat:'Per iniziare', qa:[
+  [`Cos'è Vault?`, `Vault è il tuo spazio personale dove <strong>salvi qualsiasi cosa trovi online</strong>: prodotti da comprare, ristoranti e hotel da provare, regali, idee. Tutto in un posto solo, organizzato e sincronizzato su tutti i tuoi dispositivi. Puoi anche avere un <strong>profilo pubblico</strong>, seguire altre persone e farti seguire.`],
+  [`Vault è gratis?`, `Sì. Le funzioni principali sono <strong>gratuite</strong> (fino a 20 oggetti attivi). <strong>Vault Plus</strong> sblocca oggetti illimitati e funzioni avanzate (Mappa, statistiche, mood board avanzate, workspace multipli).`],
+  [`Devo creare un account?`, `Puoi dare un'occhiata subito, ma per <strong>salvare e sincronizzare</strong> i tuoi oggetti su tutti i dispositivi serve un account gratuito (basta un'email).`],
+  [`Vault ha un'app?`, `Sì: Vault è disponibile su <strong>web</strong> (vaultwishlist.com) e su <strong>iPhone</strong>. La versione <strong>Android</strong> è in arrivo.`],
+  [`Come si sincronizzano i miei dati?`, `Accedi con lo <strong>stesso account</strong> su web e telefono: i tuoi oggetti sono sempre allineati, ovunque.`],
+ ]},
+ {cat:'Aggiungere oggetti', qa:[
+  [`Come aggiungo un oggetto?`, `<ol><li>Copia il link del prodotto o del luogo.</li><li>Incollalo nella <strong>barra di ricerca in alto</strong> (oppure tocca <strong>＋ Aggiungi</strong>).</li><li>Vault recupera da solo <strong>titolo, immagine e prezzo</strong>.</li><li>Completa i dettagli se vuoi e salva.</li></ol><div class="tip">💡 Il modo più veloce: copia un link e incollalo nella barra in alto. Fatto in 3 secondi.</div>`],
+  [`Devo per forza mettere un link?`, `No, è facoltativo. Puoi creare un oggetto anche solo con un <strong>titolo e una foto</strong>. Il link però ha due vantaggi: il <strong>riempimento automatico</strong> dei dettagli e la possibilità per i tuoi amici di aprirlo o comprarlo.`],
+  [`Da quali negozi posso aggiungere?`, `Praticamente <strong>qualsiasi sito</strong>: Amazon, negozi online, Google Maps, Booking, blog… Vault legge i dati pubblici della pagina.`],
+  [`Perché da alcuni brand (Adidas, Zara, Nike) i dati non si recuperano da soli?`, `Alcuni grandi brand usano <strong>protezioni anti-bot</strong> che bloccano il recupero automatico dei dati. In quel caso Vault crea comunque l'oggetto: ti basta <strong>aggiungere titolo e foto a mano</strong>. Stiamo lavorando per coprirne sempre di più.`],
+  [`Come aggiungo una foto?`, `Nella scheda di aggiunta puoi <strong>incollare un URL immagine</strong> e premere Aggiungi, oppure <strong>caricare una foto</strong> dal tuo dispositivo.`],
+  [`Come aggiungo un ristorante o un luogo?`, `Incolla un <strong>link di Google Maps</strong>: Vault lo riconosce come luogo e mostra indirizzo, orari e la tua valutazione. Lo ritrovi poi nella <strong>Mappa</strong>.`],
+  [`Posso aggiungere mentre navigo dal telefono?`, `Sì (su iPhone): dal tasto <strong>Condividi</strong> del browser scegli <strong>"Vault"</strong> e l'oggetto viene aggiunto automaticamente.`],
+  [`Quali dettagli posso salvare?`, `Prezzo, <strong>prezzo trovato</strong> (per i confronti), variante (taglia/colore), quantità, nota, <strong>scadenza</strong>, tag, nota vocale e — per i luoghi — una valutazione a stelle.`],
+  [`Come modifico o elimino un oggetto?`, `Aprilo con un tocco: nella scheda trovi <strong>Modifica</strong> ed <strong>Elimina</strong>. Se lo elimini per sbaglio, subito dopo puoi annullare dal messaggio che compare.`],
+ ]},
+ {cat:'Organizzare', qa:[
+  [`Cosa sono le sezioni?`, `Sono <strong>cartelle</strong> per raggruppare gli oggetti (es. Moda, Tech, Ristoranti). Creale dal menu laterale con <strong>＋ Nuova sezione</strong>; puoi dare a ognuna un colore e un'icona.`],
+  [`Come uso i tag?`, `I tag sono <strong>etichette libere</strong> per filtrare al volo (es. #regalo, #compleanno). Aggiungili nella scheda dell'oggetto.`],
+  [`Cosa sono gli stati?`, `Sono le linguette colorate in alto: <strong>Lo voglio / Ordinato / Comprato</strong> per i prodotti, <strong>Da visitare / Visitato</strong> per i luoghi. Toccale per filtrare.`],
+  [`Come metto un oggetto in priorità?`, `Tocca la <strong>stella</strong> sulla card: gli oggetti prioritari restano in evidenza.`],
+  [`Come funziona la ricerca?`, `La barra in alto fa <strong>tre cose in una</strong>: cerca tra i tuoi oggetti, con <strong>@nome</strong> cerca le persone, e <strong>incollando un link</strong> lo aggiunge direttamente.`],
+  [`Quali viste ci sono?`, `<strong>Griglia</strong>, <strong>Lista</strong> e <strong>Mood board</strong> (bacheca visiva). Cambiale dai pulsanti vista in alto.`],
+  [`Cos'è la Mappa?`, `Una <strong>mappa del mondo</strong> con tutti i tuoi luoghi salvati (funzione Vault Plus). La apri dal footer o dal menu.`],
+  [`Come riordino gli oggetti?`, `Con l'<strong>ordinamento</strong> (più recenti, prezzo, nome…) oppure trascinandoli in ordine manuale.`],
+  [`Cos'è l'Archivio?`, `Ti permette di <strong>mettere da parte</strong> gli oggetti senza eliminarli. Li ritrovi nella linguetta <strong>Archivio</strong>.`],
+ ]},
+ {cat:'Prezzi e budget', qa:[
+  [`Che differenza c'è tra "prezzo" e "prezzo trovato"?`, `Il <strong>prezzo</strong> è quello di riferimento dell'oggetto; il <strong>prezzo trovato</strong> ti fa segnare un'offerta e vedere subito il <strong>risparmio in %</strong>.`],
+  [`Vault segue i cambi di prezzo?`, `Sì: tiene uno <strong>storico dei prezzi</strong> che registri nel tempo, così vedi l'andamento.`],
+  [`Posso tenere sotto controllo la spesa?`, `Sì: Vault somma la tua <strong>spesa</strong> (es. gli oggetti comprati) per aiutarti a gestire il budget.`],
+ ]},
+ {cat:'Il tuo profilo e la condivisione', qa:[
+  [`Come funziona il mio profilo pubblico?`, `Ogni utente ha un profilo con <strong>@username</strong>, foto, bio, badge e gli oggetti che sceglie di mostrare. Gli altri possono vederlo, seguirti e ispirarsi.`],
+  [`Come scelgo il mio @username?`, `In fase di registrazione o dal tuo profilo. È <strong>unico</strong> e diventa anche il link condivisibile del tuo profilo.`],
+  [`Profilo pubblico o privato?`, `Decidi tu. Se è <strong>privato</strong>, gli altri ti trovano ma vedono un lucchetto e devono inviarti una <strong>richiesta</strong> per vedere i tuoi oggetti.`],
+  [`Come condivido un oggetto o la mia lista?`, `Dal tasto <strong>Condividi</strong> ottieni un link apribile <strong>anche da chi non ha l'app</strong>.`],
+  [`Chi vede i miei oggetti?`, `Solo quelli che decidi di <strong>mostrare pubblicamente</strong>. Tutto il resto resta privato e visibile solo a te.`],
+ ]},
+ {cat:'Social', qa:[
+  [`Come trovo e seguo altre persone?`, `Usa il tab <strong>People</strong> (o scrivi <strong>@nome</strong> nella barra). Apri il profilo e tocca <strong>Segui</strong>.`],
+  [`Come funzionano gli account privati?`, `Invii una <strong>richiesta di follow</strong>; la persona la accetta (o rifiuta) dalle Notifiche.`],
+  [`Dove vedo le notifiche?`, `Nella <strong>campanella</strong> (tab <strong>Alerts</strong> nel footer): chi ha iniziato a seguirti, le richieste, e altro.`],
+  [`Come metto oggetti in evidenza (Featured)?`, `Puoi mettere fino a <strong>5 oggetti preferiti</strong> in cima al tuo profilo. Apri un oggetto → riquadro <strong>"Public profile"</strong> → <strong>Feature</strong>.`],
+  [`Come nascondo un oggetto dal profilo?`, `Nello stesso riquadro "Public profile" tocca <strong>Hidden</strong>: così, anche con il profilo pubblico, quell'oggetto resta <strong>solo tuo</strong>.`],
+  [`Come vedo followers e seguiti?`, `Toccali direttamente sul profilo per aprire la lista completa.`],
+  [`Come segnalo un profilo?`, `Dal profilo, tocca <strong>"Report profile"</strong>: la segnalazione arriva a noi e la esaminiamo.`],
+ ]},
+ {cat:'Regali', qa:[
+  [`Come gestisco i regali?`, `Puoi segnare un oggetto come <strong>regalo</strong> e indicare <strong>"Regalo per"</strong> (a chi è destinato), per tenerli ordinati.`],
+  [`Posso fare liste da condividere?`, `Sì: puoi creare <strong>liste condivise</strong> da mandare ad altri, perfette per le occasioni (compleanni, feste…).`],
+ ]},
+ {cat:'Vault Plus', qa:[
+  [`Cos'è Vault Plus?`, `L'abbonamento che sblocca il pieno potenziale: <strong>oggetti illimitati</strong>, <strong>Mappa</strong>, statistiche avanzate, <strong>mood board avanzate</strong>, workspace multipli e priorità sulle novità.`],
+  [`Quanto costa?`, `C'è un piano <strong>mensile</strong> e uno <strong>annuale</strong> (con sconto). Trovi i prezzi aggiornati nella schermata Vault Plus.`],
+  [`Come lo attivo?`, `Tocca <strong>Vault Plus</strong> nel menu, scegli il piano e completa l'attivazione.`],
+  [`Come ripristino l'acquisto su un nuovo telefono? (iOS)`, `Il Plus <strong>segue il tuo account</strong>: accedi e, se serve, usa <strong>Ripristina acquisti</strong>.`],
+  [`Come annullo l'abbonamento?`, `Dalle impostazioni dell'abbonamento. Mantieni Plus <strong>fino a fine periodo</strong> e i tuoi dati restano intatti.`],
+ ]},
+ {cat:'Privacy e account', qa:[
+  [`Che dati raccogliete?`, `Solo il <strong>necessario</strong> per far funzionare l'app (account, i tuoi oggetti, preferenze). <strong>Niente vendita di dati né profilazione pubblicitaria.</strong>`],
+  [`Dove sono conservati i miei dati?`, `Su server nell'<strong>Unione Europea</strong>.`],
+  [`Come cancello il mio account?`, `Dal tuo profilo, sezione <strong>Elimina account</strong>: rimuove <strong>definitivamente</strong> i tuoi dati (diritto all'oblio).`],
+  [`C'è un'età minima?`, `Sì, Vault è pensato per utenti dai <strong>16 anni</strong> in su.`],
+  [`Come cambio email o password?`, `Dalle impostazioni dell'account.`],
+ ]},
+ {cat:'Problemi comuni', qa:[
+  [`Un sito non recupera titolo o immagine`, `È quasi sempre un <strong>sito protetto</strong> da anti-bot: aggiungi titolo e foto <strong>a mano</strong>, l'oggetto funziona lo stesso.`],
+  [`L'immagine non si vede`, `Incolla un <strong>URL immagine valido</strong> oppure carica una foto dal dispositivo.`],
+  [`Non vedo i miei oggetti su un altro dispositivo`, `Controlla di aver fatto l'<strong>accesso con lo stesso account</strong> su entrambi.`],
+  [`L'app va a scatti`, `Aggiorna all'<strong>ultima versione</strong>. Se persiste, scrivici indicando il modello di telefono così indaghiamo.`],
+ ]},
+ {cat:'Tutorial rapidi', qa:[
+  [`▶ Aggiungi il tuo primo oggetto in 10 secondi`, `<ol><li>Copia un link (es. da Amazon).</li><li>Incollalo nella barra in alto.</li><li>Tocca Salva.</li></ol>Ecco fatto: il tuo primo oggetto è nel vault. 🎉`],
+  [`▶ Crea e condividi la tua wishlist`, `<ol><li>Aggiungi qualche oggetto.</li><li>Rendi <strong>pubblici</strong> quelli che vuoi mostrare.</li><li>Condividi il <strong>link del tuo profilo</strong> con amici e famiglia.</li></ol>`],
+  [`▶ Organizza come un pro`, `<ol><li>Crea <strong>sezioni</strong> per tema.</li><li>Assegna <strong>tag</strong> e <strong>stati</strong>.</li><li>Usa la <strong>stella</strong> per le priorità.</li></ol>`],
+  [`▶ Salva luoghi sulla mappa`, `<ol><li>Incolla un link di <strong>Google Maps</strong>.</li><li>Vault lo salva come luogo.</li><li>Aprili tutti insieme nella <strong>Mappa</strong> (Plus).</li></ol>`],
+  [`▶ Diventa social`, `<ol><li>Scegli il tuo <strong>@username</strong>.</li><li>Metti foto e bio.</li><li>Segui gli amici e metti <strong>5 oggetti in evidenza</strong>.</li></ol>`],
+ ]},
+ {cat:'Contatti', qa:[
+  [`Come vi contatto?`, `Scrivi a <strong>vaultwishlist@gmail.com</strong>: rispondiamo il prima possibile.`],
+  [`Chi ha creato Vault?`, `Vault è un progetto indipendente, curato con attenzione ai dettagli, alla velocità e alla <strong>privacy</strong>.`],
+ ]},
+];
+function openHelp(){ const o=document.getElementById('helpOv'); if(!o)return; o.classList.add('open'); document.body.classList.add('pp-open'); const s=document.getElementById('helpSearch'); if(s)s.value=''; _renderHelp(''); o.scrollTop=0; }
+function closeHelp(){ const o=document.getElementById('helpOv'); if(o)o.classList.remove('open'); document.body.classList.remove('pp-open'); }
+function _helpToggle(el){ const q=el.closest('.help-q'); if(q) q.classList.toggle('open'); }
+function _renderHelp(filter){
+  const box=document.getElementById('helpContent'); if(!box) return;
+  const f=(filter||'').toLowerCase().trim();
+  let html='', any=false;
+  HELP_DATA.forEach(c=>{
+    const items=c.qa.filter(([q,a])=> !f || q.toLowerCase().includes(f) || a.toLowerCase().includes(f));
+    if(!items.length) return; any=true;
+    html+=`<div class="help-cat"><div class="help-cat-title">${esc(c.cat)}</div>`;
+    items.forEach(([q,a])=>{
+      html+=`<div class="help-q${f?' open':''}"><div class="help-q-head" onclick="_helpToggle(this)"><span>${esc(q)}</span><span class="chev">▸</span></div><div class="help-a"><div class="help-a-inner">${a}</div></div></div>`;
+    });
+    html+=`</div>`;
+  });
+  box.innerHTML = any ? html : `<div class="help-empty">Nessun risultato per "${esc(f)}".<br>Prova un'altra parola o scrivici a vaultwishlist@gmail.com.</div>`;
+}
 document.addEventListener('click',e=>{if(!e.target.closest('#curDd'))closeCurDd();});
 document.addEventListener('click',e=>{
   const p=document.getElementById('langPopup');
