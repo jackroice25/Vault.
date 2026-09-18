@@ -170,7 +170,7 @@ button,a,.card,.chip,.si,.sb-util,.mtab,.newsec,.disc-row,.pubi-card,[onclick]{t
 .mtabs{display:none}
 @media(max-width:768px){
   /* Floating "liquid glass" pill footer (icon-only, active tab gets a glass bubble) */
-  .mtabs{display:flex;position:fixed;left:22px;right:22px;bottom:max(4px, calc(env(safe-area-inset-bottom) - 12px));z-index:9500;justify-content:space-around;align-items:center;gap:4px;background:rgba(26,26,29,.5);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.12);border-radius:30px;padding:6px 12px;box-shadow:0 10px 28px rgba(0,0,0,.4);transform:translateZ(0)}
+  .mtabs{display:flex;position:fixed;left:22px;right:22px;bottom:max(4px, calc(env(safe-area-inset-bottom) - 12px));z-index:9500;justify-content:space-around;align-items:center;gap:4px;background:rgba(28,28,32,.94);border:1px solid rgba(255,255,255,.12);border-radius:30px;padding:6px 12px;box-shadow:0 10px 28px rgba(0,0,0,.45)}
   body.sheet-open .mtabs,body.sb-open .mtabs{display:none} /* hide footer during the product sheet / categories drawer */
   .profile-page .pp-wrap{padding-bottom:calc(84px + env(safe-area-inset-bottom))} /* clear the floating footer */
   /* Only the full-screen Map section sits BELOW the footer (footer stays usable);
@@ -198,7 +198,7 @@ button,a,.card,.chip,.si,.sb-util,.mtab,.newsec,.disc-row,.pubi-card,[onclick]{t
   body.sb-open .sb-backdrop{opacity:1;pointer-events:auto}
   .sb-toggle{display:flex;align-items:center;justify-content:center;width:36px;height:36px;flex-shrink:0;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--t1);cursor:pointer;padding:0}
   .tb{padding:calc(10px + env(safe-area-inset-top)) 12px 10px;gap:6px}
-  .sb{padding-top:env(safe-area-inset-top)}
+  .sb{padding-top:env(safe-area-inset-top);padding-bottom:calc(20px + env(safe-area-inset-bottom))}
   .tb-title{display:none}
   .srch-wrap{flex:1;width:auto;min-width:0}
   .srch{flex:1;width:100%;min-width:0}
@@ -423,6 +423,7 @@ select.inp{cursor:pointer}
 #detOv #detIn{flex:1;min-height:0;overflow-y:auto;padding:18px 22px 22px}
 .det-grabber{display:none}
 @keyframes sheetInRight{from{transform:translateX(100%);opacity:.5}to{transform:none;opacity:1}}
+@keyframes sheetOutRight{from{transform:none;opacity:1}to{transform:translateX(100%);opacity:.4}}
 @media(max-width:768px){
   /* Full-screen sheet: fixed header on top, content scrolls underneath (no overlap) */
   #detOv .mo{width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;border-radius:0;padding:0;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
@@ -2366,7 +2367,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.18-social23';
+const APP_BUILD='2026.09.19-social24';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -3595,7 +3596,15 @@ function galGo(idx){
   document.querySelectorAll('.gal-th').forEach((th,i)=>th.classList.toggle('on',i===galCurIdx));
 }
 
-function closeDetMo(){document.getElementById('detOv').classList.remove('open');document.body.classList.remove('sheet-open');}
+function closeDetMo(skipAnim){
+  const ov=document.getElementById('detOv'); if(!ov) return;
+  const mo=ov.querySelector('.mo');
+  const finish=()=>{ ov.classList.remove('open'); document.body.classList.remove('sheet-open'); if(mo){mo.style.animation='';mo.style.transform='';mo.style.opacity='';} };
+  // Mobile: slide the sheet out to the right (mirrors the open animation). Desktop / already-swiped: just close.
+  if(skipAnim===true || !ov.classList.contains('open') || !mo || window.innerWidth>768){ finish(); return; }
+  mo.style.animation='sheetOutRight .24s cubic-bezier(.4,0,.7,1) forwards';
+  setTimeout(finish,230);
+}
 
 // ── Touch gestures: single-tap open, swipe sidebar, swipe-to-close sheet ──
 (function _touchGestures(){
@@ -3624,6 +3633,32 @@ function closeDetMo(){document.getElementById('detOv').classList.remove('open');
   // 2) DRAG the categories sidebar with the finger (edge-drag to open, drag it back to close).
   //    The drawer follows the finger 1:1, then snaps open/closed on release.
   let sbEl=null,sbBd=null,sbW=300,sx2=0,sy2=0,sbArmed=false,sbDrag=false,sbOpenStart=false,sbCurX=0;
+  // The drag handler is attached ONLY during an armed touch (edge / drawer open) and
+  // removed on release — so normal content scrolling never hits a non-passive
+  // touchmove on document (that was killing scroll performance).
+  const sbMove=(e)=>{
+    if(!sbArmed||!sbEl) return;
+    const t=e.touches[0]; const dx=t.clientX-sx2, dy=t.clientY-sy2;
+    if(!sbDrag){
+      if(Math.abs(dx)>8 && Math.abs(dx)>Math.abs(dy)+2){ sbDrag=true; sbEl.style.transition='none'; sbBd=document.querySelector('.sb-backdrop'); if(sbBd){sbBd.style.transition='none';sbBd.style.display='block';} }
+      else if(Math.abs(dy)>10){ sbArmed=false; document.removeEventListener('touchmove',sbMove); return; } // vertical → let it scroll
+      else return;
+    }
+    const base=sbOpenStart?0:-sbW;
+    sbCurX=Math.max(-sbW,Math.min(0,base+dx));
+    sbEl.style.transform='translateX('+sbCurX+'px)';
+    if(sbBd){ const p=(sbCurX+sbW)/sbW; sbBd.style.opacity=String(p*0.9); sbBd.style.pointerEvents=p>0?'auto':'none'; }
+    if(e.cancelable) e.preventDefault();
+  };
+  const sbEndDrag=()=>{
+    document.removeEventListener('touchmove',sbMove);
+    if(!sbDrag){ sbArmed=false; return; }
+    sbDrag=false; sbArmed=false;
+    sbEl.style.transition=''; sbEl.style.transform='';
+    if(sbBd){ sbBd.style.transition=''; sbBd.style.opacity=''; sbBd.style.pointerEvents=''; sbBd.style.display=''; }
+    const openRatio=(sbCurX+sbW)/sbW; // snap: keep open if pulled past ~40%
+    document.body.classList.toggle('sb-open', openRatio>0.4);
+  };
   document.addEventListener('touchstart',e=>{
     if(!isMobile()){ sbArmed=false; return; }
     if(document.querySelector('.ov.open, .profile-page.open')){ sbArmed=false; return; }
@@ -3632,29 +3667,10 @@ function closeDetMo(){document.getElementById('detOv').classList.remove('open');
     sbOpenStart=document.body.classList.contains('sb-open');
     sbW=sbEl.offsetWidth||300;
     sbArmed = sbOpenStart || sx2<=26; // open drawer: drag anywhere; closed: only from left edge
+    if(sbArmed) document.addEventListener('touchmove',sbMove,{passive:false});
   },{passive:true});
-  document.addEventListener('touchmove',e=>{
-    if(!sbArmed||!isMobile()||!sbEl) return;
-    const t=e.touches[0]; const dx=t.clientX-sx2, dy=t.clientY-sy2;
-    if(!sbDrag){
-      if(Math.abs(dx)>8 && Math.abs(dx)>Math.abs(dy)+2){ sbDrag=true; sbEl.style.transition='none'; sbBd=document.querySelector('.sb-backdrop'); if(sbBd){sbBd.style.transition='none';sbBd.style.display='block';} }
-      else if(Math.abs(dy)>10){ sbArmed=false; return; }
-      else return;
-    }
-    const base=sbOpenStart?0:-sbW;
-    sbCurX=Math.max(-sbW,Math.min(0,base+dx));
-    sbEl.style.transform='translateX('+sbCurX+'px)';
-    if(sbBd){ const p=(sbCurX+sbW)/sbW; sbBd.style.opacity=String(p*0.9); sbBd.style.pointerEvents=p>0?'auto':'none'; }
-    if(e.cancelable) e.preventDefault();
-  },{passive:false});
-  document.addEventListener('touchend',()=>{
-    if(!sbDrag){ sbArmed=false; return; }
-    sbDrag=false; sbArmed=false;
-    sbEl.style.transition=''; sbEl.style.transform='';
-    if(sbBd){ sbBd.style.transition=''; sbBd.style.opacity=''; sbBd.style.pointerEvents=''; sbBd.style.display=''; }
-    const openRatio=(sbCurX+sbW)/sbW; // snap: keep open if pulled past ~40%
-    document.body.classList.toggle('sb-open', openRatio>0.4);
-  },{passive:true});
+  document.addEventListener('touchend',sbEndDrag,{passive:true});
+  document.addEventListener('touchcancel',sbEndDrag,{passive:true});
 
   // 3) SWIPE-RIGHT (horizontal) to close the product sheet, sheet follows the finger
   function bindSheetSwipe(){
@@ -3678,7 +3694,7 @@ function closeDetMo(){document.getElementById('detOv').classList.remove('open');
       if(!drag) return; drag=false; mo.style.transition='';
       if(horiz&&dx>90){
         mo.style.transform='translateX(100%)'; mo.style.opacity='0';
-        setTimeout(()=>{closeDetMo(); mo.style.transform=''; mo.style.opacity='';},240);
+        setTimeout(()=>{closeDetMo(true); mo.style.transform=''; mo.style.opacity='';},240);
       } else { mo.style.transform=''; mo.style.opacity=''; }
     });
   }
