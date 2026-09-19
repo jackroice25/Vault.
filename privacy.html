@@ -29,10 +29,10 @@
 <div class="wrap">
   <a class="back" href="./">← Back to Vault</a>
   <h1>Privacy Policy</h1>
-  <div class="updated">Last updated: 3 July 2026 · Applies to vaultwishlist.com and the Vault app</div>
+  <div class="updated">Last updated: 20 September 2026 · Applies to vaultwishlist.com and the Vault app</div>
 
   <div class="box">
-    <strong>In short:</strong> Vault stores your account email and the wishlist data you create, so the app can work and sync across your devices. We don't run ads, we don't sell your data, and we don't use tracking or profiling cookies. Payments are handled entirely by Stripe, we never see your card details.
+    <strong>In short:</strong> Vault stores your account email and the wishlist data you create, so the app can work and sync across your devices. We don't run ads, we don't sell your data, and we don't use advertising or cross-site tracking. Your account is <strong>private by default</strong>: nothing you save is public unless you choose to turn on a public profile or share a list. Payments are handled entirely by Stripe, we never see your card details.
   </div>
 
   <h2>1. Data Controller</h2>
@@ -49,9 +49,11 @@
     <tr><td>Your vault content (saved items, titles, links, images URLs, prices, notes, lists, reminders)</td><td>Providing the core service: storing and syncing your wishlists across devices</td><td>Art. 6(1)(b), contract performance</td></tr>
     <tr><td>Subscription status (Free / Plus)</td><td>Activating paid features you purchased</td><td>Art. 6(1)(b), contract performance</td></tr>
     <tr><td>Names entered by guests when reserving a gift on a shared gift list</td><td>Showing other guests that a gift is taken, to avoid duplicates</td><td>Art. 6(1)(f), legitimate interest of the list participants</td></tr>
+    <tr><td><strong>Public profile</strong> (nickname, optional display name, avatar, bio) — only if you turn on a public profile</td><td>Letting other users find and view the profile you chose to make public</td><td>Art. 6(1)(a), your consent (you opt in and can turn it off anytime)</td></tr>
+    <tr><td><strong>Social connections</strong> (who you follow, who follows you) and items you mark as public/featured — only if you use social features</td><td>Operating the follow system and showing your chosen public items on your profile</td><td>Art. 6(1)(a), your consent</td></tr>
     <tr><td>Technical logs (IP address, timestamps) processed by our infrastructure providers</td><td>Security, abuse prevention, service operation</td><td>Art. 6(1)(f), legitimate interest</td></tr>
   </table>
-  <p>We do <strong>not</strong> collect: payment card numbers (handled by Stripe), precise location, contacts, advertising identifiers, or behavioural profiles.</p>
+  <p>We do <strong>not</strong> collect: payment card numbers (handled by Stripe), precise location, contacts, advertising identifiers, or advertising / cross-site behavioural profiles.</p>
 
   <h2>3. Passwords</h2>
   <p>Passwords are never stored or transmitted in plain text. Authentication is operated by Supabase, which stores passwords using the industry-standard <strong>bcrypt</strong> hashing algorithm. Neither we nor Supabase can read your password.</p>
@@ -102,10 +104,24 @@
     <li>Payment data is handled exclusively by Stripe, a PCI-DSS Level 1 certified provider.</li>
   </ul>
 
-  <h2>9. Children</h2>
+  <h2>9. Social profiles and public content</h2>
+  <p>Your account is <strong>private by default</strong>. Nothing you save is visible to anyone else unless you actively choose to make it so:</p>
+  <ul>
+    <li><strong>Public profile.</strong> You may turn on a public profile with a nickname, an optional display name, an avatar and a short bio. When enabled, that profile and the items you specifically mark as public (or "featured") can be viewed by other Vault users and, where a profile link is shared, by anyone with the link. Items you keep private are never shown. You can hide individual items, make your profile private again, or clear these fields at any time from the app.</li>
+    <li><strong>Following.</strong> If you follow other users, or they follow you, that connection is stored to operate the follow system. On a private profile, follow requests must be approved by you.</li>
+    <li><strong>Shared and gift lists.</strong> When you deliberately share a list, the people you invite (or anyone with the link, for gift lists) can see the items on that list. Gift reservations show the reserver's chosen name to other guests.</li>
+    <li><strong>Reporting.</strong> Users can report a profile or item they consider abusive; reports reach us by email so we can review and, where needed, remove content or suspend an account.</li>
+  </ul>
+  <p>Because public profile fields are shown to others, please don't put anything there you wouldn't want to be public. We recommend using a nickname rather than your full legal name.</p>
+
+  <h2>10. AI insights (Vault Plus)</h2>
+  <p>Vault Plus includes optional "AI" features (taste profile, spending statistics, insights). These are <strong>computed on your own device from your own vault data</strong> — for example your average price, most-used category, or how many items you've bought. They produce a summary shown only to you.</p>
+  <p>This is <strong>not</strong> advertising or cross-site behavioural profiling: your vault content is never sold, never shared with advertisers, and is not used to track you across other websites or to build a marketing profile. We do not make automated decisions that produce legal or similarly significant effects about you (GDPR Art. 22).</p>
+
+  <h2>11. Children</h2>
   <p>Vault is not directed at children under 16. We do not knowingly collect data from children. If you believe a child has created an account, contact us and we will delete it.</p>
 
-  <h2>10. Changes to this policy</h2>
+  <h2>12. Changes to this policy</h2>
   <p>If we make material changes, we will show a notice in the app before the changes take effect. The "last updated" date at the top always reflects the current version.</p>
 
   <p style="margin-top:28px;font-size:12px;color:var(--t3);text-align:center">© 2026 Vault™ · All rights reserved. Vault™ and the Vault logo are trademarks of the Vault team.</p>
