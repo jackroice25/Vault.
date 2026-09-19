@@ -1163,6 +1163,9 @@ body.pp-open{overflow:hidden}
 .help-hero-sub{font-size:14px;color:var(--t3);margin-top:6px}
 .help-search-wrap{display:flex;align-items:center;gap:8px;max-width:460px;margin:18px auto 0;background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:11px 14px;color:var(--t3)}
 .help-search{flex:1;background:none;border:none;outline:none;color:var(--t1);font-size:15px;font-family:inherit}
+.help-lang{display:inline-flex;align-items:center;gap:7px;margin:14px 0 0;background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:7px 12px;color:var(--t3)}
+.help-lang select{background:none;border:none;outline:none;color:var(--t1);font-size:14px;font-family:inherit;font-weight:600;cursor:pointer}
+.help-lang select option{background:var(--s1);color:var(--t1)}
 .help-cat{margin-top:26px}
 .help-cat-title{font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin:0 0 10px 4px}
 .help-q{background:var(--s1);border:1px solid var(--bd);border-radius:12px;margin-bottom:8px;overflow:hidden;transition:border-color .15s}
@@ -1842,23 +1845,25 @@ document.addEventListener('DOMContentLoaded',function(){try{
 <!-- ═══ HELP / GUIDE CENTER ═══ -->
 <div id="helpOv" class="profile-page">
   <div class="pp-topbar">
-    <button class="pp-back" onclick="closeHelp()"><svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-back"/></svg> Indietro</button>
-    <div class="pp-topbar-handle">Guida &amp; aiuto</div>
+    <button class="pp-back" onclick="closeHelp()"><svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-back"/></svg> <span id="helpBack">Back</span></button>
+    <div class="pp-topbar-handle" id="helpTitleBar">Help</div>
     <div style="width:70px"></div>
   </div>
   <div class="help-wrap">
     <div class="help-hero">
-      <div class="help-hero-title">Come possiamo aiutarti?</div>
-      <div class="help-hero-sub">Guide, tutorial e risposte per usare Vault al meglio.</div>
+      <div class="help-hero-title" id="helpHeroTitle">How can we help?</div>
+      <div class="help-hero-sub" id="helpHeroSub">Guides, tutorials and answers to get the most out of Vault.</div>
+      <div class="help-lang">
+        <svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-globe"/></svg>
+        <select id="helpLangSel" onchange="_setHelpLang(this.value)"></select>
+      </div>
       <div class="help-search-wrap">
         <svg class="ico" width="15" height="15" viewBox="0 0 16 16"><use href="#ic-search"/></svg>
-        <input id="helpSearch" class="help-search" type="text" placeholder="Cerca nella guida…" oninput="_renderHelp(this.value)">
+        <input id="helpSearch" class="help-search" type="text" placeholder="Search the guide…" oninput="_renderHelp(this.value)">
       </div>
     </div>
     <div id="helpContent"></div>
-    <div class="help-contact">
-      Non hai trovato la risposta? Scrivici a <a href="mailto:vaultwishlist@gmail.com">vaultwishlist@gmail.com</a>
-    </div>
+    <div class="help-contact" id="helpContact"></div>
   </div>
 </div>
 <!-- ═══ SOCIAL: AVATAR CROPPER ═══ -->
@@ -2367,7 +2372,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.19-social24';
+const APP_BUILD='2026.09.19-social25';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -5827,111 +5832,515 @@ function openLangPanel(){
 
 function hideLangPopup(){document.getElementById('langPopup').classList.remove('open');}
 
-// ══════════════════ HELP / GUIDE CENTER ══════════════════
-const HELP_DATA=[
- {cat:'Per iniziare', qa:[
-  [`Cos'è Vault?`, `Vault è il tuo spazio personale dove <strong>salvi qualsiasi cosa trovi online</strong>: prodotti da comprare, ristoranti e hotel da provare, regali, idee. Tutto in un posto solo, organizzato e sincronizzato su tutti i tuoi dispositivi. Puoi anche avere un <strong>profilo pubblico</strong>, seguire altre persone e farti seguire.`],
-  [`Vault è gratis?`, `Sì. Le funzioni principali sono <strong>gratuite</strong> (fino a 20 oggetti attivi). <strong>Vault Plus</strong> sblocca oggetti illimitati e funzioni avanzate (Mappa, statistiche, mood board avanzate, workspace multipli).`],
-  [`Devo creare un account?`, `Puoi dare un'occhiata subito, ma per <strong>salvare e sincronizzare</strong> i tuoi oggetti su tutti i dispositivi serve un account gratuito (basta un'email).`],
-  [`Vault ha un'app?`, `Sì: Vault è disponibile su <strong>web</strong> (vaultwishlist.com) e su <strong>iPhone</strong>. La versione <strong>Android</strong> è in arrivo.`],
-  [`Come si sincronizzano i miei dati?`, `Accedi con lo <strong>stesso account</strong> su web e telefono: i tuoi oggetti sono sempre allineati, ovunque.`],
- ]},
- {cat:'Aggiungere oggetti', qa:[
-  [`Come aggiungo un oggetto?`, `<ol><li>Copia il link del prodotto o del luogo.</li><li>Incollalo nella <strong>barra di ricerca in alto</strong> (oppure tocca <strong>＋ Aggiungi</strong>).</li><li>Vault recupera da solo <strong>titolo, immagine e prezzo</strong>.</li><li>Completa i dettagli se vuoi e salva.</li></ol><div class="tip">💡 Il modo più veloce: copia un link e incollalo nella barra in alto. Fatto in 3 secondi.</div>`],
-  [`Devo per forza mettere un link?`, `No, è facoltativo. Puoi creare un oggetto anche solo con un <strong>titolo e una foto</strong>. Il link però ha due vantaggi: il <strong>riempimento automatico</strong> dei dettagli e la possibilità per i tuoi amici di aprirlo o comprarlo.`],
-  [`Da quali negozi posso aggiungere?`, `Praticamente <strong>qualsiasi sito</strong>: Amazon, negozi online, Google Maps, Booking, blog… Vault legge i dati pubblici della pagina.`],
-  [`Perché da alcuni brand (Adidas, Zara, Nike) i dati non si recuperano da soli?`, `Alcuni grandi brand usano <strong>protezioni anti-bot</strong> che bloccano il recupero automatico dei dati. In quel caso Vault crea comunque l'oggetto: ti basta <strong>aggiungere titolo e foto a mano</strong>. Stiamo lavorando per coprirne sempre di più.`],
-  [`Come aggiungo una foto?`, `Nella scheda di aggiunta puoi <strong>incollare un URL immagine</strong> e premere Aggiungi, oppure <strong>caricare una foto</strong> dal tuo dispositivo.`],
-  [`Come aggiungo un ristorante o un luogo?`, `Incolla un <strong>link di Google Maps</strong>: Vault lo riconosce come luogo e mostra indirizzo, orari e la tua valutazione. Lo ritrovi poi nella <strong>Mappa</strong>.`],
-  [`Posso aggiungere mentre navigo dal telefono?`, `Sì (su iPhone): dal tasto <strong>Condividi</strong> del browser scegli <strong>"Vault"</strong> e l'oggetto viene aggiunto automaticamente.`],
-  [`Quali dettagli posso salvare?`, `Prezzo, <strong>prezzo trovato</strong> (per i confronti), variante (taglia/colore), quantità, nota, <strong>scadenza</strong>, tag, nota vocale e — per i luoghi — una valutazione a stelle.`],
-  [`Come modifico o elimino un oggetto?`, `Aprilo con un tocco: nella scheda trovi <strong>Modifica</strong> ed <strong>Elimina</strong>. Se lo elimini per sbaglio, subito dopo puoi annullare dal messaggio che compare.`],
- ]},
- {cat:'Organizzare', qa:[
-  [`Cosa sono le sezioni?`, `Sono <strong>cartelle</strong> per raggruppare gli oggetti (es. Moda, Tech, Ristoranti). Creale dal menu laterale con <strong>＋ Nuova sezione</strong>; puoi dare a ognuna un colore e un'icona.`],
-  [`Come uso i tag?`, `I tag sono <strong>etichette libere</strong> per filtrare al volo (es. #regalo, #compleanno). Aggiungili nella scheda dell'oggetto.`],
-  [`Cosa sono gli stati?`, `Sono le linguette colorate in alto: <strong>Lo voglio / Ordinato / Comprato</strong> per i prodotti, <strong>Da visitare / Visitato</strong> per i luoghi. Toccale per filtrare.`],
-  [`Come metto un oggetto in priorità?`, `Tocca la <strong>stella</strong> sulla card: gli oggetti prioritari restano in evidenza.`],
-  [`Come funziona la ricerca?`, `La barra in alto fa <strong>tre cose in una</strong>: cerca tra i tuoi oggetti, con <strong>@nome</strong> cerca le persone, e <strong>incollando un link</strong> lo aggiunge direttamente.`],
-  [`Quali viste ci sono?`, `<strong>Griglia</strong>, <strong>Lista</strong> e <strong>Mood board</strong> (bacheca visiva). Cambiale dai pulsanti vista in alto.`],
-  [`Cos'è la Mappa?`, `Una <strong>mappa del mondo</strong> con tutti i tuoi luoghi salvati (funzione Vault Plus). La apri dal footer o dal menu.`],
-  [`Come riordino gli oggetti?`, `Con l'<strong>ordinamento</strong> (più recenti, prezzo, nome…) oppure trascinandoli in ordine manuale.`],
-  [`Cos'è l'Archivio?`, `Ti permette di <strong>mettere da parte</strong> gli oggetti senza eliminarli. Li ritrovi nella linguetta <strong>Archivio</strong>.`],
- ]},
- {cat:'Prezzi e budget', qa:[
-  [`Che differenza c'è tra "prezzo" e "prezzo trovato"?`, `Il <strong>prezzo</strong> è quello di riferimento dell'oggetto; il <strong>prezzo trovato</strong> ti fa segnare un'offerta e vedere subito il <strong>risparmio in %</strong>.`],
-  [`Vault segue i cambi di prezzo?`, `Sì: tiene uno <strong>storico dei prezzi</strong> che registri nel tempo, così vedi l'andamento.`],
-  [`Posso tenere sotto controllo la spesa?`, `Sì: Vault somma la tua <strong>spesa</strong> (es. gli oggetti comprati) per aiutarti a gestire il budget.`],
- ]},
- {cat:'Il tuo profilo e la condivisione', qa:[
-  [`Come funziona il mio profilo pubblico?`, `Ogni utente ha un profilo con <strong>@username</strong>, foto, bio, badge e gli oggetti che sceglie di mostrare. Gli altri possono vederlo, seguirti e ispirarsi.`],
-  [`Come scelgo il mio @username?`, `In fase di registrazione o dal tuo profilo. È <strong>unico</strong> e diventa anche il link condivisibile del tuo profilo.`],
-  [`Profilo pubblico o privato?`, `Decidi tu. Se è <strong>privato</strong>, gli altri ti trovano ma vedono un lucchetto e devono inviarti una <strong>richiesta</strong> per vedere i tuoi oggetti.`],
-  [`Come condivido un oggetto o la mia lista?`, `Dal tasto <strong>Condividi</strong> ottieni un link apribile <strong>anche da chi non ha l'app</strong>.`],
-  [`Chi vede i miei oggetti?`, `Solo quelli che decidi di <strong>mostrare pubblicamente</strong>. Tutto il resto resta privato e visibile solo a te.`],
- ]},
- {cat:'Social', qa:[
-  [`Come trovo e seguo altre persone?`, `Usa il tab <strong>People</strong> (o scrivi <strong>@nome</strong> nella barra). Apri il profilo e tocca <strong>Segui</strong>.`],
-  [`Come funzionano gli account privati?`, `Invii una <strong>richiesta di follow</strong>; la persona la accetta (o rifiuta) dalle Notifiche.`],
-  [`Dove vedo le notifiche?`, `Nella <strong>campanella</strong> (tab <strong>Alerts</strong> nel footer): chi ha iniziato a seguirti, le richieste, e altro.`],
-  [`Come metto oggetti in evidenza (Featured)?`, `Puoi mettere fino a <strong>5 oggetti preferiti</strong> in cima al tuo profilo. Apri un oggetto → riquadro <strong>"Public profile"</strong> → <strong>Feature</strong>.`],
-  [`Come nascondo un oggetto dal profilo?`, `Nello stesso riquadro "Public profile" tocca <strong>Hidden</strong>: così, anche con il profilo pubblico, quell'oggetto resta <strong>solo tuo</strong>.`],
-  [`Come vedo followers e seguiti?`, `Toccali direttamente sul profilo per aprire la lista completa.`],
-  [`Come segnalo un profilo?`, `Dal profilo, tocca <strong>"Report profile"</strong>: la segnalazione arriva a noi e la esaminiamo.`],
- ]},
- {cat:'Regali', qa:[
-  [`Come gestisco i regali?`, `Puoi segnare un oggetto come <strong>regalo</strong> e indicare <strong>"Regalo per"</strong> (a chi è destinato), per tenerli ordinati.`],
-  [`Posso fare liste da condividere?`, `Sì: puoi creare <strong>liste condivise</strong> da mandare ad altri, perfette per le occasioni (compleanni, feste…).`],
- ]},
- {cat:'Vault Plus', qa:[
-  [`Cos'è Vault Plus?`, `L'abbonamento che sblocca il pieno potenziale: <strong>oggetti illimitati</strong>, <strong>Mappa</strong>, statistiche avanzate, <strong>mood board avanzate</strong>, workspace multipli e priorità sulle novità.`],
-  [`Quanto costa?`, `C'è un piano <strong>mensile</strong> e uno <strong>annuale</strong> (con sconto). Trovi i prezzi aggiornati nella schermata Vault Plus.`],
-  [`Come lo attivo?`, `Tocca <strong>Vault Plus</strong> nel menu, scegli il piano e completa l'attivazione.`],
-  [`Come ripristino l'acquisto su un nuovo telefono? (iOS)`, `Il Plus <strong>segue il tuo account</strong>: accedi e, se serve, usa <strong>Ripristina acquisti</strong>.`],
-  [`Come annullo l'abbonamento?`, `Dalle impostazioni dell'abbonamento. Mantieni Plus <strong>fino a fine periodo</strong> e i tuoi dati restano intatti.`],
- ]},
- {cat:'Privacy e account', qa:[
-  [`Che dati raccogliete?`, `Solo il <strong>necessario</strong> per far funzionare l'app (account, i tuoi oggetti, preferenze). <strong>Niente vendita di dati né profilazione pubblicitaria.</strong>`],
-  [`Dove sono conservati i miei dati?`, `Su server nell'<strong>Unione Europea</strong>.`],
-  [`Come cancello il mio account?`, `Dal tuo profilo, sezione <strong>Elimina account</strong>: rimuove <strong>definitivamente</strong> i tuoi dati (diritto all'oblio).`],
-  [`C'è un'età minima?`, `Sì, Vault è pensato per utenti dai <strong>16 anni</strong> in su.`],
-  [`Come cambio email o password?`, `Dalle impostazioni dell'account.`],
- ]},
- {cat:'Problemi comuni', qa:[
-  [`Un sito non recupera titolo o immagine`, `È quasi sempre un <strong>sito protetto</strong> da anti-bot: aggiungi titolo e foto <strong>a mano</strong>, l'oggetto funziona lo stesso.`],
-  [`L'immagine non si vede`, `Incolla un <strong>URL immagine valido</strong> oppure carica una foto dal dispositivo.`],
-  [`Non vedo i miei oggetti su un altro dispositivo`, `Controlla di aver fatto l'<strong>accesso con lo stesso account</strong> su entrambi.`],
-  [`L'app va a scatti`, `Aggiorna all'<strong>ultima versione</strong>. Se persiste, scrivici indicando il modello di telefono così indaghiamo.`],
- ]},
- {cat:'Tutorial rapidi', qa:[
-  [`▶ Aggiungi il tuo primo oggetto in 10 secondi`, `<ol><li>Copia un link (es. da Amazon).</li><li>Incollalo nella barra in alto.</li><li>Tocca Salva.</li></ol>Ecco fatto: il tuo primo oggetto è nel vault. 🎉`],
-  [`▶ Crea e condividi la tua wishlist`, `<ol><li>Aggiungi qualche oggetto.</li><li>Rendi <strong>pubblici</strong> quelli che vuoi mostrare.</li><li>Condividi il <strong>link del tuo profilo</strong> con amici e famiglia.</li></ol>`],
-  [`▶ Organizza come un pro`, `<ol><li>Crea <strong>sezioni</strong> per tema.</li><li>Assegna <strong>tag</strong> e <strong>stati</strong>.</li><li>Usa la <strong>stella</strong> per le priorità.</li></ol>`],
-  [`▶ Salva luoghi sulla mappa`, `<ol><li>Incolla un link di <strong>Google Maps</strong>.</li><li>Vault lo salva come luogo.</li><li>Aprili tutti insieme nella <strong>Mappa</strong> (Plus).</li></ol>`],
-  [`▶ Diventa social`, `<ol><li>Scegli il tuo <strong>@username</strong>.</li><li>Metti foto e bio.</li><li>Segui gli amici e metti <strong>5 oggetti in evidenza</strong>.</li></ol>`],
- ]},
- {cat:'Contatti', qa:[
-  [`Come vi contatto?`, `Scrivi a <strong>vaultwishlist@gmail.com</strong>: rispondiamo il prima possibile.`],
-  [`Chi ha creato Vault?`, `Vault è un progetto indipendente, curato con attenzione ai dettagli, alla velocità e alla <strong>privacy</strong>.`],
- ]},
-];
-function openHelp(){ const o=document.getElementById('helpOv'); if(!o)return; o.classList.add('open'); document.body.classList.add('pp-open'); const s=document.getElementById('helpSearch'); if(s)s.value=''; _renderHelp(''); o.scrollTop=0; }
+// ══════════════════ HELP / GUIDE CENTER (multilingual) ══════════════════
+const HELP_LANGS=[['en','English'],['it','Italiano'],['es','Español'],['fr','Français'],['de','Deutsch'],['zh','中文'],['ja','日本語'],['ru','Русский'],['pl','Polski']];
+const HELP_UI={
+ en:{back:'Back',title:'Help',hero:'How can we help?',sub:'Guides, tutorials and answers to get the most out of Vault.',search:'Search the guide…',contact:`Didn't find your answer? Write to <a href="mailto:vaultwishlist@gmail.com">vaultwishlist@gmail.com</a>`,empty:'No results for'},
+ it:{back:'Indietro',title:'Guida',hero:'Come possiamo aiutarti?',sub:'Guide, tutorial e risposte per usare Vault al meglio.',search:'Cerca nella guida…',contact:`Non hai trovato la risposta? Scrivici a <a href="mailto:vaultwishlist@gmail.com">vaultwishlist@gmail.com</a>`,empty:'Nessun risultato per'},
+ es:{back:'Atrás',title:'Ayuda',hero:'¿Cómo podemos ayudarte?',sub:'Guías, tutoriales y respuestas para aprovechar Vault al máximo.',search:'Buscar en la guía…',contact:`¿No encuentras la respuesta? Escríbenos a <a href="mailto:vaultwishlist@gmail.com">vaultwishlist@gmail.com</a>`,empty:'Sin resultados para'},
+ fr:{back:'Retour',title:'Aide',hero:'Comment pouvons-nous aider ?',sub:'Guides, tutoriels et réponses pour tirer le meilleur de Vault.',search:'Rechercher dans le guide…',contact:`Vous n'avez pas trouvé ? Écrivez-nous à <a href="mailto:vaultwishlist@gmail.com">vaultwishlist@gmail.com</a>`,empty:'Aucun résultat pour'},
+ de:{back:'Zurück',title:'Hilfe',hero:'Wie können wir helfen?',sub:'Anleitungen, Tutorials und Antworten, um Vault optimal zu nutzen.',search:'In der Hilfe suchen…',contact:`Keine Antwort gefunden? Schreib uns an <a href="mailto:vaultwishlist@gmail.com">vaultwishlist@gmail.com</a>`,empty:'Keine Ergebnisse für'},
+ zh:{back:'返回',title:'帮助',hero:'需要什么帮助？',sub:'指南、教程和常见问题，助你用好 Vault。',search:'搜索帮助…',contact:`没找到答案？写信给我们：<a href="mailto:vaultwishlist@gmail.com">vaultwishlist@gmail.com</a>`,empty:'没有找到'},
+ ja:{back:'戻る',title:'ヘルプ',hero:'どうされましたか？',sub:'Vault を使いこなすためのガイド・チュートリアル・Q&A。',search:'ヘルプを検索…',contact:`答えが見つかりませんか？ <a href="mailto:vaultwishlist@gmail.com">vaultwishlist@gmail.com</a> までご連絡ください`,empty:'該当なし：'},
+ ru:{back:'Назад',title:'Помощь',hero:'Чем можем помочь?',sub:'Руководства, инструкции и ответы, чтобы использовать Vault по максимуму.',search:'Поиск по справке…',contact:`Не нашли ответ? Напишите нам: <a href="mailto:vaultwishlist@gmail.com">vaultwishlist@gmail.com</a>`,empty:'Ничего не найдено по'},
+ pl:{back:'Wstecz',title:'Pomoc',hero:'Jak możemy pomóc?',sub:'Poradniki, samouczki i odpowiedzi, aby w pełni wykorzystać Vault.',search:'Szukaj w pomocy…',contact:`Nie znalazłeś odpowiedzi? Napisz na <a href="mailto:vaultwishlist@gmail.com">vaultwishlist@gmail.com</a>`,empty:'Brak wyników dla'},
+};
+let _helpLang=(function(){try{return localStorage.getItem('vaultHelpLang')||'en'}catch(e){return 'en'}})();
+const HELP_I18N={
+ en:[
+  {c:'Getting started', qa:[
+   [`What is Vault?`,`Vault is your personal space to save anything you find online — products to buy, restaurants and hotels to try, gifts and ideas — all in one organized place, synced across your devices. You can also have a public profile, follow people and be followed.`],
+   [`Is Vault free?`,`Yes. Core features are free (up to 20 active items). Vault Plus unlocks unlimited items and advanced features (Map, statistics, advanced mood boards, multiple workspaces).`],
+   [`Do I need an account?`,`You can look around right away, but to save and sync your items across devices you need a free account (just an email).`],
+   [`Which devices does it work on?`,`On the web (vaultwishlist.com) and on iPhone. Android is coming soon. Sign in with the same account to keep everything in sync.`],
+  ]},
+  {c:'Adding items', qa:[
+   [`How do I add an item?`,`Copy a link, paste it into the top search bar (or tap ＋ Add). Vault fetches the title, image and price automatically. Adjust the details if you like and save.`],
+   [`Do I have to use a link?`,`No. You can create an item with just a title and a photo. A link helps though: it auto-fills the details and lets friends open or buy the item.`],
+   [`Which stores are supported?`,`Almost any site — Amazon, online shops, Google Maps, Booking, blogs. Vault reads the public data of the page.`],
+   [`Why don't some brands (Adidas, Zara) auto-fill?`,`Some big brands use anti-bot protection that blocks automatic fetching. Vault still creates the item — just add the title and photo yourself.`],
+   [`How do I add a photo, or a place?`,`For a photo: paste an image URL or upload one from your device. For a place or restaurant: paste a Google Maps link and you'll find it on the Map. On iPhone you can also add while browsing via the Share button → "Vault".`],
+  ]},
+  {c:'Organizing', qa:[
+   [`What are sections?`,`Folders to group items (e.g. Fashion, Tech, Restaurants). Create them from the side menu, each with its own colour and icon.`],
+   [`Tags, status and priority?`,`Tags are free labels for quick filtering; status (Want / Ordered / Bought, or To visit / Visited) filters via the coloured chips on top; tap the star on a card to mark a priority.`],
+   [`How does search work?`,`The top bar does three things: searches your items, finds people with @name, and adds a link when you paste one.`],
+   [`What views are there?`,`Grid, List and Mood board. Switch from the view buttons on top. You can also archive items to set them aside without deleting.`],
+  ]},
+  {c:'Your profile & social', qa:[
+   [`How does my public profile work?`,`Each user has a profile with an @username, photo, bio and the items they choose to show. Others can view it and follow you.`],
+   [`Public or private?`,`Your choice. If private, people can find you but see a lock and must send a request to view your items.`],
+   [`How do I follow people?`,`Use the People tab (or type @name in the bar), open a profile and tap Follow. For private accounts you send a request they accept from Notifications.`],
+   [`How do I feature or hide items?`,`Open an item → "Public profile": tap Feature to pin it (up to 5) at the top of your profile, or Hidden to keep it visible only to you even on a public profile.`],
+   [`How do I share my list?`,`The Share button gives a link that opens even for people without the app.`],
+  ]},
+  {c:'Prices & Vault Plus', qa:[
+   [`Price vs "price found"?`,`"Price" is the reference; "price found" lets you note a deal and see the % saving.`],
+   [`What is Vault Plus?`,`The subscription that unlocks unlimited items, the Map, advanced statistics, advanced mood boards and multiple workspaces.`],
+   [`How much is it and how do I activate it?`,`There's a monthly plan and a discounted yearly plan. Tap Vault Plus in the menu to see prices and activate.`],
+   [`How do I cancel?`,`From the subscription settings. You keep Plus until the end of the period and your data stays intact.`],
+  ]},
+  {c:'Privacy & account', qa:[
+   [`What data do you collect?`,`Only what's needed to run the app (account, your items, preferences). No data selling and no ad profiling.`],
+   [`Where is my data stored?`,`On servers in the European Union.`],
+   [`How do I delete my account?`,`From your profile, "Delete account" — it permanently removes your data (right to erasure). Vault is for users aged 16+.`],
+  ]},
+  {c:'Troubleshooting', qa:[
+   [`A site won't fetch the title or image`,`It's usually an anti-bot–protected site: add the title and photo manually — the item still works fine.`],
+   [`The image doesn't show`,`Paste a valid image URL or upload a photo from your device.`],
+   [`I don't see my items on another device`,`Make sure you signed in with the same account on both.`],
+  ]},
+  {c:'Quick tutorials', qa:[
+   [`▶ Add your first item in 10 seconds`,`1) Copy a link. 2) Paste it into the top bar. 3) Tap Save. Done!`],
+   [`▶ Create and share your wishlist`,`1) Add a few items. 2) Make public the ones you want to show. 3) Share your profile link with friends and family.`],
+   [`▶ Go social`,`1) Pick your @username. 2) Add a photo and bio. 3) Follow friends and feature 5 items on your profile.`],
+  ]},
+  {c:'Contact', qa:[
+   [`How do I contact you?`,`Write to vaultwishlist@gmail.com — we reply as soon as we can.`],
+  ]},
+ ],
+ it:[
+  {c:'Per iniziare', qa:[
+   [`Cos'è Vault?`,`Vault è il tuo spazio personale dove salvi qualsiasi cosa trovi online — prodotti da comprare, ristoranti e hotel da provare, regali e idee — tutto in un posto solo, sincronizzato su tutti i dispositivi. Puoi anche avere un profilo pubblico, seguire persone ed essere seguito.`],
+   [`Vault è gratis?`,`Sì. Le funzioni principali sono gratuite (fino a 20 oggetti attivi). Vault Plus sblocca oggetti illimitati e funzioni avanzate (Mappa, statistiche, mood board avanzate, workspace multipli).`],
+   [`Serve un account?`,`Puoi dare un'occhiata subito, ma per salvare e sincronizzare i tuoi oggetti su tutti i dispositivi serve un account gratuito (basta un'email).`],
+   [`Su quali dispositivi funziona?`,`Su web (vaultwishlist.com) e su iPhone. Android è in arrivo. Accedi con lo stesso account per tenere tutto allineato.`],
+  ]},
+  {c:'Aggiungere oggetti', qa:[
+   [`Come aggiungo un oggetto?`,`Copia un link, incollalo nella barra in alto (o tocca ＋ Aggiungi). Vault recupera da solo titolo, immagine e prezzo. Completa i dettagli se vuoi e salva.`],
+   [`Devo per forza mettere un link?`,`No. Puoi creare un oggetto anche solo con titolo e foto. Il link però aiuta: riempie i dettagli in automatico e permette agli amici di aprirlo o comprarlo.`],
+   [`Da quali negozi posso aggiungere?`,`Praticamente qualsiasi sito — Amazon, negozi online, Google Maps, Booking, blog. Vault legge i dati pubblici della pagina.`],
+   [`Perché da alcuni brand (Adidas, Zara) non si compila da solo?`,`Alcuni grandi brand usano protezioni anti-bot che bloccano il recupero automatico. Vault crea comunque l'oggetto: aggiungi tu titolo e foto.`],
+   [`Come aggiungo una foto o un luogo?`,`Per la foto: incolla un URL immagine o caricala dal dispositivo. Per un luogo o ristorante: incolla un link di Google Maps e lo ritrovi nella Mappa. Su iPhone puoi anche aggiungere mentre navighi con il tasto Condividi → "Vault".`],
+  ]},
+  {c:'Organizzare', qa:[
+   [`Cosa sono le sezioni?`,`Cartelle per raggruppare gli oggetti (es. Moda, Tech, Ristoranti). Creale dal menu laterale, ognuna con colore e icona.`],
+   [`Tag, stato e priorità?`,`I tag sono etichette libere per filtrare; lo stato (Lo voglio / Ordinato / Comprato, o Da visitare / Visitato) filtra con le linguette colorate in alto; tocca la stella su una card per la priorità.`],
+   [`Come funziona la ricerca?`,`La barra in alto fa tre cose: cerca tra i tuoi oggetti, trova le persone con @nome e aggiunge un link quando lo incolli.`],
+   [`Quali viste ci sono?`,`Griglia, Lista e Mood board. Cambiale dai pulsanti vista in alto. Puoi anche archiviare gli oggetti per metterli da parte senza eliminarli.`],
+  ]},
+  {c:'Profilo e social', qa:[
+   [`Come funziona il mio profilo pubblico?`,`Ogni utente ha un profilo con @username, foto, bio e gli oggetti che sceglie di mostrare. Gli altri possono vederlo e seguirti.`],
+   [`Pubblico o privato?`,`Decidi tu. Se privato, gli altri ti trovano ma vedono un lucchetto e devono inviare una richiesta per vedere i tuoi oggetti.`],
+   [`Come seguo le persone?`,`Usa il tab People (o scrivi @nome nella barra), apri un profilo e tocca Segui. Per gli account privati invii una richiesta che accettano dalle Notifiche.`],
+   [`Come metto in evidenza o nascondo gli oggetti?`,`Apri un oggetto → "Public profile": tocca Feature per fissarlo (max 5) in cima al profilo, o Hidden per tenerlo visibile solo a te anche con profilo pubblico.`],
+   [`Come condivido la lista?`,`Il tasto Condividi crea un link apribile anche da chi non ha l'app.`],
+  ]},
+  {c:'Prezzi e Vault Plus', qa:[
+   [`Prezzo e "prezzo trovato"?`,`Il "prezzo" è il riferimento; il "prezzo trovato" ti fa segnare un'offerta e vedere il risparmio in %.`],
+   [`Cos'è Vault Plus?`,`L'abbonamento che sblocca oggetti illimitati, la Mappa, statistiche avanzate, mood board avanzate e workspace multipli.`],
+   [`Quanto costa e come lo attivo?`,`C'è un piano mensile e uno annuale scontato. Tocca Vault Plus nel menu per vedere i prezzi e attivarlo.`],
+   [`Come annullo?`,`Dalle impostazioni dell'abbonamento. Mantieni Plus fino a fine periodo e i dati restano intatti.`],
+  ]},
+  {c:'Privacy e account', qa:[
+   [`Che dati raccogliete?`,`Solo il necessario per far funzionare l'app (account, i tuoi oggetti, preferenze). Niente vendita di dati né profilazione pubblicitaria.`],
+   [`Dove sono i miei dati?`,`Su server nell'Unione Europea.`],
+   [`Come cancello l'account?`,`Dal profilo, "Elimina account" — rimuove definitivamente i tuoi dati (diritto all'oblio). Vault è per utenti dai 16 anni in su.`],
+  ]},
+  {c:'Problemi comuni', qa:[
+   [`Un sito non recupera titolo o immagine`,`Di solito è un sito protetto da anti-bot: aggiungi titolo e foto a mano — l'oggetto funziona lo stesso.`],
+   [`L'immagine non si vede`,`Incolla un URL immagine valido o carica una foto dal dispositivo.`],
+   [`Non vedo i miei oggetti su un altro dispositivo`,`Assicurati di aver fatto l'accesso con lo stesso account su entrambi.`],
+  ]},
+  {c:'Tutorial rapidi', qa:[
+   [`▶ Aggiungi il primo oggetto in 10 secondi`,`1) Copia un link. 2) Incollalo nella barra in alto. 3) Tocca Salva. Fatto!`],
+   [`▶ Crea e condividi la wishlist`,`1) Aggiungi qualche oggetto. 2) Rendi pubblici quelli da mostrare. 3) Condividi il link del profilo con amici e famiglia.`],
+   [`▶ Diventa social`,`1) Scegli il tuo @username. 2) Metti foto e bio. 3) Segui gli amici e metti 5 oggetti in evidenza.`],
+  ]},
+  {c:'Contatti', qa:[
+   [`Come vi contatto?`,`Scrivi a vaultwishlist@gmail.com — rispondiamo il prima possibile.`],
+  ]},
+ ],
+ es:[
+  {c:'Primeros pasos', qa:[
+   [`¿Qué es Vault?`,`Vault es tu espacio personal para guardar todo lo que encuentras online — productos, restaurantes y hoteles, regalos e ideas — en un solo lugar organizado y sincronizado en todos tus dispositivos. También puedes tener un perfil público, seguir a gente y que te sigan.`],
+   [`¿Vault es gratis?`,`Sí. Las funciones principales son gratuitas (hasta 20 elementos activos). Vault Plus desbloquea elementos ilimitados y funciones avanzadas (Mapa, estadísticas, mood boards avanzados, varios workspaces).`],
+   [`¿Necesito una cuenta?`,`Puedes echar un vistazo enseguida, pero para guardar y sincronizar tus elementos necesitas una cuenta gratuita (solo un email).`],
+   [`¿En qué dispositivos funciona?`,`En web (vaultwishlist.com) y en iPhone. Android llegará pronto. Inicia sesión con la misma cuenta para mantener todo sincronizado.`],
+  ]},
+  {c:'Añadir elementos', qa:[
+   [`¿Cómo añado un elemento?`,`Copia un enlace, pégalo en la barra superior (o toca ＋ Añadir). Vault obtiene título, imagen y precio automáticamente. Ajusta los detalles y guarda.`],
+   [`¿Es obligatorio poner un enlace?`,`No. Puedes crear un elemento solo con título y foto. El enlace ayuda: rellena los detalles automáticamente y permite a tus amigos abrirlo o comprarlo.`],
+   [`¿Qué tiendas son compatibles?`,`Casi cualquier sitio — Amazon, tiendas, Google Maps, Booking, blogs. Vault lee los datos públicos de la página.`],
+   [`¿Por qué algunas marcas (Adidas, Zara) no se rellenan solas?`,`Algunas grandes marcas usan protección anti-bot que bloquea la obtención automática. Vault igualmente crea el elemento: añade tú el título y la foto.`],
+   [`¿Cómo añado una foto o un lugar?`,`Foto: pega una URL de imagen o súbela desde el dispositivo. Lugar o restaurante: pega un enlace de Google Maps y lo verás en el Mapa. En iPhone también puedes añadir mientras navegas con el botón Compartir → "Vault".`],
+  ]},
+  {c:'Organizar', qa:[
+   [`¿Qué son las secciones?`,`Carpetas para agrupar elementos (p. ej. Moda, Tech, Restaurantes). Créalas desde el menú lateral, cada una con color e icono.`],
+   [`¿Etiquetas, estado y prioridad?`,`Las etiquetas son libres para filtrar; el estado (Lo quiero / Pedido / Comprado, o Por visitar / Visitado) filtra con las pestañas de color; toca la estrella de una tarjeta para marcar prioridad.`],
+   [`¿Cómo funciona la búsqueda?`,`La barra superior hace tres cosas: busca tus elementos, encuentra personas con @nombre y añade un enlace al pegarlo.`],
+   [`¿Qué vistas hay?`,`Cuadrícula, Lista y Mood board. Cambia con los botones de vista arriba. También puedes archivar elementos sin borrarlos.`],
+  ]},
+  {c:'Tu perfil y social', qa:[
+   [`¿Cómo funciona mi perfil público?`,`Cada usuario tiene un perfil con @usuario, foto, bio y los elementos que elige mostrar. Los demás pueden verlo y seguirte.`],
+   [`¿Público o privado?`,`Tú decides. Si es privado, te encuentran pero ven un candado y deben enviar una solicitud para ver tus elementos.`],
+   [`¿Cómo sigo a la gente?`,`Usa la pestaña People (o escribe @nombre), abre un perfil y toca Seguir. En cuentas privadas envías una solicitud que aceptan desde Notificaciones.`],
+   [`¿Cómo destaco u oculto elementos?`,`Abre un elemento → "Public profile": toca Feature para fijarlo (máx. 5) arriba en tu perfil, u Hidden para que solo lo veas tú aunque el perfil sea público.`],
+   [`¿Cómo comparto mi lista?`,`El botón Compartir da un enlace que se abre incluso para quien no tiene la app.`],
+  ]},
+  {c:'Precios y Vault Plus', qa:[
+   [`¿Precio vs "precio encontrado"?`,`El "precio" es la referencia; el "precio encontrado" registra una oferta y muestra el ahorro en %.`],
+   [`¿Qué es Vault Plus?`,`La suscripción que desbloquea elementos ilimitados, el Mapa, estadísticas avanzadas, mood boards avanzados y varios workspaces.`],
+   [`¿Cuánto cuesta y cómo lo activo?`,`Hay un plan mensual y uno anual con descuento. Toca Vault Plus en el menú para ver precios y activarlo.`],
+   [`¿Cómo cancelo?`,`Desde los ajustes de la suscripción. Mantienes Plus hasta el final del periodo y tus datos permanecen intactos.`],
+  ]},
+  {c:'Privacidad y cuenta', qa:[
+   [`¿Qué datos recopiláis?`,`Solo lo necesario para que la app funcione (cuenta, tus elementos, preferencias). Sin venta de datos ni perfilado publicitario.`],
+   [`¿Dónde se guardan mis datos?`,`En servidores de la Unión Europea.`],
+   [`¿Cómo elimino mi cuenta?`,`Desde tu perfil, "Eliminar cuenta" — borra tus datos de forma permanente (derecho al olvido). Vault es para mayores de 16 años.`],
+  ]},
+  {c:'Problemas comunes', qa:[
+   [`Un sitio no obtiene título o imagen`,`Suele ser un sitio con anti-bot: añade título y foto a mano — el elemento funciona igual.`],
+   [`La imagen no se ve`,`Pega una URL de imagen válida o sube una foto del dispositivo.`],
+   [`No veo mis elementos en otro dispositivo`,`Asegúrate de haber iniciado sesión con la misma cuenta en ambos.`],
+  ]},
+  {c:'Tutoriales rápidos', qa:[
+   [`▶ Añade tu primer elemento en 10 segundos`,`1) Copia un enlace. 2) Pégalo en la barra superior. 3) Toca Guardar. ¡Listo!`],
+   [`▶ Crea y comparte tu lista`,`1) Añade algunos elementos. 2) Haz públicos los que quieras mostrar. 3) Comparte el enlace de tu perfil.`],
+   [`▶ Hazte social`,`1) Elige tu @usuario. 2) Pon foto y bio. 3) Sigue a amigos y destaca 5 elementos.`],
+  ]},
+  {c:'Contacto', qa:[
+   [`¿Cómo os contacto?`,`Escribe a vaultwishlist@gmail.com — respondemos lo antes posible.`],
+  ]},
+ ],
+ fr:[
+  {c:'Pour commencer', qa:[
+   [`Qu'est-ce que Vault ?`,`Vault est ton espace personnel pour enregistrer tout ce que tu trouves en ligne — produits, restaurants et hôtels, cadeaux et idées — au même endroit, organisé et synchronisé sur tous tes appareils. Tu peux aussi avoir un profil public, suivre des gens et être suivi.`],
+   [`Vault est-il gratuit ?`,`Oui. Les fonctions principales sont gratuites (jusqu'à 20 éléments actifs). Vault Plus débloque les éléments illimités et des fonctions avancées (Carte, statistiques, mood boards avancés, plusieurs espaces).`],
+   [`Faut-il un compte ?`,`Tu peux regarder tout de suite, mais pour enregistrer et synchroniser tes éléments il faut un compte gratuit (juste un e-mail).`],
+   [`Sur quels appareils ?`,`Sur le web (vaultwishlist.com) et sur iPhone. Android arrive bientôt. Connecte-toi avec le même compte pour tout garder synchronisé.`],
+  ]},
+  {c:'Ajouter des éléments', qa:[
+   [`Comment ajouter un élément ?`,`Copie un lien, colle-le dans la barre du haut (ou touche ＋ Ajouter). Vault récupère automatiquement le titre, l'image et le prix. Ajuste les détails et enregistre.`],
+   [`Faut-il obligatoirement un lien ?`,`Non. Tu peux créer un élément avec juste un titre et une photo. Le lien aide : il remplit les détails et permet à tes amis de l'ouvrir ou de l'acheter.`],
+   [`Quelles boutiques sont prises en charge ?`,`Presque tous les sites — Amazon, boutiques, Google Maps, Booking, blogs. Vault lit les données publiques de la page.`],
+   [`Pourquoi certaines marques (Adidas, Zara) ne se remplissent pas ?`,`Certaines grandes marques utilisent une protection anti-bot qui bloque la récupération automatique. Vault crée quand même l'élément : ajoute toi-même le titre et la photo.`],
+   [`Comment ajouter une photo ou un lieu ?`,`Photo : colle une URL d'image ou importe-la depuis l'appareil. Lieu ou restaurant : colle un lien Google Maps et tu le retrouveras sur la Carte. Sur iPhone tu peux aussi ajouter en naviguant via le bouton Partager → "Vault".`],
+  ]},
+  {c:'Organiser', qa:[
+   [`Qu'est-ce que les sections ?`,`Des dossiers pour regrouper les éléments (ex. Mode, Tech, Restaurants). Crée-les depuis le menu latéral, chacune avec sa couleur et son icône.`],
+   [`Tags, statut et priorité ?`,`Les tags sont des étiquettes libres pour filtrer ; le statut (Je veux / Commandé / Acheté, ou À visiter / Visité) filtre via les puces colorées en haut ; touche l'étoile d'une carte pour la priorité.`],
+   [`Comment fonctionne la recherche ?`,`La barre du haut fait trois choses : cherche tes éléments, trouve des personnes avec @nom, et ajoute un lien quand tu le colles.`],
+   [`Quelles vues existent ?`,`Grille, Liste et Mood board. Change avec les boutons de vue en haut. Tu peux aussi archiver des éléments sans les supprimer.`],
+  ]},
+  {c:'Ton profil & social', qa:[
+   [`Comment fonctionne mon profil public ?`,`Chaque utilisateur a un profil avec un @nom, une photo, une bio et les éléments qu'il choisit de montrer. Les autres peuvent le voir et te suivre.`],
+   [`Public ou privé ?`,`À toi de choisir. En privé, on te trouve mais avec un cadenas et il faut envoyer une demande pour voir tes éléments.`],
+   [`Comment suivre des gens ?`,`Utilise l'onglet People (ou tape @nom), ouvre un profil et touche Suivre. Pour les comptes privés, tu envoies une demande acceptée depuis les Notifications.`],
+   [`Comment mettre en avant ou masquer des éléments ?`,`Ouvre un élément → "Public profile" : touche Feature pour l'épingler (max 5) en haut du profil, ou Hidden pour qu'il reste visible seulement par toi même en profil public.`],
+   [`Comment partager ma liste ?`,`Le bouton Partager donne un lien qui s'ouvre même sans l'app.`],
+  ]},
+  {c:'Prix & Vault Plus', qa:[
+   [`Prix vs "prix trouvé" ?`,`Le "prix" est la référence ; le "prix trouvé" note une offre et affiche l'économie en %.`],
+   [`Qu'est-ce que Vault Plus ?`,`L'abonnement qui débloque les éléments illimités, la Carte, les statistiques avancées, les mood boards avancés et plusieurs espaces.`],
+   [`Combien ça coûte et comment l'activer ?`,`Il y a un forfait mensuel et un forfait annuel réduit. Touche Vault Plus dans le menu pour voir les prix et l'activer.`],
+   [`Comment annuler ?`,`Depuis les réglages de l'abonnement. Tu gardes Plus jusqu'à la fin de la période et tes données restent intactes.`],
+  ]},
+  {c:'Confidentialité & compte', qa:[
+   [`Quelles données collectez-vous ?`,`Seulement le nécessaire pour faire fonctionner l'app (compte, tes éléments, préférences). Aucune vente de données ni profilage publicitaire.`],
+   [`Où sont stockées mes données ?`,`Sur des serveurs dans l'Union européenne.`],
+   [`Comment supprimer mon compte ?`,`Depuis ton profil, "Supprimer le compte" — cela efface définitivement tes données (droit à l'oubli). Vault est réservé aux 16 ans et plus.`],
+  ]},
+  {c:'Dépannage', qa:[
+   [`Un site ne récupère pas le titre ou l'image`,`C'est souvent un site protégé anti-bot : ajoute le titre et la photo à la main — l'élément fonctionne quand même.`],
+   [`L'image ne s'affiche pas`,`Colle une URL d'image valide ou importe une photo depuis l'appareil.`],
+   [`Je ne vois pas mes éléments sur un autre appareil`,`Vérifie que tu es connecté avec le même compte sur les deux.`],
+  ]},
+  {c:'Tutoriels rapides', qa:[
+   [`▶ Ajoute ton premier élément en 10 secondes`,`1) Copie un lien. 2) Colle-le dans la barre du haut. 3) Touche Enregistrer. C'est fait !`],
+   [`▶ Crée et partage ta liste`,`1) Ajoute quelques éléments. 2) Rends publics ceux à montrer. 3) Partage le lien de ton profil.`],
+   [`▶ Deviens social`,`1) Choisis ton @nom. 2) Ajoute photo et bio. 3) Suis des amis et mets 5 éléments en avant.`],
+  ]},
+  {c:'Contact', qa:[
+   [`Comment vous contacter ?`,`Écris à vaultwishlist@gmail.com — nous répondons dès que possible.`],
+  ]},
+ ],
+ de:[
+  {c:'Erste Schritte', qa:[
+   [`Was ist Vault?`,`Vault ist dein persönlicher Ort, um alles zu speichern, was du online findest — Produkte, Restaurants und Hotels, Geschenke und Ideen — an einem Ort, organisiert und auf allen Geräten synchronisiert. Du kannst auch ein öffentliches Profil haben, anderen folgen und Follower gewinnen.`],
+   [`Ist Vault kostenlos?`,`Ja. Die Kernfunktionen sind kostenlos (bis zu 20 aktive Einträge). Vault Plus schaltet unbegrenzte Einträge und erweiterte Funktionen frei (Karte, Statistiken, erweiterte Mood Boards, mehrere Workspaces).`],
+   [`Brauche ich ein Konto?`,`Du kannst dich sofort umsehen, aber zum Speichern und Synchronisieren brauchst du ein kostenloses Konto (nur eine E-Mail).`],
+   [`Auf welchen Geräten läuft es?`,`Im Web (vaultwishlist.com) und auf dem iPhone. Android kommt bald. Melde dich mit demselben Konto an, damit alles synchron bleibt.`],
+  ]},
+  {c:'Einträge hinzufügen', qa:[
+   [`Wie füge ich einen Eintrag hinzu?`,`Kopiere einen Link, füge ihn in die obere Leiste ein (oder tippe ＋ Hinzufügen). Vault holt Titel, Bild und Preis automatisch. Passe Details an und speichere.`],
+   [`Muss ich einen Link angeben?`,`Nein. Du kannst einen Eintrag auch nur mit Titel und Foto erstellen. Ein Link hilft aber: Details werden automatisch gefüllt und Freunde können ihn öffnen oder kaufen.`],
+   [`Welche Shops werden unterstützt?`,`Fast jede Seite — Amazon, Shops, Google Maps, Booking, Blogs. Vault liest die öffentlichen Daten der Seite.`],
+   [`Warum füllen sich manche Marken (Adidas, Zara) nicht selbst?`,`Manche großen Marken nutzen Anti-Bot-Schutz, der das automatische Abrufen blockiert. Vault erstellt den Eintrag trotzdem — füge Titel und Foto selbst hinzu.`],
+   [`Wie füge ich ein Foto oder einen Ort hinzu?`,`Foto: füge eine Bild-URL ein oder lade eines vom Gerät hoch. Ort/Restaurant: füge einen Google-Maps-Link ein und finde ihn auf der Karte. Auf dem iPhone kannst du beim Surfen über den Teilen-Button → "Vault" hinzufügen.`],
+  ]},
+  {c:'Organisieren', qa:[
+   [`Was sind Bereiche (Sections)?`,`Ordner zum Gruppieren (z. B. Mode, Tech, Restaurants). Erstelle sie im Seitenmenü, je mit Farbe und Symbol.`],
+   [`Tags, Status und Priorität?`,`Tags sind freie Labels zum Filtern; der Status (Will ich / Bestellt / Gekauft oder Zu besuchen / Besucht) filtert über die farbigen Chips oben; tippe den Stern einer Karte für Priorität.`],
+   [`Wie funktioniert die Suche?`,`Die obere Leiste macht drei Dinge: durchsucht deine Einträge, findet Personen mit @name und fügt einen Link ein, wenn du ihn einfügst.`],
+   [`Welche Ansichten gibt es?`,`Raster, Liste und Mood Board. Wechsle über die Ansichtsbuttons oben. Du kannst Einträge auch archivieren, ohne sie zu löschen.`],
+  ]},
+  {c:'Dein Profil & Social', qa:[
+   [`Wie funktioniert mein öffentliches Profil?`,`Jeder hat ein Profil mit @name, Foto, Bio und den Einträgen, die er zeigen möchte. Andere können es sehen und dir folgen.`],
+   [`Öffentlich oder privat?`,`Deine Wahl. Privat: man findet dich, sieht aber ein Schloss und muss eine Anfrage senden, um deine Einträge zu sehen.`],
+   [`Wie folge ich Personen?`,`Nutze den People-Tab (oder tippe @name), öffne ein Profil und tippe Folgen. Bei privaten Konten sendest du eine Anfrage, die über Mitteilungen bestätigt wird.`],
+   [`Wie hebe ich Einträge hervor oder verstecke sie?`,`Öffne einen Eintrag → "Public profile": tippe Feature, um ihn (max. 5) oben anzuheften, oder Hidden, damit nur du ihn siehst — auch bei öffentlichem Profil.`],
+   [`Wie teile ich meine Liste?`,`Der Teilen-Button erzeugt einen Link, der auch ohne App funktioniert.`],
+  ]},
+  {c:'Preise & Vault Plus', qa:[
+   [`Preis vs. "gefundener Preis"?`,`Der "Preis" ist die Referenz; der "gefundene Preis" notiert ein Angebot und zeigt die Ersparnis in %.`],
+   [`Was ist Vault Plus?`,`Das Abo, das unbegrenzte Einträge, die Karte, erweiterte Statistiken, erweiterte Mood Boards und mehrere Workspaces freischaltet.`],
+   [`Was kostet es und wie aktiviere ich es?`,`Es gibt ein Monats- und ein vergünstigtes Jahresabo. Tippe im Menü auf Vault Plus, um Preise zu sehen und zu aktivieren.`],
+   [`Wie kündige ich?`,`In den Abo-Einstellungen. Plus bleibt bis Periodenende aktiv und deine Daten bleiben erhalten.`],
+  ]},
+  {c:'Datenschutz & Konto', qa:[
+   [`Welche Daten sammelt ihr?`,`Nur das Nötige zum Betrieb der App (Konto, deine Einträge, Einstellungen). Kein Datenverkauf, kein Werbe-Profiling.`],
+   [`Wo werden meine Daten gespeichert?`,`Auf Servern in der Europäischen Union.`],
+   [`Wie lösche ich mein Konto?`,`Im Profil unter "Konto löschen" — das entfernt deine Daten endgültig (Recht auf Vergessenwerden). Vault ist für Nutzer ab 16.`],
+  ]},
+  {c:'Fehlerbehebung', qa:[
+   [`Eine Seite lädt Titel/Bild nicht`,`Meist eine Anti-Bot-geschützte Seite: füge Titel und Foto manuell hinzu — der Eintrag funktioniert trotzdem.`],
+   [`Das Bild wird nicht angezeigt`,`Füge eine gültige Bild-URL ein oder lade ein Foto vom Gerät hoch.`],
+   [`Ich sehe meine Einträge auf einem anderen Gerät nicht`,`Stelle sicher, dass du auf beiden mit demselben Konto angemeldet bist.`],
+  ]},
+  {c:'Schnelle Tutorials', qa:[
+   [`▶ Ersten Eintrag in 10 Sekunden hinzufügen`,`1) Link kopieren. 2) In die obere Leiste einfügen. 3) Speichern tippen. Fertig!`],
+   [`▶ Wunschliste erstellen und teilen`,`1) Ein paar Einträge hinzufügen. 2) Die zu zeigenden öffentlich machen. 3) Profil-Link teilen.`],
+   [`▶ Werde social`,`1) Wähle deinen @name. 2) Foto und Bio hinzufügen. 3) Freunden folgen und 5 Einträge hervorheben.`],
+  ]},
+  {c:'Kontakt', qa:[
+   [`Wie kontaktiere ich euch?`,`Schreib an vaultwishlist@gmail.com — wir antworten so schnell wie möglich.`],
+  ]},
+ ],
+ zh:[
+  {c:'快速上手', qa:[
+   [`Vault 是什么？`,`Vault 是你的个人空间，用来保存在网上发现的一切——想买的商品、想去的餐厅和酒店、礼物和灵感——集中在一处，井井有条，并在你的所有设备间同步。你还可以拥有公开主页、关注他人并被关注。`],
+   [`Vault 免费吗？`,`是的。核心功能免费（最多 20 个有效条目）。Vault Plus 解锁无限条目和高级功能（地图、统计、进阶 Mood board、多个工作区）。`],
+   [`需要账号吗？`,`可以先随便看看，但要保存并在设备间同步条目，需要一个免费账号（只需邮箱）。`],
+   [`支持哪些设备？`,`网页版（vaultwishlist.com）和 iPhone，Android 即将推出。用同一账号登录即可保持同步。`],
+  ]},
+  {c:'添加条目', qa:[
+   [`如何添加条目？`,`复制链接，粘贴到顶部搜索栏（或点 ＋ 添加）。Vault 会自动获取标题、图片和价格。按需调整后保存。`],
+   [`必须填链接吗？`,`不必。只用标题和照片也能创建条目。但链接更方便：自动填充信息，并让好友可以打开或购买。`],
+   [`支持哪些商店？`,`几乎任何网站——Amazon、各类商店、Google 地图、Booking、博客。Vault 读取页面的公开数据。`],
+   [`为什么有些品牌（Adidas、Zara）不能自动填充？`,`一些大品牌启用了反爬保护，会阻止自动抓取。Vault 仍会创建该条目——请自行补充标题和照片。`],
+   [`如何添加图片或地点？`,`图片：粘贴图片网址或从设备上传。地点或餐厅：粘贴 Google 地图链接，可在“地图”中找到。在 iPhone 上还可在浏览时通过分享按钮 →“Vault”添加。`],
+  ]},
+  {c:'整理', qa:[
+   [`分区（Sections）是什么？`,`用于分组的文件夹（如时尚、科技、餐厅）。在侧边菜单创建，可自定义颜色和图标。`],
+   [`标签、状态和优先级？`,`标签是自由的筛选标记；状态（想要／已下单／已购买，或待去／已去）通过顶部彩色标签筛选；点卡片上的星标可标记优先。`],
+   [`搜索如何使用？`,`顶部栏有三种用途：搜索你的条目、用 @用户名 查找他人、粘贴链接即可添加。`],
+   [`有哪些视图？`,`网格、列表和 Mood board。用顶部的视图按钮切换。也可将条目归档而不删除。`],
+  ]},
+  {c:'个人主页与社交', qa:[
+   [`公开主页如何运作？`,`每位用户都有主页，含 @用户名、头像、简介以及你选择展示的条目。他人可查看并关注你。`],
+   [`公开还是私密？`,`由你决定。私密时，别人能找到你但会看到锁，需要发送请求才能查看你的条目。`],
+   [`如何关注他人？`,`用 People 标签（或输入 @用户名），打开主页点关注。私密账号会收到请求，在“通知”中接受。`],
+   [`如何精选或隐藏条目？`,`打开条目 →“Public profile”：点 Feature 置顶（最多 5 个）到主页；点 Hidden 则即使主页公开该条目也只有你可见。`],
+   [`如何分享我的清单？`,`分享按钮会生成链接，未安装应用的人也能打开。`],
+  ]},
+  {c:'价格与 Vault Plus', qa:[
+   [`“价格”与“发现的价格”？`,`“价格”是参考价；“发现的价格”用于记录优惠并显示节省百分比。`],
+   [`Vault Plus 是什么？`,`解锁无限条目、地图、高级统计、进阶 Mood board 和多个工作区的订阅。`],
+   [`多少钱、如何开通？`,`有按月和折扣年付两种方案。在菜单点 Vault Plus 查看价格并开通。`],
+   [`如何取消？`,`在订阅设置中取消。当前周期结束前仍可使用 Plus，数据保持不变。`],
+  ]},
+  {c:'隐私与账号', qa:[
+   [`你们收集哪些数据？`,`仅收集应用运行所需（账号、你的条目、偏好）。不出售数据，不做广告画像。`],
+   [`我的数据存在哪里？`,`存放在欧盟的服务器上。`],
+   [`如何删除账号？`,`在个人主页点“删除账号”——会永久删除你的数据（被遗忘权）。Vault 面向 16 岁及以上用户。`],
+  ]},
+  {c:'常见问题', qa:[
+   [`某网站抓不到标题或图片`,`通常是有反爬保护的网站：手动补充标题和照片即可，条目照常可用。`],
+   [`图片不显示`,`粘贴有效的图片网址，或从设备上传照片。`],
+   [`在另一台设备看不到我的条目`,`请确认两台设备使用同一账号登录。`],
+  ]},
+  {c:'快速教程', qa:[
+   [`▶ 10 秒添加第一个条目`,`1) 复制链接。2) 粘贴到顶部栏。3) 点保存。完成！`],
+   [`▶ 创建并分享清单`,`1) 添加一些条目。2) 把想展示的设为公开。3) 分享你的主页链接。`],
+   [`▶ 玩转社交`,`1) 选择 @用户名。2) 设置头像和简介。3) 关注好友并精选 5 个条目。`],
+  ]},
+  {c:'联系我们', qa:[
+   [`如何联系你们？`,`发邮件到 vaultwishlist@gmail.com——我们会尽快回复。`],
+  ]},
+ ],
+ ja:[
+  {c:'はじめに', qa:[
+   [`Vault とは？`,`Vault はネットで見つけたものを何でも保存できる個人スペースです。買いたい商品、行きたいレストランやホテル、ギフトやアイデアを一か所にまとめ、すべての端末で同期します。公開プロフィールを持ち、フォローしたりされたりもできます。`],
+   [`Vault は無料ですか？`,`はい。主要機能は無料（有効アイテム 20 件まで）。Vault Plus で無制限のアイテムと高度な機能（マップ、統計、上級ムードボード、複数ワークスペース）が使えます。`],
+   [`アカウントは必要？`,`すぐに見て回れますが、保存して端末間で同期するには無料アカウント（メールのみ）が必要です。`],
+   [`対応端末は？`,`ウェブ（vaultwishlist.com）と iPhone。Android は近日対応。同じアカウントでログインすれば同期されます。`],
+  ]},
+  {c:'アイテムの追加', qa:[
+   [`アイテムの追加方法は？`,`リンクをコピーして上部の検索バーに貼り付け（または ＋ 追加）。Vault がタイトル・画像・価格を自動取得します。必要に応じて調整して保存。`],
+   [`必ずリンクが必要？`,`いいえ。タイトルと写真だけでも作成できます。ただしリンクがあると詳細が自動入力され、友達が開いたり購入したりできます。`],
+   [`対応ストアは？`,`ほぼ全サイト——Amazon、各種ショップ、Google マップ、Booking、ブログなど。ページの公開データを読み取ります。`],
+   [`一部ブランド（Adidas、Zara）で自動入力されないのは？`,`大手ブランドはボット対策で自動取得をブロックすることがあります。その場合も Vault はアイテムを作成するので、タイトルと写真を自分で追加してください。`],
+   [`写真や場所の追加は？`,`写真：画像 URL を貼り付けるか端末からアップロード。場所やレストラン：Google マップのリンクを貼るとマップに表示されます。iPhone では閲覧中に共有ボタン →「Vault」で追加も可能。`],
+  ]},
+  {c:'整理', qa:[
+   [`セクションとは？`,`アイテムをまとめるフォルダ（例：ファッション、テック、レストラン）。サイドメニューから色とアイコン付きで作成できます。`],
+   [`タグ・ステータス・優先度は？`,`タグは自由なラベルで絞り込み用。ステータス（欲しい／注文済み／購入済み、または訪問予定／訪問済み）は上部の色付きチップで絞り込み。カードの星をタップで優先度。`],
+   [`検索の使い方は？`,`上部バーは 3 つの役割：アイテム検索、@名前 で人を検索、リンクを貼れば追加。`],
+   [`表示方法は？`,`グリッド、リスト、ムードボード。上部のビューボタンで切替。削除せずアーカイブも可能。`],
+  ]},
+  {c:'プロフィールとソーシャル', qa:[
+   [`公開プロフィールの仕組みは？`,`各ユーザーは @ユーザー名、写真、自己紹介、表示するアイテムを持つプロフィールがあります。他の人が閲覧しフォローできます。`],
+   [`公開か非公開か？`,`自由に選べます。非公開だと見つけられても鍵が表示され、アイテムを見るにはリクエストが必要です。`],
+   [`フォローの方法は？`,`People タブ（または @名前 を入力）でプロフィールを開き「フォロー」。非公開アカウントにはリクエストを送り、相手が通知から承認します。`],
+   [`アイテムの注目表示や非表示は？`,`アイテムを開く →「Public profile」：Feature でプロフィール上部に固定（最大 5 件）、Hidden なら公開プロフィールでも自分だけに表示。`],
+   [`リストの共有は？`,`共有ボタンでリンクを作成。アプリがない人でも開けます。`],
+  ]},
+  {c:'価格と Vault Plus', qa:[
+   [`「価格」と「見つけた価格」の違いは？`,`「価格」は基準。「見つけた価格」はセール価格を記録し、割引率（％）を表示します。`],
+   [`Vault Plus とは？`,`無制限アイテム、マップ、高度な統計、上級ムードボード、複数ワークスペースを解放するサブスクです。`],
+   [`料金と有効化は？`,`月額と割引の年額があります。メニューの Vault Plus で価格を確認して有効化。`],
+   [`解約方法は？`,`サブスク設定から。期間終了までは Plus を利用でき、データはそのまま残ります。`],
+  ]},
+  {c:'プライバシーとアカウント', qa:[
+   [`どんなデータを集めますか？`,`アプリ運用に必要な範囲のみ（アカウント、アイテム、設定）。データ販売や広告プロファイリングは行いません。`],
+   [`データはどこに保存？`,`欧州連合（EU）のサーバーに保存します。`],
+   [`アカウント削除は？`,`プロフィールの「アカウントを削除」から。データを完全に削除します（忘れられる権利）。Vault は 16 歳以上向けです。`],
+  ]},
+  {c:'困ったときは', qa:[
+   [`タイトルや画像が取得できない`,`多くはボット対策のあるサイトです。タイトルと写真を手動で追加すれば問題なく使えます。`],
+   [`画像が表示されない`,`有効な画像 URL を貼り付けるか、端末から写真をアップロードしてください。`],
+   [`別の端末でアイテムが見えない`,`両方で同じアカウントにログインしているか確認してください。`],
+  ]},
+  {c:'クイックチュートリアル', qa:[
+   [`▶ 10 秒で最初のアイテムを追加`,`1) リンクをコピー。2) 上部バーに貼り付け。3) 保存をタップ。完了！`],
+   [`▶ ウィッシュリストを作って共有`,`1) いくつか追加。2) 見せたいものを公開に。3) プロフィールのリンクを共有。`],
+   [`▶ ソーシャルを始める`,`1) @ユーザー名を決める。2) 写真と自己紹介を設定。3) 友達をフォローし 5 件を注目表示。`],
+  ]},
+  {c:'お問い合わせ', qa:[
+   [`連絡方法は？`,`vaultwishlist@gmail.com までご連絡ください。できるだけ早く返信します。`],
+  ]},
+ ],
+ ru:[
+  {c:'Начало работы', qa:[
+   [`Что такое Vault?`,`Vault — это личное пространство, где вы сохраняете всё, что находите в интернете: товары, рестораны и отели, подарки и идеи — в одном месте, упорядоченно и с синхронизацией на всех устройствах. Можно завести публичный профиль, подписываться на людей и набирать подписчиков.`],
+   [`Vault бесплатный?`,`Да. Основные функции бесплатны (до 20 активных элементов). Vault Plus открывает безлимит и расширенные функции (Карта, статистика, продвинутые мудборды, несколько рабочих пространств).`],
+   [`Нужен ли аккаунт?`,`Осмотреться можно сразу, но чтобы сохранять и синхронизировать элементы, нужен бесплатный аккаунт (только e-mail).`],
+   [`На каких устройствах работает?`,`В вебе (vaultwishlist.com) и на iPhone. Android скоро. Входите под одним аккаунтом, чтобы всё синхронизировалось.`],
+  ]},
+  {c:'Добавление элементов', qa:[
+   [`Как добавить элемент?`,`Скопируйте ссылку, вставьте в верхнюю строку (или нажмите ＋ Добавить). Vault сам подтянет название, изображение и цену. Поправьте детали и сохраните.`],
+   [`Обязательно ли указывать ссылку?`,`Нет. Элемент можно создать только с названием и фото. Но ссылка удобна: автозаполнение деталей и возможность друзьям открыть или купить.`],
+   [`Какие магазины поддерживаются?`,`Почти любые сайты — Amazon, магазины, Google Maps, Booking, блоги. Vault читает публичные данные страницы.`],
+   [`Почему некоторые бренды (Adidas, Zara) не заполняются сами?`,`Крупные бренды используют анти-бот защиту, блокирующую автозагрузку. Vault всё равно создаст элемент — добавьте название и фото вручную.`],
+   [`Как добавить фото или место?`,`Фото: вставьте URL изображения или загрузите с устройства. Место или ресторан: вставьте ссылку Google Maps — оно появится на Карте. На iPhone можно добавлять при просмотре через кнопку Поделиться → «Vault».`],
+  ]},
+  {c:'Организация', qa:[
+   [`Что такое разделы (Sections)?`,`Папки для группировки (например, Мода, Техника, Рестораны). Создавайте их в боковом меню, каждый со своим цветом и иконкой.`],
+   [`Теги, статус и приоритет?`,`Теги — свободные метки для фильтрации; статус (Хочу / Заказано / Куплено или Посетить / Посещено) фильтруется цветными чипами сверху; звёздочка на карточке — приоритет.`],
+   [`Как работает поиск?`,`Верхняя строка делает три вещи: ищет ваши элементы, находит людей по @имени и добавляет ссылку при вставке.`],
+   [`Какие есть виды?`,`Сетка, Список и Мудборд. Переключайте кнопками вида сверху. Элементы можно архивировать, не удаляя.`],
+  ]},
+  {c:'Профиль и соцсеть', qa:[
+   [`Как работает публичный профиль?`,`У каждого есть профиль с @именем, фото, описанием и элементами, которые он решил показать. Другие могут смотреть и подписываться.`],
+   [`Публичный или приватный?`,`На ваш выбор. Приватный: вас находят, но видят замок и должны отправить запрос, чтобы увидеть элементы.`],
+   [`Как подписываться на людей?`,`Вкладка People (или введите @имя), откройте профиль и нажмите Подписаться. У приватных аккаунтов вы отправляете запрос, который принимают в Уведомлениях.`],
+   [`Как выделить или скрыть элементы?`,`Откройте элемент → «Public profile»: Feature закрепляет его (до 5) вверху профиля, Hidden оставляет видимым только вам даже при публичном профиле.`],
+   [`Как поделиться списком?`,`Кнопка Поделиться даёт ссылку, которая открывается даже без приложения.`],
+  ]},
+  {c:'Цены и Vault Plus', qa:[
+   [`«Цена» и «найденная цена»?`,`«Цена» — ориентир; «найденная цена» отмечает выгодное предложение и показывает экономию в %.`],
+   [`Что такое Vault Plus?`,`Подписка, открывающая безлимит элементов, Карту, расширенную статистику, продвинутые мудборды и несколько рабочих пространств.`],
+   [`Сколько стоит и как включить?`,`Есть месячный и годовой (со скидкой) план. Нажмите Vault Plus в меню, чтобы увидеть цены и активировать.`],
+   [`Как отменить?`,`В настройках подписки. Plus сохраняется до конца периода, данные остаются нетронутыми.`],
+  ]},
+  {c:'Приватность и аккаунт', qa:[
+   [`Какие данные вы собираете?`,`Только необходимое для работы приложения (аккаунт, ваши элементы, настройки). Никакой продажи данных и рекламного профилирования.`],
+   [`Где хранятся мои данные?`,`На серверах в Европейском союзе.`],
+   [`Как удалить аккаунт?`,`В профиле «Удалить аккаунт» — данные удаляются безвозвратно (право на забвение). Vault для пользователей от 16 лет.`],
+  ]},
+  {c:'Устранение неполадок', qa:[
+   [`Сайт не подтягивает название или картинку`,`Обычно это сайт с анти-бот защитой: добавьте название и фото вручную — элемент всё равно работает.`],
+   [`Изображение не отображается`,`Вставьте корректный URL изображения или загрузите фото с устройства.`],
+   [`Не вижу элементы на другом устройстве`,`Убедитесь, что вошли под одним аккаунтом на обоих.`],
+  ]},
+  {c:'Быстрые уроки', qa:[
+   [`▶ Добавьте первый элемент за 10 секунд`,`1) Скопируйте ссылку. 2) Вставьте в верхнюю строку. 3) Нажмите Сохранить. Готово!`],
+   [`▶ Создайте и поделитесь списком`,`1) Добавьте несколько элементов. 2) Сделайте публичными нужные. 3) Поделитесь ссылкой профиля.`],
+   [`▶ Станьте социальным`,`1) Выберите @имя. 2) Добавьте фото и описание. 3) Подпишитесь на друзей и выделите 5 элементов.`],
+  ]},
+  {c:'Контакты', qa:[
+   [`Как с вами связаться?`,`Пишите на vaultwishlist@gmail.com — ответим как можно скорее.`],
+  ]},
+ ],
+ pl:[
+  {c:'Pierwsze kroki', qa:[
+   [`Czym jest Vault?`,`Vault to twoja osobista przestrzeń, w której zapisujesz wszystko, co znajdziesz online — produkty, restauracje i hotele, prezenty i pomysły — w jednym uporządkowanym miejscu, zsynchronizowanym na wszystkich urządzeniach. Możesz też mieć profil publiczny, obserwować innych i być obserwowanym.`],
+   [`Czy Vault jest darmowy?`,`Tak. Główne funkcje są darmowe (do 20 aktywnych pozycji). Vault Plus odblokowuje nieograniczoną liczbę pozycji i funkcje zaawansowane (Mapa, statystyki, zaawansowane mood boardy, wiele przestrzeni).`],
+   [`Czy potrzebuję konta?`,`Możesz się rozejrzeć od razu, ale aby zapisywać i synchronizować pozycje, potrzebne jest darmowe konto (wystarczy e-mail).`],
+   [`Na jakich urządzeniach działa?`,`W przeglądarce (vaultwishlist.com) i na iPhone. Android wkrótce. Zaloguj się tym samym kontem, aby wszystko było zsynchronizowane.`],
+  ]},
+  {c:'Dodawanie pozycji', qa:[
+   [`Jak dodać pozycję?`,`Skopiuj link, wklej w górny pasek (lub dotknij ＋ Dodaj). Vault automatycznie pobierze tytuł, zdjęcie i cenę. Popraw szczegóły i zapisz.`],
+   [`Czy link jest obowiązkowy?`,`Nie. Pozycję można utworzyć z samym tytułem i zdjęciem. Link jednak pomaga: automatycznie uzupełnia szczegóły i pozwala znajomym otworzyć lub kupić.`],
+   [`Które sklepy są obsługiwane?`,`Niemal każda strona — Amazon, sklepy, Mapy Google, Booking, blogi. Vault czyta publiczne dane strony.`],
+   [`Dlaczego niektóre marki (Adidas, Zara) nie uzupełniają się same?`,`Duże marki stosują zabezpieczenia anti-bot blokujące automatyczne pobieranie. Vault i tak utworzy pozycję — dodaj tytuł i zdjęcie ręcznie.`],
+   [`Jak dodać zdjęcie lub miejsce?`,`Zdjęcie: wklej URL obrazu lub prześlij je z urządzenia. Miejsce lub restauracja: wklej link Map Google, a znajdziesz je na Mapie. Na iPhone możesz też dodawać podczas przeglądania przez przycisk Udostępnij → „Vault”.`],
+  ]},
+  {c:'Organizacja', qa:[
+   [`Czym są sekcje?`,`Foldery do grupowania pozycji (np. Moda, Tech, Restauracje). Twórz je w menu bocznym, każdą z własnym kolorem i ikoną.`],
+   [`Tagi, status i priorytet?`,`Tagi to dowolne etykiety do filtrowania; status (Chcę / Zamówione / Kupione lub Do odwiedzenia / Odwiedzone) filtruje kolorowymi chipami u góry; gwiazdka na karcie oznacza priorytet.`],
+   [`Jak działa wyszukiwanie?`,`Górny pasek robi trzy rzeczy: przeszukuje pozycje, znajduje osoby przez @nazwę i dodaje link po wklejeniu.`],
+   [`Jakie są widoki?`,`Siatka, Lista i Mood board. Przełączaj przyciskami widoku u góry. Pozycje można też archiwizować bez usuwania.`],
+  ]},
+  {c:'Twój profil i social', qa:[
+   [`Jak działa mój profil publiczny?`,`Każdy użytkownik ma profil z @nazwą, zdjęciem, opisem i pozycjami, które chce pokazać. Inni mogą go oglądać i cię obserwować.`],
+   [`Publiczny czy prywatny?`,`Twój wybór. Prywatny: inni cię znajdą, ale zobaczą kłódkę i muszą wysłać prośbę, by zobaczyć twoje pozycje.`],
+   [`Jak obserwować osoby?`,`Użyj zakładki People (lub wpisz @nazwę), otwórz profil i dotknij Obserwuj. Konta prywatne dostają prośbę akceptowaną w Powiadomieniach.`],
+   [`Jak wyróżnić lub ukryć pozycje?`,`Otwórz pozycję → „Public profile”: Feature przypina ją (maks. 5) na górze profilu, a Hidden sprawia, że widzisz ją tylko ty, nawet przy profilu publicznym.`],
+   [`Jak udostępnić listę?`,`Przycisk Udostępnij daje link, który otworzy się nawet bez aplikacji.`],
+  ]},
+  {c:'Ceny i Vault Plus', qa:[
+   [`Cena a „znaleziona cena”?`,`„Cena” to odniesienie; „znaleziona cena” zapisuje okazję i pokazuje oszczędność w %.`],
+   [`Czym jest Vault Plus?`,`Subskrypcja odblokowująca nieograniczone pozycje, Mapę, zaawansowane statystyki, zaawansowane mood boardy i wiele przestrzeni.`],
+   [`Ile kosztuje i jak aktywować?`,`Jest plan miesięczny i tańszy roczny. Dotknij Vault Plus w menu, aby zobaczyć ceny i aktywować.`],
+   [`Jak anulować?`,`W ustawieniach subskrypcji. Plus działa do końca okresu, a dane pozostają nienaruszone.`],
+  ]},
+  {c:'Prywatność i konto', qa:[
+   [`Jakie dane zbieracie?`,`Tylko to, co potrzebne do działania aplikacji (konto, twoje pozycje, ustawienia). Bez sprzedaży danych i profilowania reklamowego.`],
+   [`Gdzie są przechowywane moje dane?`,`Na serwerach w Unii Europejskiej.`],
+   [`Jak usunąć konto?`,`W profilu „Usuń konto” — trwale usuwa twoje dane (prawo do bycia zapomnianym). Vault jest dla osób od 16 lat.`],
+  ]},
+  {c:'Rozwiązywanie problemów', qa:[
+   [`Strona nie pobiera tytułu ani zdjęcia`,`Zwykle to strona z ochroną anti-bot: dodaj tytuł i zdjęcie ręcznie — pozycja i tak działa.`],
+   [`Zdjęcie się nie wyświetla`,`Wklej prawidłowy URL obrazu lub prześlij zdjęcie z urządzenia.`],
+   [`Nie widzę pozycji na innym urządzeniu`,`Upewnij się, że na obu zalogowałeś się tym samym kontem.`],
+  ]},
+  {c:'Szybkie samouczki', qa:[
+   [`▶ Dodaj pierwszą pozycję w 10 sekund`,`1) Skopiuj link. 2) Wklej w górny pasek. 3) Dotknij Zapisz. Gotowe!`],
+   [`▶ Utwórz i udostępnij listę`,`1) Dodaj kilka pozycji. 2) Ustaw jako publiczne te do pokazania. 3) Udostępnij link do profilu.`],
+   [`▶ Wejdź w social`,`1) Wybierz @nazwę. 2) Dodaj zdjęcie i opis. 3) Obserwuj znajomych i wyróżnij 5 pozycji.`],
+  ]},
+  {c:'Kontakt', qa:[
+   [`Jak się z wami skontaktować?`,`Napisz na vaultwishlist@gmail.com — odpowiemy najszybciej, jak to możliwe.`],
+  ]},
+ ],
+};
+function _setHelpLang(l){ _helpLang=l; try{localStorage.setItem('vaultHelpLang',l);}catch(e){} _applyHelpUI(); const s=document.getElementById('helpSearch'); _renderHelp(s?s.value:''); }
+function _applyHelpUI(){
+  const u=HELP_UI[_helpLang]||HELP_UI.en;
+  const set=(id,v,html)=>{const e=document.getElementById(id); if(!e)return; if(html) e.innerHTML=v; else e.textContent=v;};
+  set('helpBack',u.back); set('helpTitleBar',u.title); set('helpHeroTitle',u.hero); set('helpHeroSub',u.sub); set('helpContact',u.contact,true);
+  const s=document.getElementById('helpSearch'); if(s)s.placeholder=u.search;
+  const sel=document.getElementById('helpLangSel'); if(sel){ sel.innerHTML=HELP_LANGS.map(([code,name])=>`<option value="${code}">${esc(name)}</option>`).join(''); sel.value=_helpLang; }
+}
+function openHelp(){ const o=document.getElementById('helpOv'); if(!o)return; o.classList.add('open'); document.body.classList.add('pp-open'); const s=document.getElementById('helpSearch'); if(s)s.value=''; _applyHelpUI(); _renderHelp(''); o.scrollTop=0; }
 function closeHelp(){ const o=document.getElementById('helpOv'); if(o)o.classList.remove('open'); document.body.classList.remove('pp-open'); }
 function _helpToggle(el){ const q=el.closest('.help-q'); if(q) q.classList.toggle('open'); }
 function _renderHelp(filter){
   const box=document.getElementById('helpContent'); if(!box) return;
   const f=(filter||'').toLowerCase().trim();
+  const data=HELP_I18N[_helpLang]||HELP_I18N.en;
   let html='', any=false;
-  HELP_DATA.forEach(c=>{
+  data.forEach(c=>{
     const items=c.qa.filter(([q,a])=> !f || q.toLowerCase().includes(f) || a.toLowerCase().includes(f));
     if(!items.length) return; any=true;
-    html+=`<div class="help-cat"><div class="help-cat-title">${esc(c.cat)}</div>`;
-    items.forEach(([q,a])=>{
-      html+=`<div class="help-q${f?' open':''}"><div class="help-q-head" onclick="_helpToggle(this)"><span>${esc(q)}</span><span class="chev">▸</span></div><div class="help-a"><div class="help-a-inner">${a}</div></div></div>`;
-    });
+    html+=`<div class="help-cat"><div class="help-cat-title">${esc(c.c)}</div>`;
+    items.forEach(([q,a])=>{ html+=`<div class="help-q${f?' open':''}"><div class="help-q-head" onclick="_helpToggle(this)"><span>${esc(q)}</span><span class="chev">▸</span></div><div class="help-a"><div class="help-a-inner">${a}</div></div></div>`; });
     html+=`</div>`;
   });
-  box.innerHTML = any ? html : `<div class="help-empty">Nessun risultato per "${esc(f)}".<br>Prova un'altra parola o scrivici a vaultwishlist@gmail.com.</div>`;
+  const u=HELP_UI[_helpLang]||HELP_UI.en;
+  box.innerHTML = any ? html : `<div class="help-empty">${esc(u.empty)} "${esc(f)}".</div>`;
 }
 document.addEventListener('click',e=>{if(!e.target.closest('#curDd'))closeCurDd();});
 document.addEventListener('click',e=>{
