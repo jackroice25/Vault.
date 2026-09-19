@@ -289,7 +289,9 @@ button,a,.card,.chip,.si,.sb-util,.mtab,.newsec,.disc-row,.pubi-card,[onclick]{t
 .empty-icon{font-size:50px;margin-bottom:16px}
 .empty h3{font-size:15px;color:var(--t2);font-weight:600;margin-bottom:7px}
 .empty p{font-size:13px;color:var(--t3);line-height:1.6;margin-bottom:20px}
-.empty-cta{background:var(--accent);color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif}
+.empty-sub{max-width:340px;margin:8px auto 0;color:var(--t3);font-size:13.5px;line-height:1.55;text-align:center}
+.empty-cta{display:inline-flex;align-items:center;gap:7px;margin-top:16px;background:var(--accent);color:#fff;border:none;padding:12px 26px;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;font-family:'Inter',sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.empty-cta:active{transform:scale(.96)}
 
 /* ── OVERLAY / MODAL ── */
 .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);align-items:center;justify-content:center;z-index:9600}
@@ -2372,7 +2374,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.19-social25';
+const APP_BUILD='2026.09.19-social26';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -3331,7 +3333,8 @@ function render(){
   if(!items.length){
     grid.className='';
     const emptyIco=S.chip==='voglio'?ico('bag',36):S.chip==='comprato'?ico('check-circle',36):S.chip==='ordinato'?ico('box',36):S.chip==='visitare'?ico('pin',36):S.chip==='visitato'?ico('map',36):S.chip==='archivio'?ico('archive',36):ico('sparkle',36);
-    grid.innerHTML=`<div class="empty"><div class="empty-icon" style="opacity:.35;color:var(--accent)">${emptyIco}</div><h3>${t('emptyTitle')||'Nessun elemento'}</h3></div>`;
+    const _firstRun=S.items.filter(i=>!i.archived).length===0 && (S.chip==='tutti'||S.chip===undefined) && (S.active===null||S.active===undefined);
+    grid.innerHTML=`<div class="empty"><div class="empty-icon" style="opacity:.35;color:var(--accent)">${emptyIco}</div><h3>${t('emptyTitle')||'Nessun elemento'}</h3>${_firstRun?`<p class="empty-sub">${t('emptyDesc')||''}</p><button class="empty-cta" onclick="_haptic('light');openAddMo()">${ico('plus',13)} ${t('emptyBtn')||t('addBtn')}</button>`:''}</div>`;
     renderRemBanner();
     return;
   }
@@ -3588,6 +3591,7 @@ function openDetMo(id){
   {const _dl=document.getElementById('detLink'); _dl.href=safeUrl(item.url); _dl.onclick=()=>_biTrackClick(item.id);} // Vault Business: outbound click
   document.getElementById('detOv').classList.add('open');
   document.body.classList.add('sheet-open');
+  _haptic('light');
 }
 
 function galGo(idx){
@@ -4332,7 +4336,7 @@ function saveItem(){
     });
     _biItem=S.items[0];
   }
-  save();closeAddMo();renderSidebar();render();
+  _haptic('success');save();closeAddMo();renderSidebar();render();
   _migratePhotos(); // fire-and-forget: push any just-added base64 photo up to storage as a URL
 }
 
@@ -4511,9 +4515,24 @@ function delSec(id){
 }
 
 // ── ITEM ACTIONS ──
+// Haptic feedback (premium native feel). Uses Capacitor Haptics on iOS/Android if
+// present, falls back to the Web Vibration API (Android/web). No-op if unavailable.
+function _haptic(kind){
+  try{
+    const H=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Haptics;
+    if(H){
+      if(kind==='success'||kind==='warning'||kind==='error'){ H.notification({type:kind.toUpperCase()}); }
+      else if(kind==='medium'){ H.impact({style:'MEDIUM'}); }
+      else if(kind==='heavy'){ H.impact({style:'HEAVY'}); }
+      else { H.impact({style:'LIGHT'}); }
+      return;
+    }
+    if(navigator.vibrate){ navigator.vibrate(kind==='heavy'?18:kind==='medium'||kind==='success'?12:7); }
+  }catch(e){}
+}
 function star(id){
   const item=S.items.find(i=>i.id===id);if(!item)return;
-  item.star=!item.star;item.mod=Date.now();save();render();
+  item.star=!item.star;item.mod=Date.now();_haptic('light');save();render();
 }
 // ── Public-profile per-item controls (social) ──
 const FEATURED_MAX=5;
@@ -5229,6 +5248,7 @@ function sortedItems(items){
 let _deletedItem=null,_toastTimer=null;
 function del(id){
   const idx=S.items.findIndex(i=>i.id===id);if(idx<0)return;
+  _haptic('medium');
   _deletedItem={item:S.items[idx],idx};
   _biTrackRemove(S.items[idx]); // Vault Business: mark the anonymized save inactive
   S.items.splice(idx,1);
@@ -8590,7 +8610,7 @@ function _closeSections(){
   document.body.classList.remove('pp-open');
 }
 function _setTab(name){ document.querySelectorAll('#mtabs .mtab').forEach(b=>b.classList.toggle('on', b.dataset.tab===name)); }
-function goHome(){
+function goHome(){ _haptic('light');
   _closeSections();
   ['detOv','addOv','notifOv','statsOv','shareOv'].forEach(id=>document.getElementById(id)?.classList.remove('open'));
   document.body.classList.remove('sheet-open','sb-open');
@@ -8602,6 +8622,7 @@ function goHome(){
   _setTab('home');
 }
 function goSection(which){
+  _haptic('light');
   _closeSections();
   document.body.classList.remove('sb-open');
   if(which==='map') openMapMo();
