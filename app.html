@@ -2145,7 +2145,7 @@ body.pp-open{overflow:hidden}
       </div>
       <div id="voicePreview" style="display:none" class="voice-preview">
         <audio id="voiceAudio" controls></audio>
-        <button class="voice-rm" onclick="removeVoice()" title="Rimuovi">✕</button>
+        <button class="voice-rm" onclick="removeVoice()" id="voiceRmBtn" title="Rimuovi">✕</button>
       </div>
     </div>
 
@@ -2208,15 +2208,15 @@ body.pp-open{overflow:hidden}
 <!-- ═══ KEYBOARD SHORTCUTS OVERLAY (FEATURE 3) ═══ -->
 <div id="kbOv" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:99997;align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
   <div style="background:var(--s2);border:1px solid var(--bd2);border-radius:14px;padding:22px 26px;min-width:300px;max-width:360px">
-    <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:14px;display:flex;align-items:center;gap:7px"><svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-keyboard"/></svg> Scorciatoie da tastiera</div>
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px;color:var(--t2)"><span>Nuova voce</span><span style="background:var(--s3);border:1px solid var(--bd2);border-radius:5px;padding:2px 8px;font-size:11px;font-family:monospace;color:var(--t1)">N</span></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px;color:var(--t2)"><span>Cerca</span><span style="background:var(--s3);border:1px solid var(--bd2);border-radius:5px;padding:2px 8px;font-size:11px;font-family:monospace;color:var(--t1)">/</span></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px;color:var(--t2)"><span>Vista griglia</span><span style="background:var(--s3);border:1px solid var(--bd2);border-radius:5px;padding:2px 8px;font-size:11px;font-family:monospace;color:var(--t1)">G</span></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px;color:var(--t2)"><span>Vista lista</span><span style="background:var(--s3);border:1px solid var(--bd2);border-radius:5px;padding:2px 8px;font-size:11px;font-family:monospace;color:var(--t1)">L</span></div>
+    <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:14px;display:flex;align-items:center;gap:7px"><svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-keyboard"/></svg> <span id="kbTitle">Scorciatoie da tastiera</span></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px;color:var(--t2)"><span id="kbLblNew">Nuova voce</span><span style="background:var(--s3);border:1px solid var(--bd2);border-radius:5px;padding:2px 8px;font-size:11px;font-family:monospace;color:var(--t1)">N</span></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px;color:var(--t2)"><span id="kbLblSearch">Cerca</span><span style="background:var(--s3);border:1px solid var(--bd2);border-radius:5px;padding:2px 8px;font-size:11px;font-family:monospace;color:var(--t1)">/</span></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px;color:var(--t2)"><span id="kbLblGrid">Vista griglia</span><span style="background:var(--s3);border:1px solid var(--bd2);border-radius:5px;padding:2px 8px;font-size:11px;font-family:monospace;color:var(--t1)">G</span></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px;color:var(--t2)"><span id="kbLblList">Vista lista</span><span style="background:var(--s3);border:1px solid var(--bd2);border-radius:5px;padding:2px 8px;font-size:11px;font-family:monospace;color:var(--t1)">L</span></div>
     <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px;color:var(--t2)"><span>Mood board</span><span style="background:var(--s3);border:1px solid var(--bd2);border-radius:5px;padding:2px 8px;font-size:11px;font-family:monospace;color:var(--t1)">M</span></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px;color:var(--t2)"><span>Close</span><span style="background:var(--s3);border:1px solid var(--bd2);border-radius:5px;padding:2px 8px;font-size:11px;font-family:monospace;color:var(--t1)">Esc</span></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px;color:var(--t2)"><span>Questo pannello</span><span style="background:var(--s3);border:1px solid var(--bd2);border-radius:5px;padding:2px 8px;font-size:11px;font-family:monospace;color:var(--t1)">?</span></div>
-    <button style="width:100%;margin-top:12px;background:var(--s3);border:1px solid var(--bd);border-radius:8px;padding:7px;font-size:12px;color:var(--t2);cursor:pointer;font-family:inherit" onclick="document.getElementById('kbOv').style.display='none'">Close</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px;color:var(--t2)"><span id="kbLblClose">Close</span><span style="background:var(--s3);border:1px solid var(--bd2);border-radius:5px;padding:2px 8px;font-size:11px;font-family:monospace;color:var(--t1)">Esc</span></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px;color:var(--t2)"><span id="kbLblPanel">Questo pannello</span><span style="background:var(--s3);border:1px solid var(--bd2);border-radius:5px;padding:2px 8px;font-size:11px;font-family:monospace;color:var(--t1)">?</span></div>
+    <button style="width:100%;margin-top:12px;background:var(--s3);border:1px solid var(--bd);border-radius:8px;padding:7px;font-size:12px;color:var(--t2);cursor:pointer;font-family:inherit" onclick="document.getElementById('kbOv').style.display='none'" id="kbCloseBtn">Close</button>
   </div>
 </div>
 
@@ -2397,7 +2397,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.20-social30';
+const APP_BUILD='2026.09.20-social31';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -3984,7 +3984,7 @@ function renderImgStrip(){
   strip.innerHTML=extraImages.map((u,i)=>`
     <div class="img-th${i===0?' first-badge':''}">
       <img src="${esc(u)}" alt="" onerror="this.parentElement.style.opacity='.4'">
-      <button class="img-th-rm" onclick="removeImg(${i})" title="Rimuovi">✕</button>
+      <button class="img-th-rm" onclick="removeImg(${i})" title="${_lbl({it:'Rimuovi',en:'Remove',es:'Quitar',fr:'Retirer',de:'Entfernen',pt:'Remover',nl:'Verwijderen'})}">✕</button>
     </div>`).join('');
 }
 function addManualImg(){
@@ -4563,7 +4563,7 @@ const FEATURED_MAX=5;
 function featuredCount(){return S.items.filter(i=>i.featured&&!i.archived).length;}
 function toggleFeatured(id){
   const item=S.items.find(i=>i.id===id);if(!item)return;
-  if(!item.featured&&featuredCount()>=FEATURED_MAX){showToast('You can feature up to '+FEATURED_MAX+' items on your profile.');return;}
+  if(!item.featured&&featuredCount()>=FEATURED_MAX){showToast(_lbl({it:"Puoi mettere in evidenza fino a {n} oggetti sul profilo.",en:"You can feature up to {n} items on your profile.",es:"Puedes destacar hasta {n} objetos en tu perfil.",fr:"Tu peux mettre en avant jusqu'à {n} objets sur ton profil.",de:"Du kannst bis zu {n} Objekte in deinem Profil hervorheben.",pt:"Você pode destacar até {n} itens no seu perfil.",nl:"Je kunt tot {n} items op je profiel uitlichten."}).replace("{n}",FEATURED_MAX));return;}
   item.featured=!item.featured;
   if(item.featured)item.pubHidden=false; // a featured item must be visible
   item.mod=Date.now();save();render();
@@ -5236,15 +5236,15 @@ async function exportMoodboard(fromFs){
       });
     }
     const target=fromFs?document.getElementById('moodFsGrid'):document.getElementById('grid');
-    if(!target){showToast('Attiva la vista Moodboard prima.');return;}
+    if(!target){showToast(_lbl({it:"Attiva prima la vista Moodboard.",en:"Switch to Moodboard view first.",es:"Activa primero la vista Moodboard.",fr:"Active d'abord la vue Moodboard.",de:"Wechsle zuerst zur Moodboard-Ansicht.",pt:"Ative primeiro a vista Moodboard.",nl:"Schakel eerst naar de Moodboard-weergave."}));return;}
     const bg=_moodTheme==='dark'?'#0a0a0a':_moodTheme==='cream'?'#f5f0e8':'#ffffff';
     const canvas=await window.html2canvas(target,{backgroundColor:bg,scale:2,useCORS:true,allowTaint:true,logging:false});
     const a=document.createElement('a');
     a.download='vault-moodboard.png';
     a.href=canvas.toDataURL('image/png');
     a.click();
-    showToast('Export completato!');
-  }catch(e){showToast('Errore export. Prova a fare screenshot manuale.');}
+    showToast(_lbl({it:"Export completato!",en:"Export complete!",es:"¡Exportación completada!",fr:"Export terminé !",de:"Export abgeschlossen!",pt:"Exportação concluída!",nl:"Export voltooid!"}));
+  }catch(e){showToast(_lbl({it:"Errore export. Prova a fare uno screenshot manuale.",en:"Export failed. Try a manual screenshot.",es:"Error al exportar. Prueba una captura manual.",fr:"Échec de l'export. Essaie une capture d'écran manuelle.",de:"Export fehlgeschlagen. Versuche einen manuellen Screenshot.",pt:"Falha na exportação. Tente uma captura manual.",nl:"Export mislukt. Probeer een handmatige schermafbeelding."}));}
   finally{if(btn){btn.innerHTML='<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M5 7l3 3 3-3M2 12v2h12v-2"/></svg> Export PNG';btn.disabled=false;}}
 }
 
@@ -5722,8 +5722,19 @@ function applyLang(){
   const tbTitle=g('tbTitle');
   if(tbTitle&&!S.active) tbTitle.textContent=t('allItemsTitle');
   p('srch',_lbl({it:'Cerca oggetti, @persone o incolla un link…',en:'Search items, @people or paste a link…',es:'Busca objetos, @gente o pega un enlace…',fr:'Cherchez objets, @gens ou collez un lien…',de:'Objekte, @Leute suchen oder Link einfügen…',pt:'Busque itens, @pessoas ou cole um link…',nl:'Zoek items, @mensen of plak een link…'}));
-  // kbar hints
+  // kbar hints + search placeholder
+  p('kbarInp',_lbl({it:'Cerca oggetti…',en:'Search items…',es:'Buscar objetos…',fr:'Rechercher…',de:'Objekte suchen…',pt:'Buscar itens…',nl:'Items zoeken…'}));
   s('kbarHintOpen',t('kbarOpen'));s('kbarHintNav',t('kbarNav'));s('kbarHintClose',t('kbarClose'));
+  // keyboard-shortcuts overlay (desktop)
+  s('kbTitle',_lbl({it:'Scorciatoie da tastiera',en:'Keyboard shortcuts',es:'Atajos de teclado',fr:'Raccourcis clavier',de:'Tastenkürzel',pt:'Atalhos de teclado',nl:'Sneltoetsen'}));
+  s('kbLblNew',_lbl({it:'Nuova voce',en:'New item',es:'Nuevo elemento',fr:'Nouvel élément',de:'Neues Element',pt:'Novo item',nl:'Nieuw item'}));
+  s('kbLblSearch',_lbl({it:'Cerca',en:'Search',es:'Buscar',fr:'Rechercher',de:'Suchen',pt:'Buscar',nl:'Zoeken'}));
+  s('kbLblGrid',_lbl({it:'Vista griglia',en:'Grid view',es:'Vista de cuadrícula',fr:'Vue grille',de:'Rasteransicht',pt:'Vista de grade',nl:'Rasterweergave'}));
+  s('kbLblList',_lbl({it:'Vista lista',en:'List view',es:'Vista de lista',fr:'Vue liste',de:'Listenansicht',pt:'Vista de lista',nl:'Lijstweergave'}));
+  s('kbLblClose',_lbl({it:'Chiudi',en:'Close',es:'Cerrar',fr:'Fermer',de:'Schließen',pt:'Fechar',nl:'Sluiten'}));
+  s('kbLblPanel',_lbl({it:'Questo pannello',en:'This panel',es:'Este panel',fr:'Ce panneau',de:'Dieses Panel',pt:'Este painel',nl:'Dit paneel'}));
+  s('kbCloseBtn',_lbl({it:'Chiudi',en:'Close',es:'Cerrar',fr:'Fermer',de:'Schließen',pt:'Fechar',nl:'Sluiten'}));
+  {const e=g('voiceRmBtn');if(e)e.title=_lbl({it:'Rimuovi',en:'Remove',es:'Quitar',fr:'Retirer',de:'Entfernen',pt:'Remover',nl:'Verwijderen'});}
   // toast undo button
   const ub=document.querySelector('#toast button');if(ub)ub.textContent=t('cancel');
   // link picker save
@@ -6790,7 +6801,7 @@ function importVault(input){
   reader.readAsText(file);
 }
 function resetVault(){
-  if(!confirm('Delete ALL items and sections? This cannot be undone.'))return;
+  if(!confirm(_lbl({it:"Eliminare TUTTI gli oggetti e le sezioni? Non è reversibile.",en:"Delete ALL items and sections? This cannot be undone.",es:"¿Eliminar TODOS los objetos y secciones? No se puede deshacer.",fr:"Supprimer TOUS les objets et sections ? Action irréversible.",de:"ALLE Objekte und Bereiche löschen? Das kann nicht rückgängig gemacht werden.",pt:"Excluir TODOS os itens e seções? Isso não pode ser desfeito.",nl:"ALLE items en secties verwijderen? Dit kan niet ongedaan gemaakt worden."})))return;
   // Tombstone everything that existed BEFORE clearing, so a sync merge can tell
   // "device just emptied on purpose" apart from "brand-new device with 0 items"
   // and doesn't silently restore the wiped data from the cloud (see _mergeRemoteData).
@@ -7380,7 +7391,7 @@ async function submitPasswordReset(){
     document.getElementById('pwResetOv').style.display='none';
     // clear the recovery token from the URL, then reload, the now-valid session logs the user in
     try{history.replaceState(null,'',location.pathname);}catch(e){}
-    showToast('Password updated, signing you in…');
+    showToast(_lbl({it:"Password aggiornata, accesso in corso…",en:"Password updated, signing you in…",es:"Contraseña actualizada, iniciando sesión…",fr:"Mot de passe mis à jour, connexion…",de:"Passwort aktualisiert, du wirst angemeldet…",pt:"Senha atualizada, entrando…",nl:"Wachtwoord bijgewerkt, je wordt aangemeld…"}));
     setTimeout(()=>location.reload(),600);
   }catch(e){
     err.textContent='Something went wrong. Please try again.';
@@ -7610,7 +7621,7 @@ function renderPlusModal(){
 function showCheckout(){
   if(!_sbUser){
     closePlusModal();
-    showToast('Create a free account first to subscribe.');
+    showToast(_lbl({it:"Crea prima un account gratuito per abbonarti.",en:"Create a free account first to subscribe.",es:"Crea primero una cuenta gratis para suscribirte.",fr:"Crée d'abord un compte gratuit pour t'abonner.",de:"Erstelle zuerst ein kostenloses Konto, um zu abonnieren.",pt:"Crie primeiro uma conta grátis para assinar.",nl:"Maak eerst een gratis account om te abonneren."}));
     setTimeout(()=>document.getElementById('authOv')?.style.setProperty('display','flex'),400);
     return;
   }
@@ -7648,7 +7659,7 @@ function deactivatePlus(){
   localStorage.removeItem('vaultPlan');
   _updatePlusSideBtn();
   renderProfile();
-  showToast('Reset to Free plan.');
+  showToast(_lbl({it:"Ripristinato al piano Free.",en:"Reset to Free plan.",es:"Restablecido al plan Free.",fr:"Rétabli au plan Free.",de:"Auf den Free-Plan zurückgesetzt.",pt:"Redefinido para o plano Free.",nl:"Teruggezet naar het gratis plan."}));
 }
 
 // ── APPLE IN-APP PURCHASE via RevenueCat (iOS only; web keeps Stripe) ──────────
@@ -7708,15 +7719,15 @@ async function _rcPurchase(billing){
   try{
     const offs=await P.getOfferings();
     const cur=offs&&offs.current;
-    if(!cur){ showToast('Plus is not available right now. Please try again later.'); return; }
+    if(!cur){ showToast(_lbl({it:"Plus non è disponibile al momento. Riprova più tardi.",en:"Plus is not available right now. Please try again later.",es:"Plus no está disponible ahora. Inténtalo más tarde.",fr:"Plus n'est pas disponible pour le moment. Réessaie plus tard.",de:"Plus ist gerade nicht verfügbar. Bitte später erneut versuchen.",pt:"O Plus não está disponível agora. Tente mais tarde.",nl:"Plus is nu niet beschikbaar. Probeer het later opnieuw."})); return; }
     const pkg=(billing==='annual')?cur.annual:cur.monthly;
-    if(!pkg){ showToast('This plan is not available right now.'); return; }
+    if(!pkg){ showToast(_lbl({it:"Questo piano non è disponibile al momento.",en:"This plan is not available right now.",es:"Este plan no está disponible ahora.",fr:"Ce plan n'est pas disponible pour le moment.",de:"Dieser Plan ist gerade nicht verfügbar.",pt:"Este plano não está disponível agora.",nl:"Dit plan is nu niet beschikbaar."})); return; }
     const res=await P.purchasePackage({aPackage:pkg});
     if(_rcHasPlus(res&&res.customerInfo)){ activatePlus(); }
   }catch(e){
     if(e && (e.userCancelled===true || (e.code+'')==='1' || /cancel/i.test((e&&e.message)||''))) return;
     console.warn('[RC] purchase failed', e);
-    showToast('Purchase could not be completed. Please try again.');
+    showToast(_lbl({it:"Acquisto non riuscito. Riprova.",en:"Purchase could not be completed. Please try again.",es:"No se pudo completar la compra. Inténtalo de nuevo.",fr:"Achat impossible. Réessaie.",de:"Kauf konnte nicht abgeschlossen werden. Bitte erneut versuchen.",pt:"Não foi possível concluir a compra. Tente novamente.",nl:"Aankoop kon niet worden voltooid. Probeer opnieuw."}));
   }
 }
 async function _rcRestore(){
@@ -7725,9 +7736,9 @@ async function _rcRestore(){
   await _rcEnsureUser();
   try{
     const res=await P.restorePurchases();
-    if(_rcHasPlus(res&&res.customerInfo)){ activatePlus(); showToast('Vault Plus restored ✓'); }
-    else showToast('No previous purchases found.');
-  }catch(e){ showToast('Could not restore purchases.'); }
+    if(_rcHasPlus(res&&res.customerInfo)){ activatePlus(); showToast(_lbl({it:"Vault Plus ripristinato ✓",en:"Vault Plus restored ✓",es:"Vault Plus restaurado ✓",fr:"Vault Plus restauré ✓",de:"Vault Plus wiederhergestellt ✓",pt:"Vault Plus restaurado ✓",nl:"Vault Plus hersteld ✓"})); }
+    else showToast(_lbl({it:"Nessun acquisto precedente trovato.",en:"No previous purchases found.",es:"No se encontraron compras anteriores.",fr:"Aucun achat précédent trouvé.",de:"Keine früheren Käufe gefunden.",pt:"Nenhuma compra anterior encontrada.",nl:"Geen eerdere aankopen gevonden."}));
+  }catch(e){ showToast(_lbl({it:"Impossibile ripristinare gli acquisti.",en:"Could not restore purchases.",es:"No se pudieron restaurar las compras.",fr:"Impossible de restaurer les achats.",de:"Käufe konnten nicht wiederhergestellt werden.",pt:"Não foi possível restaurar as compras.",nl:"Kon aankopen niet herstellen."})); }
 }
 
 function plusSideBtnClick(){
@@ -7772,7 +7783,7 @@ function _getPlanSectionHTML(){
 
 async function openStripePortal(){
   if(!_sb||!_sbUser){showToast(t('signInReq'));return;}
-  showToast('Opening billing portal...');
+  showToast(_lbl({it:"Apertura del portale di fatturazione…",en:"Opening billing portal…",es:"Abriendo el portal de facturación…",fr:"Ouverture du portail de facturation…",de:"Abrechnungsportal wird geöffnet…",pt:"Abrindo o portal de faturamento…",nl:"Factuurportaal wordt geopend…"}));
   try{
     const {data:{session}}=await _sb.auth.getSession();
     const token=session?.access_token;
@@ -7785,8 +7796,8 @@ async function openStripePortal(){
       const a=document.createElement('a');
       a.href=json.url;a.target='_blank';a.rel='noopener';
       document.body.appendChild(a);a.click();document.body.removeChild(a);
-    }else showToast('No subscription found.');
-  }catch(e){showToast('Error opening portal.');}
+    }else showToast(_lbl({it:"Nessun abbonamento trovato.",en:"No subscription found.",es:"No se encontró suscripción.",fr:"Aucun abonnement trouvé.",de:"Kein Abonnement gefunden.",pt:"Nenhuma assinatura encontrada.",nl:"Geen abonnement gevonden."}));
+  }catch(e){showToast(_lbl({it:"Errore nell'apertura del portale.",en:"Error opening portal.",es:"Error al abrir el portal.",fr:"Erreur à l'ouverture du portail.",de:"Fehler beim Öffnen des Portals.",pt:"Erro ao abrir o portal.",nl:"Fout bij openen portaal."}));}
 }
 
 function showCancelSubModal(){
