@@ -76,8 +76,8 @@ button,a,.card,.chip,.si,.sb-util,.mtab,.newsec,.disc-row,.pubi-card,[onclick]{t
 .si{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--t2);transition:background .1s,color .1s;user-select:none;margin-bottom:1px}
 .si:hover{background:var(--s2);color:var(--t1)}
 .si.on{background:var(--ax);color:var(--accent)}
-.si-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0}
-.si-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.si-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0;color:#e0b84a}
+.si-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#e0b84a;font-weight:600}
 .si-count{font-size:11px;background:var(--s2);padding:1px 6px;border-radius:10px;color:var(--t3);min-width:20px;text-align:center}
 .si.on .si-count{background:rgba(184,184,184,.18);color:var(--accent)}
 .si-arrow{font-size:13px;color:var(--t3);opacity:0;transition:opacity .15s;margin-left:2px}
@@ -135,6 +135,7 @@ button,a,.card,.chip,.si,.sb-util,.mtab,.newsec,.disc-row,.pubi-card,[onclick]{t
 .omni-add span{color:var(--t1)}
 .omni-empty{padding:14px 12px;color:var(--t3);font-size:12.5px;text-align:center}
 .vbtns{display:flex;gap:3px}
+#mViewBtn{display:none}
 .vb{background:var(--s2);border:1px solid var(--bd);color:var(--t2);width:38px;height:38px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .12s}
 .vb:hover,.vb.on{background:var(--s3);color:var(--t1);border-color:var(--bd2)}
 .add-btn{background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .13s;white-space:nowrap;letter-spacing:-.2px}
@@ -203,7 +204,8 @@ button,a,.card,.chip,.si,.sb-util,.mtab,.newsec,.disc-row,.pubi-card,[onclick]{t
   .srch-wrap{flex:1;width:auto;min-width:0}
   .srch{flex:1;width:100%;min-width:0}
   .sort-sel{display:none}
-  #focusModeBtn,#shareVaultBtn{display:none}
+  #focusModeBtn,#shareVaultBtn,.vbtns{display:none} /* cleaner mobile top bar */
+  #mViewBtn{display:flex}
   .vb{width:34px;height:34px}
   .add-btn{padding:8px 12px}
   .paste-bar{padding:9px 12px}
@@ -1690,6 +1692,7 @@ document.addEventListener('DOMContentLoaded',function(){try{
       <button class="vb" id="lBtn" onclick="setView('list')" title="Lista"><svg class="ico" width="15" height="15" viewBox="0 0 16 16"><use href="#ic-list"/></svg></button>
       <button class="vb" id="mBtn" onclick="setView('mood')" title="Mood board"><svg class="ico" width="15" height="15" viewBox="0 0 16 16"><use href="#ic-layers"/></svg></button>
     </div>
+    <button class="vb" id="mViewBtn" onclick="cycleView()" title="Cambia vista"><svg class="ico" width="15" height="15" viewBox="0 0 16 16"><use href="#ic-grid"/></svg></button>
     <button class="vb" id="shareVaultBtn" onclick="openShareMo()" title="Condividi"><svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-share"/></svg></button>
     <button class="vb notif-btn" id="notifBtn" onclick="openNotifs()" title="Notifications" style="display:none"><svg class="ico" width="15" height="15" viewBox="0 0 16 16"><use href="#ic-bell-ring"/></svg><span class="notif-badge" id="notifBadge" style="display:none">0</span></button>
     <button class="add-btn" id="addTopBtn" onclick="openAddMo()"><svg class="ico" width="13" height="13" viewBox="0 0 16 16"><use href="#ic-plus"/></svg> Aggiungi</button>
@@ -2374,7 +2377,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.19-social26';
+const APP_BUILD='2026.09.19-social27';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -3223,7 +3226,8 @@ function renderSidebar(){
     const dot=s.accent?`<span class="si-acc" style="background:${s.accent}"></span>`:'';
     const isOn=S.active===s.id;
     const clickArg=s.id===null?'null':(isOn?'null':`'${s.id}'`);
-    const arrow=s.id!==null?`<span class="si-arrow">${isOn?ico('close',10):ico('chevron-right',10)}</span>`:'';
+    // Only the chevron (expand hint) when NOT selected; when selected, just the red trash — no confusing white X.
+    const arrow=(s.id!==null&&!isOn)?`<span class="si-arrow">${ico('chevron-right',10)}</span>`:'';
     // Explicit, tappable delete for real sections (mobile: long-press ctx menu is
     // undiscoverable, and tapping the collapse X looked like delete → confusing loop).
     const delBtn=(s.id!==null&&isOn)?`<span class="si-del" onclick="event.stopPropagation();delSec('${s.id}')" title="${t('ctxDeleteSec')}" style="display:inline-flex;align-items:center;padding:5px;margin-left:1px;color:#e06666;cursor:pointer">${ico('trash',13)}</span>`:'';
@@ -5116,8 +5120,12 @@ function setView(v){
   document.getElementById('lBtn').classList.toggle('on',v==='list');
   const mb=document.getElementById('mBtn');if(mb)mb.classList.toggle('on',v==='mood');
   const mt=document.getElementById('moodToolbar');if(mt)mt.classList.toggle('show',v==='mood');
+  _updateViewBtn();
   render();
 }
+// Mobile: one compact button cycles Grid → List → Mood (keeps the top bar clean).
+function _updateViewBtn(){ const b=document.getElementById('mViewBtn'); if(!b)return; const v=S.view||'grid'; b.innerHTML=ico(v==='list'?'list':v==='mood'?'layers':'grid',15); }
+function cycleView(){ const order=['grid','list','mood']; const i=order.indexOf(S.view||'grid'); _haptic('light'); setView(order[(i+1)%order.length]); }
 
 // ── ADVANCED MOODBOARD ──
 let _moodLayout=localStorage.getItem('vaultMoodLayout')||'3';
