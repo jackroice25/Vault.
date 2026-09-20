@@ -1855,7 +1855,7 @@ body.pp-open{overflow:hidden}
 <!-- ═══ SOCIAL: DISCOVER (account search) ═══ -->
 <div class="ov" id="discoverOv">
   <div class="mo" style="max-width:440px">
-    <div class="mo-hd"><svg class="ico" width="16" height="16" viewBox="0 0 16 16" style="margin-right:6px"><use href="#ic-globe"/></svg>Discover people</div>
+    <div class="mo-hd"><svg class="ico" width="16" height="16" viewBox="0 0 16 16" style="margin-right:6px"><use href="#ic-globe"/></svg><span id="discoverPeopleLbl">Discover people</span></div>
     <div class="disc-search-wrap">
       <span class="disc-at">@</span>
       <input id="discSearch" class="disc-search" type="text" placeholder="Search a username..." autocomplete="off" autocapitalize="none" spellcheck="false" oninput="_discSearchDebounced()">
@@ -2225,27 +2225,27 @@ body.pp-open{overflow:hidden}
   <div class="mo" style="max-width:400px;width:90vw">
     <div class="mo-hd" style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
       <svg class="ico" width="16" height="16" viewBox="0 0 16 16" style="flex-shrink:0"><use href="#ic-share"/></svg>
-      Share wishlist
+      <span id="shareMoHd">Share wishlist</span>
     </div>
-    <p style="font-size:12px;color:var(--t2);margin-bottom:18px;line-height:1.5">Anyone with the link can view your list in read-only mode.</p>
+    <p style="font-size:12px;color:var(--t2);margin-bottom:18px;line-height:1.5" id="shareMoSub">Anyone with the link can view your list in read-only mode.</p>
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
       <button class="btn-s" style="display:flex;align-items:center;gap:8px;padding:11px 14px;justify-content:flex-start" onclick="generateShareLink(null)">
         <svg class="ico" width="14" height="14" viewBox="0 0 16 16" style="flex-shrink:0"><use href="#ic-layers"/></svg>
-        <div style="text-align:left"><div style="font-size:12px;font-weight:600;color:var(--t1)">Entire vault</div><div style="font-size:11px;color:var(--t3);font-weight:400">Share all your items</div></div>
+        <div style="text-align:left"><div style="font-size:12px;font-weight:600;color:var(--t1)" id="shareAllT">Entire vault</div><div style="font-size:11px;color:var(--t3);font-weight:400" id="shareAllD">Share all your items</div></div>
       </button>
       <button class="btn-s" id="shareSecBtn" style="display:flex;align-items:center;gap:8px;padding:11px 14px;justify-content:flex-start" onclick="generateShareLink(S.active)">
         <svg class="ico" width="14" height="14" viewBox="0 0 16 16" style="flex-shrink:0"><use href="#ic-tag"/></svg>
-        <div style="text-align:left"><div style="font-size:12px;font-weight:600;color:var(--t1)">Current section</div><div style="font-size:11px;color:var(--t3);font-weight:400">Share only this section</div></div>
+        <div style="text-align:left"><div style="font-size:12px;font-weight:600;color:var(--t1)" id="shareSecT">Current section</div><div style="font-size:11px;color:var(--t3);font-weight:400" id="shareSecD">Share only this section</div></div>
       </button>
     </div>
     <div id="shareUrlBox" style="display:none">
       <div style="background:var(--s3);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;font-size:10px;color:var(--t2);word-break:break-all;max-height:52px;overflow-y:auto;line-height:1.5;margin-bottom:10px;font-family:monospace" id="shareUrlText"></div>
       <button class="btn-p" style="width:100%;display:flex;align-items:center;justify-content:center;gap:7px" onclick="copyShareLink()">
         <svg class="ico" width="13" height="13" viewBox="0 0 16 16"><use href="#ic-link"/></svg>
-        Copy link
+        <span id="shareCopyBtn">Copy link</span>
       </button>
     </div>
-    <div class="mo-acts" style="margin-top:14px"><button class="btn-s" onclick="closeShareMo()">Close</button></div>
+    <div class="mo-acts" style="margin-top:14px"><button class="btn-s" id="shareCloseBtn" onclick="closeShareMo()">Close</button></div>
   </div>
 </div>
 
@@ -2255,10 +2255,10 @@ body.pp-open{overflow:hidden}
 <!-- ═══ IMPORT MODAL (FEATURE 10) ═══ -->
 <div class="mo-ov ov" id="importOv" onclick="if(event.target===this)closeImportMo()">
   <div class="mo" style="max-width:440px;width:90vw">
-    <div class="mo-hd"><svg class="ico" width="15" height="15" viewBox="0 0 16 16" style="margin-right:6px"><use href="#ic-import"/></svg>Importa dal vault</div>
+    <div class="mo-hd"><svg class="ico" width="15" height="15" viewBox="0 0 16 16" style="margin-right:6px"><use href="#ic-import"/></svg><span id="impMoHd">Importa dal vault</span></div>
     <div class="imp-list" id="impList"></div>
     <div class="mo-acts">
-      <button class="btn-s" onclick="closeImportMo()">Annulla</button>
+      <button class="btn-s" id="impCancelBtn" onclick="closeImportMo()">Annulla</button>
       <button class="btn-p" id="impConfirmBtn" onclick="confirmImport()">Importa</button>
     </div>
   </div>
@@ -2397,7 +2397,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.20-social32';
+const APP_BUILD='2026.09.20-social33';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -5741,6 +5741,20 @@ function applyLang(){
   s('kbLblPanel',_lbl({it:'Questo pannello',en:'This panel',es:'Este panel',fr:'Ce panneau',de:'Dieses Panel',pt:'Este painel',nl:'Dit paneel'}));
   s('kbCloseBtn',_lbl({it:'Chiudi',en:'Close',es:'Cerrar',fr:'Fermer',de:'Schließen',pt:'Fechar',nl:'Sluiten'}));
   {const e=g('voiceRmBtn');if(e)e.title=_lbl({it:'Rimuovi',en:'Remove',es:'Quitar',fr:'Retirer',de:'Entfernen',pt:'Remover',nl:'Verwijderen'});}
+  // share modal
+  s('shareMoHd',_lbl({it:'Condividi wishlist',en:'Share wishlist',es:'Compartir lista',fr:'Partager la liste',de:'Wunschliste teilen',pt:'Compartilhar lista',nl:'Wenslijst delen'}));
+  s('shareMoSub',_lbl({it:'Chiunque abbia il link può vedere la tua lista in sola lettura.',en:'Anyone with the link can view your list in read-only mode.',es:'Cualquiera con el enlace puede ver tu lista en solo lectura.',fr:'Toute personne ayant le lien peut voir ta liste en lecture seule.',de:'Jeder mit dem Link kann deine Liste schreibgeschützt ansehen.',pt:'Qualquer pessoa com o link pode ver sua lista somente leitura.',nl:'Iedereen met de link kan je lijst alleen-lezen bekijken.'}));
+  s('shareAllT',_lbl({it:'Tutto il vault',en:'Entire vault',es:'Todo el vault',fr:'Tout le vault',de:'Gesamter Vault',pt:'Todo o vault',nl:'Hele vault'}));
+  s('shareAllD',_lbl({it:'Condividi tutti i tuoi elementi',en:'Share all your items',es:'Comparte todos tus elementos',fr:'Partage tous tes éléments',de:'Teile alle deine Objekte',pt:'Compartilhe todos os itens',nl:'Deel al je items'}));
+  s('shareSecT',_lbl({it:'Sezione attuale',en:'Current section',es:'Sección actual',fr:'Section actuelle',de:'Aktueller Bereich',pt:'Seção atual',nl:'Huidige sectie'}));
+  s('shareSecD',_lbl({it:'Condividi solo questa sezione',en:'Share only this section',es:'Comparte solo esta sección',fr:'Partage seulement cette section',de:'Nur diesen Bereich teilen',pt:'Compartilhe só esta seção',nl:'Deel alleen deze sectie'}));
+  s('shareCopyBtn',_lbl({it:'Copia link',en:'Copy link',es:'Copiar enlace',fr:'Copier le lien',de:'Link kopieren',pt:'Copiar link',nl:'Link kopiëren'}));
+  s('shareCloseBtn',t('close'));
+  // import modal
+  s('impMoHd',_lbl({it:'Importa dal vault',en:'Import from vault',es:'Importar del vault',fr:'Importer depuis le vault',de:'Aus dem Vault importieren',pt:'Importar do vault',nl:'Importeren uit vault'}));
+  s('impCancelBtn',t('cancel'));
+  {const e=g('impConfirmBtn');if(e)e.textContent=_lbl({it:'Importa',en:'Import',es:'Importar',fr:'Importer',de:'Importieren',pt:'Importar',nl:'Importeren'});}
+  s('discoverPeopleLbl',_lbl({it:'Scopri persone',en:'Discover people',es:'Descubre gente',fr:'Découvrir des gens',de:'Leute entdecken',pt:'Descobrir pessoas',nl:'Mensen ontdekken'}));
   // toast undo button
   const ub=document.querySelector('#toast button');if(ub)ub.textContent=t('cancel');
   // link picker save
@@ -5830,6 +5844,7 @@ function applyLang(){
 
 function setLang(code){
   S.lang=code;save();
+  try{localStorage.setItem('vaultLang',code);}catch(e){} // remembered for the pre-login auth screen too
   hideLangPopup();
   applyLang();
 }
@@ -7316,7 +7331,7 @@ const _AUTH_STR={
   ru:{title:'С возвращением',reg:'Создать аккаунт',sub:'Войдите в ваш Vault',subReg:'Данные хранятся на устройстве',btn:'Войти',div:'или',toReg:'Нет аккаунта?',toRegLnk:'Создать',toLgn:'Есть аккаунт?',toLgnLnk:'Войти',guest:'Продолжить без аккаунта →',ePh:'Email',pPh:'Пароль',p2Ph:'Повторите пароль'},
   pl:{title:'Witaj ponownie',reg:'Utwórz konto',sub:'Zaloguj się do Vault',subReg:'Twoje dane zostają na urządzeniu',btn:'Zaloguj się',div:'lub',toReg:'Nie masz konta?',toRegLnk:'Utwórz je',toLgn:'Masz już konto?',toLgnLnk:'Zaloguj się',guest:'Kontynuuj bez konta →',ePh:'Email',pPh:'Hasło',p2Ph:'Powtórz hasło'},
 };
-let _authLang=(()=>{const l=(navigator.language||'en').split('-')[0];return _AUTH_STR[l]?l:'en';})();
+let _authLang=(()=>{try{const sv=localStorage.getItem('vaultLang');if(sv&&_AUTH_STR[sv])return sv;}catch(e){} const l=(navigator.language||'en').split('-')[0];return _AUTH_STR[l]?l:'en';})();
 function _as(k){return(_AUTH_STR[_authLang]||_AUTH_STR.en)[k]||_AUTH_STR.en[k];}
 const _AUTH_FLAGS={it:'🇮🇹',en:'🇬🇧',es:'🇪🇸',fr:'🇫🇷',de:'🇩🇪',zh:'🇨🇳',ja:'🇯🇵',ru:'🇷🇺',pl:'🇵🇱'};
 function _renderAuthLang(){
