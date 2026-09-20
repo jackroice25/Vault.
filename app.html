@@ -2397,7 +2397,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.20-social33';
+const APP_BUILD='2026.09.20-social34';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -8969,57 +8969,107 @@ async function _initGlobe(){
     </div>
     <div class="tutorial-body">
 
-      <!-- 1. Advanced Statistics -->
       <div class="tutorial-section">
         <div class="tutorial-step-num">1</div>
-        <div class="tutorial-icon-wrap blue"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-chart"/></svg></div>
+        <div class="tutorial-icon-wrap purple"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-layers"/></svg></div>
         <div style="flex:1">
-          <div class="tutorial-sec-title">Advanced statistics</div>
-          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-line-chart"/></svg> Statistics in the sidebar</div>
-          <div class="tutorial-sec-desc">Advanced Analytics unlocks detailed metrics: average spend by category, product distribution by price range, purchase rate (how many wishlist items get bought), products with the biggest savings vs original price, and a monthly purchase summary.</div>
-          <div class="tutorial-sec-note">In the Free version this section appears locked. With Plus the lock disappears and real data becomes visible.</div>
+          <div class="tutorial-sec-title">Shared &amp; collaborative lists</div>
+          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-layers"/></svg> Shared lists in the sidebar / bottom menu</div>
+          <div class="tutorial-sec-desc">Invite anyone into a list and edit it together in real time. Perfect for couples furnishing a home, a group planning a trip, or a family registry, everyone adds items and everyone sees the updates live.</div>
+          <div class="tutorial-sec-note">Creating shared lists is a Plus feature; invited guests can view and edit the list you share with them.</div>
         </div>
       </div>
 
-      <!-- 2. AI Taste Profile -->
       <div class="tutorial-section">
         <div class="tutorial-step-num">2</div>
-        <div class="tutorial-icon-wrap purple"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-brain"/></svg></div>
+        <div class="tutorial-icon-wrap gold"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-gift"/></svg></div>
         <div style="flex:1">
-          <div class="tutorial-sec-title">Taste Insights</div>
-          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-crown"/></svg> Vault Plus in the sidebar</div>
-          <div class="tutorial-sec-desc">Analyses all saved products and builds a personal style profile. The system calculates: dominant price range (budget, mid-range, premium), favourite category, ratio of explored vs purchased products, starred favourites, average wishlist price, and conversion rate from "want it" to "bought".</div>
-          <div class="tutorial-sec-note">The profile updates every time you open the panel. Requires at least 3 products in the vault for meaningful results.</div>
+          <div class="tutorial-sec-title">Gift mode</div>
+          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-gift"/></svg> Gift lists</div>
+          <div class="tutorial-sec-desc">Publish a wishlist as a gift list and share one link, no account needed to open it. Guests quietly reserve what they'll buy, so two people never gift the same thing. Ideal for birthdays and the holidays.</div>
+          <div class="tutorial-sec-note">You stay surprised: reservations are hidden from you and visible only to your guests.</div>
         </div>
       </div>
 
-      <!-- 3. Price history -->
       <div class="tutorial-section">
         <div class="tutorial-step-num">3</div>
+        <div class="tutorial-icon-wrap green"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-wallet"/></svg></div>
+        <div style="flex:1">
+          <div class="tutorial-sec-title">Savings goals</div>
+          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-tag"/></svg> On each product</div>
+          <div class="tutorial-sec-desc">Set an amount to put aside toward something you want and watch a progress bar fill as you save. A calm, motivating way to buy on purpose instead of on impulse.</div>
+          <div class="tutorial-sec-note">Track savings per item and mark each contribution as you go.</div>
+        </div>
+      </div>
+
+      <div class="tutorial-section">
+        <div class="tutorial-step-num">4</div>
+        <div class="tutorial-icon-wrap blue"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-bell-ring"/></svg></div>
+        <div style="flex:1">
+          <div class="tutorial-sec-title">Reminders</div>
+          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-tag"/></svg> On each product</div>
+          <div class="tutorial-sec-desc">Add a reminder to any item, tomorrow, next week, end of the month, or a date you choose. When it's time, Vault brings it back to the top so nothing you meant to buy quietly slips away.</div>
+          <div class="tutorial-sec-note">You set the reminder date yourself; Vault surfaces the item when it's due.</div>
+        </div>
+      </div>
+
+      <div class="tutorial-section">
+        <div class="tutorial-step-num">5</div>
+        <div class="tutorial-icon-wrap blue"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-external"/></svg></div>
+        <div style="flex:1">
+          <div class="tutorial-sec-title">One-tap save</div>
+          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-link"/></svg> iOS share sheet &amp; the paste bar</div>
+          <div class="tutorial-sec-desc">On iPhone, share any page to Vault straight from Safari's share menu, no copy-paste. On the web, paste a link into the bar at the top and it's saved instantly, with title, image and price filled in.</div>
+          <div class="tutorial-sec-note">The Vault share extension adds “Vault” to the iOS share menu.</div>
+        </div>
+      </div>
+
+      <div class="tutorial-section">
+        <div class="tutorial-step-num">6</div>
         <div class="tutorial-icon-wrap green"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-clock"/></svg></div>
         <div style="flex:1">
           <div class="tutorial-sec-title">Price history</div>
           <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-tag"/></svg> On each product</div>
-          <div class="tutorial-sec-desc">Note the prices you spot over time and Vault keeps a history for each item, plus a "price found" field to record a deal and see your saving as a percentage, so you buy at the right moment.</div>
+          <div class="tutorial-sec-desc">Note the prices you spot over time and Vault keeps a history for each item, plus a “price found” field to record a deal and see your saving as a percentage, so you buy at the right moment.</div>
           <div class="tutorial-sec-note">Prices are the ones you record yourself, Vault does not scrape live prices automatically.</div>
         </div>
       </div>
 
-      <!-- 4. Cloud sync -->
       <div class="tutorial-section">
-        <div class="tutorial-step-num">4</div>
-        <div class="tutorial-icon-wrap green"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-cloud-check"/></svg></div>
+        <div class="tutorial-step-num">7</div>
+        <div class="tutorial-icon-wrap purple"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-brain"/></svg></div>
         <div style="flex:1">
-          <div class="tutorial-sec-title">Cloud sync</div>
-          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-crown"/></svg> Automatic with your account</div>
-          <div class="tutorial-sec-desc">Sign in and your vault follows you, everything stays in sync across your phone, tablet and computer. Prefer to stay anonymous? Use Vault as a guest and your data lives locally on this device.</div>
-          <div class="tutorial-sec-note">Sync is active whenever you're signed in with your account.</div>
+          <div class="tutorial-sec-title">Taste Insights</div>
+          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-crown"/></svg> Vault Plus in the sidebar</div>
+          <div class="tutorial-sec-desc">Analyses all saved products and builds a personal style profile. It calculates your dominant price range (budget, mid-range, premium), favourite category, ratio of explored vs purchased products, starred favourites, average wishlist price, and conversion rate from “want it” to “bought”.</div>
+          <div class="tutorial-sec-note">Computed on your own device from your own vault. Needs at least 3 products for meaningful results.</div>
         </div>
       </div>
 
-      <!-- 5. Premium Themes -->
       <div class="tutorial-section">
-        <div class="tutorial-step-num">5</div>
+        <div class="tutorial-step-num">8</div>
+        <div class="tutorial-icon-wrap blue"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-chart"/></svg></div>
+        <div style="flex:1">
+          <div class="tutorial-sec-title">Advanced statistics</div>
+          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-line-chart"/></svg> Statistics in the sidebar</div>
+          <div class="tutorial-sec-desc">Detailed metrics: average spend by category, product distribution by price range, purchase rate (how many wishlist items get bought), products with the biggest savings vs original price, and a monthly purchase summary.</div>
+          <div class="tutorial-sec-note">In the Free version this section appears locked. With Plus the lock disappears and real data becomes visible.</div>
+        </div>
+      </div>
+
+      <div class="tutorial-section">
+        <div class="tutorial-step-num">9</div>
+        <div class="tutorial-icon-wrap red"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-mood-board"/></svg></div>
+        <div style="flex:1">
+          <div class="tutorial-sec-title">Advanced mood boards</div>
+          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-layers"/></svg> Mood Board view (layers icon)</div>
+          <div class="tutorial-sec-desc">The basic mood board shows products as side-by-side images. The Plus version adds fullscreen mode with free drag-and-drop layout, text labels and captions over images, manual card resizing, and export of the board as a PNG image.</div>
+          <div class="tutorial-sec-note">The basic mood board view stays available to everyone. Advanced editing activates automatically with Plus.</div>
+        </div>
+      </div>
+
+      <div class="tutorial-section">
+        <div class="tutorial-step-num">10</div>
         <div class="tutorial-icon-wrap red"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-palette"/></svg></div>
         <div style="flex:1">
           <div class="tutorial-sec-title">Premium themes</div>
@@ -9029,26 +9079,24 @@ async function _initGlobe(){
         </div>
       </div>
 
-      <!-- 6. Advanced Mood Boards -->
       <div class="tutorial-section">
-        <div class="tutorial-step-num">6</div>
-        <div class="tutorial-icon-wrap red"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-mood-board"/></svg></div>
+        <div class="tutorial-step-num">11</div>
+        <div class="tutorial-icon-wrap green"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-cloud-check"/></svg></div>
         <div style="flex:1">
-          <div class="tutorial-sec-title">Advanced mood boards</div>
-          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-layers"/></svg> Mood Board view (layers icon)</div>
-          <div class="tutorial-sec-desc">The basic mood board view shows products as side-by-side images. The Plus version adds fullscreen mode with free drag-and-drop layout, the ability to add text labels and captions over images, manual card resizing, and export of the board as a PNG image.</div>
-          <div class="tutorial-sec-note">The basic mood board view remains available to all. Advanced editing features activate automatically with Plus.</div>
+          <div class="tutorial-sec-title">Cloud sync</div>
+          <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-crown"/></svg> Automatic with your account</div>
+          <div class="tutorial-sec-desc">Sign in and your vault follows you, everything stays in sync across your phone, tablet and computer. Prefer to stay anonymous? Use Vault as a guest and your data lives locally on this device.</div>
+          <div class="tutorial-sec-note">Sync is active whenever you're signed in with your account.</div>
         </div>
       </div>
 
-      <!-- 7. Priority Features -->
       <div class="tutorial-section">
-        <div class="tutorial-step-num">7</div>
+        <div class="tutorial-step-num">12</div>
         <div class="tutorial-icon-wrap gold"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-rocket"/></svg></div>
         <div style="flex:1">
           <div class="tutorial-sec-title">Priority access to new features</div>
           <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-crown"/></svg> Automatic with Plus plan</div>
-          <div class="tutorial-sec-desc">Every new feature is released to Plus users weeks ahead of the Free version. This includes new online shop integrations, new item types, new views, and every interface improvement. You don't need to do anything: features appear directly in the app as soon as they're released.</div>
+          <div class="tutorial-sec-desc">Every new feature reaches Plus users first, new shop integrations, new item types, new views and interface improvements. You don't need to do anything: features appear in the app as soon as they're released.</div>
           <div class="tutorial-sec-note">Features marked with the Plus badge in the menu are exclusive previews for your plan.</div>
         </div>
       </div>
