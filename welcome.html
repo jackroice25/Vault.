@@ -18,7 +18,7 @@
       {"@type":"Question","name":"How does saving from a website work?","acceptedAnswer":{"@type":"Answer","text":"Copy the link of anything you like — a product, a restaurant, a hotel — and paste it into Vault. It reads the page and fills in the title, image and price automatically. On iPhone you can also save straight from Safari's share menu: tap Share, then Vault."}},
       {"@type":"Question","name":"Which websites are supported?","acceptedAnswer":{"@type":"Answer","text":"Most of the web works out of the box: shops, marketplaces, Google Maps, Booking and countless others. A few large brands use aggressive bot protection that can block automatic reading; on those, Vault still saves the item with a clean name from the link, and you can add the photo and price yourself in a couple of seconds."}},
       {"@type":"Question","name":"What do the paid plans include?","acceptedAnswer":{"@type":"Answer","text":"Keeper (€2.99/mo) adds 75 items, shared and gift lists, savings goals, reminders and one-tap save. Collector (€4.99/mo) adds 150 items, price history, taste insights and advanced statistics. Vaulter (€9.99/mo) unlocks unlimited items, the globe map for places, advanced moodboards, premium themes, cloud sync and priority access."}},
-      {"@type":"Question","name":"Can I share a list with other people?","acceptedAnswer":{"@type":"Answer","text":"Yes, with Vault Plus. Shared lists let you invite anyone and edit together in real time — ideal for couples, families or a group trip. Gift lists go a step further: share one link (no account needed to open it) and friends quietly reserve what they'll buy, so nobody gifts the same thing twice."}},
+      {"@type":"Question","name":"Can I share a list with other people?","acceptedAnswer":{"@type":"Answer","text":"Yes, starting with the Keeper plan. Shared lists let you invite anyone and edit together in real time — ideal for couples, families or a group trip. Gift lists go a step further: share one link (no account needed to open it) and friends quietly reserve what they'll buy, so nobody gifts the same thing twice."}},
       {"@type":"Question","name":"Is my data private?","acceptedAnswer":{"@type":"Answer","text":"Private by default — you control what becomes public. There are no ads, and no advertising or third-party behavioural tracking. Your data is yours, passwords are securely hashed, everything travels encrypted, and you can export all of it to CSV or delete your account at any time."}},
       {"@type":"Question","name":"Do I need to install anything?","acceptedAnswer":{"@type":"Answer","text":"No. Vault runs in your browser, nothing to download. You can use it as a guest with everything stored locally, or create a free account to sync across devices. There is also a free desktop app for Mac and Windows; native mobile apps are on the way."}}
     ]}
@@ -637,9 +637,9 @@
 <section class="plus-band" id="plus">
   <div class="wrap">
     <div class="plus-head reveal">
-      <span class="plus-kicker"><svg class="ico"><use href="#ic-crown"/></svg> Vault Plus</span>
-      <h2 class="big">The free Vault is generous.<br><em>Plus makes it powerful.</em></h2>
-      <p class="lead">Everything in the free version stays free, forever. Plus adds the tools that turn a personal wishlist into something you share, plan around and act on, for less than a coffee a month.</p>
+      <span class="plus-kicker"><svg class="ico"><use href="#ic-crown"/></svg> Upgrade your Vault</span>
+      <h2 class="big">The free Vault is generous.<br><em>Keeper, Collector &amp; Vaulter make it powerful.</em></h2>
+      <p class="lead">Everything in the free version stays free, forever. Three simple plans add the tools that turn a personal wishlist into something you share, plan around and act on, from less than a coffee a month.</p>
     </div>
 
     <div class="plus-grid reveal">
@@ -719,13 +719,13 @@
           <li><svg class="ico"><use href="#ic-check-circle"/></svg> Shared &amp; collaborative lists</li>
           <li><svg class="ico"><use href="#ic-check-circle"/></svg> Gift mode with reservations</li>
           <li><svg class="ico"><use href="#ic-check-circle"/></svg> Savings goals</li>
-          <li><svg class="ico"><use href="#ic-check-circle"/></svg> Reminders &amp; one-tap save</li>
+          <li><svg class="ico"><use href="#ic-check-circle"/></svg> Reminders</li>
         </ul>
         <a class="btn btn-line" href="/">Choose Keeper</a>
       </div>
 
       <div class="pcard gold reveal">
-        <span class="pbadge">MOST POPULAR</span>
+        <span class="pbadge">RECOMMENDED</span>
         <div class="pn">Collector</div>
         <div class="amt">€4.99 <span>/ mo</span></div>
         <div class="per">or €49.99 / year · save 17%</div>
@@ -748,7 +748,7 @@
           <li><svg class="ico"><use href="#ic-check-circle"/></svg> <b>Unlimited</b> items</li>
           <li><svg class="ico"><use href="#ic-check-circle"/></svg> The globe map for places</li>
           <li><svg class="ico"><use href="#ic-check-circle"/></svg> Advanced moodboards &amp; premium themes</li>
-          <li><svg class="ico"><use href="#ic-check-circle"/></svg> Cloud sync &amp; priority access</li>
+          <li><svg class="ico"><use href="#ic-check-circle"/></svg> Early access to new features</li>
         </ul>
         <a class="btn btn-line" href="/">Choose Vaulter</a>
       </div>
@@ -778,17 +778,18 @@
         ["Grid, list & moodboard views",1,1,1,1],
         ["Public @profile you can share",1,1,1,1],
         ["Private sync & CSV export",1,1,1,1],
+        ["One-tap save (iOS share sheet)",1,1,1,1],
         ["Active items","20","75","150","∞"],
         ["Shared & collaborative lists",0,1,1,1],
         ["Gift mode with reservations",0,1,1,1],
         ["Savings goals",0,1,1,1],
-        ["Reminders & one-tap save",0,1,1,1],
+        ["Reminders",0,1,1,1],
         ["Price history",0,0,1,1],
         ["Taste insights",0,0,1,1],
         ["Advanced statistics",0,0,1,1],
         ["The globe map for places",0,0,0,1],
         ["Advanced moodboards & premium themes",0,0,0,1],
-        ["Cloud sync & priority access",0,0,0,1]
+        ["Early access to new features",0,0,0,1]
       ];
       function cell(v){
         if(v===1) return '<td style="text-align:center;padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);color:#c9a227">✓</td>';
@@ -824,7 +825,7 @@
         <div class="a"><b>Keeper</b> (€2.99/mo) adds 75 items, shared &amp; gift lists, savings goals, reminders and one-tap save. <b>Collector</b> (€4.99/mo) adds 150 items, price history, taste insights and advanced statistics. <b>Vaulter</b> (€9.99/mo) unlocks unlimited items, the globe map for places, advanced moodboards, premium themes, cloud sync and priority access. See the <a href="#pricing">pricing table</a> for the full breakdown.</div></details>
 
       <details class="reveal"><summary>Can I share a list with other people?<span class="q-ico">+</span></summary>
-        <div class="a">Yes, with Vault Plus. Shared lists let you invite anyone and edit together in real time, ideal for couples, families or a group trip. Gift lists go a step further: share one link (no account needed to open it) and friends quietly reserve what they'll buy, so nobody gifts the same thing twice.</div></details>
+        <div class="a">Yes, starting with the Keeper plan. Shared lists let you invite anyone and edit together in real time, ideal for couples, families or a group trip. Gift lists go a step further: share one link (no account needed to open it) and friends quietly reserve what they'll buy, so nobody gifts the same thing twice.</div></details>
 
       <details class="reveal"><summary>Is my data private?<span class="q-ico">+</span></summary>
         <div class="a">Private by default, you control what becomes public. There are no ads, and no advertising or third-party behavioural tracking. Your data is yours, passwords are securely hashed, everything travels encrypted, and you can export all of it to CSV or delete your account at any time. Read our <a href="privacy.html">Privacy Policy</a> for the details.</div></details>
