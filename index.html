@@ -14,10 +14,10 @@
     {"@type":"Organization","@id":"https://vaultwishlist.com/#org","name":"Vault","url":"https://vaultwishlist.com/","logo":"https://vaultwishlist.com/icon-512.png"},
     {"@type":"SoftwareApplication","name":"Vault Wishlist","operatingSystem":"iOS, macOS, Web","applicationCategory":"LifestyleApplication","url":"https://vaultwishlist.com/","description":"Save products, places and gifts from anywhere into beautiful wishlists, then share a public @profile others can follow and discover. Track prices, plan trips, share gift lists, synced across your devices. Private by default.","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"}},
     {"@type":"FAQPage","@id":"https://vaultwishlist.com/#faq","mainEntity":[
-      {"@type":"Question","name":"Is Vault really free?","acceptedAnswer":{"@type":"Answer","text":"Yes. The free plan is free forever: save products and places from most sites, organise them into sections, use the grid, list, globe and moodboard views, and sync privately across your devices. Vault Plus (€4.99/month) is optional and adds sharing, gift lists, reminders and more."}},
+      {"@type":"Question","name":"Is Vault really free?","acceptedAnswer":{"@type":"Answer","text":"Yes. The free plan is free forever (up to 20 active items): save products and places from most sites, organise them into sections, use the grid, list and moodboard views, and sync privately across your devices. Paid plans are optional and start at €2.99/month (Keeper), with Collector (€4.99) and Vaulter (€9.99) adding more items and features."}},
       {"@type":"Question","name":"How does saving from a website work?","acceptedAnswer":{"@type":"Answer","text":"Copy the link of anything you like — a product, a restaurant, a hotel — and paste it into Vault. It reads the page and fills in the title, image and price automatically. On iPhone you can also save straight from Safari's share menu: tap Share, then Vault."}},
       {"@type":"Question","name":"Which websites are supported?","acceptedAnswer":{"@type":"Answer","text":"Most of the web works out of the box: shops, marketplaces, Google Maps, Booking and countless others. A few large brands use aggressive bot protection that can block automatic reading; on those, Vault still saves the item with a clean name from the link, and you can add the photo and price yourself in a couple of seconds."}},
-      {"@type":"Question","name":"What exactly do I get with Vault Plus?","acceptedAnswer":{"@type":"Answer","text":"Everything in Free, plus: shared and collaborative lists, gift mode with reservations, savings goals, reminders, price history, AI insights into your taste and spending, advanced moodboards and premium themes."}},
+      {"@type":"Question","name":"What do the paid plans include?","acceptedAnswer":{"@type":"Answer","text":"Keeper (€2.99/mo) adds 75 items, shared and gift lists, savings goals, reminders and one-tap save. Collector (€4.99/mo) adds 150 items, price history, taste insights and advanced statistics. Vaulter (€9.99/mo) unlocks unlimited items, the globe map for places, advanced moodboards, premium themes, cloud sync and priority access."}},
       {"@type":"Question","name":"Can I share a list with other people?","acceptedAnswer":{"@type":"Answer","text":"Yes, with Vault Plus. Shared lists let you invite anyone and edit together in real time — ideal for couples, families or a group trip. Gift lists go a step further: share one link (no account needed to open it) and friends quietly reserve what they'll buy, so nobody gifts the same thing twice."}},
       {"@type":"Question","name":"Is my data private?","acceptedAnswer":{"@type":"Answer","text":"Private by default — you control what becomes public. There are no ads, and no advertising or third-party behavioural tracking. Your data is yours, passwords are securely hashed, everything travels encrypted, and you can export all of it to CSV or delete your account at any time."}},
       {"@type":"Question","name":"Do I need to install anything?","acceptedAnswer":{"@type":"Answer","text":"No. Vault runs in your browser, nothing to download. You can use it as a guest with everything stored locally, or create a free account to sync across devices. There is also a free desktop app for Mac and Windows; native mobile apps are on the way."}}
@@ -186,7 +186,8 @@
   .pcell p{font-size:14px;color:var(--t2);line-height:1.62}
 
   /* pricing */
-  .price-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:840px;margin:60px auto 0}
+  .price-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;max-width:1120px;margin:52px auto 0;align-items:stretch}
+  @media(max-width:900px){.price-grid{grid-template-columns:1fr 1fr;max-width:560px}}
   .pcard{border:1px solid var(--bd);border-radius:20px;padding:36px 34px;background:var(--s1);position:relative}
   .pcard.gold{border-color:rgba(201,162,39,.4);background:linear-gradient(180deg,rgba(201,162,39,.05),var(--s1))}
   .pcard .pn{font-size:14px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--t2)}
@@ -317,7 +318,7 @@
 
 <nav id="nav">
   <div class="nav-in">
-    <a href="#top" aria-label="Vault"><img class="nav-logo" src="assets/vault-logo.png" alt="Vault" width="75" height="34" style="display:block;height:34px;width:auto"></a>
+    <a href="#top" aria-label="Vault"><img class="nav-logo" src="assets/vault-logo.png" alt="Vault" width="85" height="48" style="display:block;height:48px;width:auto"></a>
     <div class="nav-links">
       <a href="#social">Profiles</a>
       <a href="#save">Save</a>
@@ -699,39 +700,69 @@
         <div class="amt">€0</div>
         <div class="per">Free forever</div>
         <ul>
-          <li><svg class="ico"><use href="#ic-check-circle"/></svg> Save products &amp; places from most sites</li>
-          <li><svg class="ico"><use href="#ic-check-circle"/></svg> Sections, filters, search &amp; sorting</li>
-          <li><svg class="ico"><use href="#ic-check-circle"/></svg> Grid, list, globe &amp; moodboard views</li>
-          <li><svg class="ico"><use href="#ic-check-circle"/></svg> Private cloud sync across devices</li>
-          <li><svg class="ico"><use href="#ic-check-circle"/></svg> Export to CSV anytime</li>
+          <li><svg class="ico"><use href="#ic-check-circle"/></svg> Up to <b>20</b> active items</li>
+          <li><svg class="ico"><use href="#ic-check-circle"/></svg> Save from most sites</li>
+          <li><svg class="ico"><use href="#ic-check-circle"/></svg> Sections, filters, search</li>
+          <li><svg class="ico"><use href="#ic-check-circle"/></svg> Grid, list &amp; moodboard views</li>
+          <li><svg class="ico"><use href="#ic-check-circle"/></svg> Private sync &amp; CSV export</li>
         </ul>
         <a class="btn btn-line" href="app.html">Start free</a>
       </div>
-      <div class="pcard gold reveal">
-        <span class="pbadge">FULL EXPERIENCE</span>
-        <div class="pn">Vault Plus</div>
-        <div class="amt">€4.99 <span>/ month</span></div>
-        <div class="per">or €49.99 / year</div>
-        <div class="yr">Two months free on annual, save 17%</div>
+
+      <div class="pcard reveal">
+        <div class="pn">Keeper</div>
+        <div class="amt">€2.99 <span>/ mo</span></div>
+        <div class="per">or €29.99 / year · save 17%</div>
         <ul>
           <li><svg class="ico"><use href="#ic-crown"/></svg> <b>Everything in Free, and:</b></li>
+          <li><svg class="ico"><use href="#ic-check-circle"/></svg> <b>75</b> active items</li>
           <li><svg class="ico"><use href="#ic-check-circle"/></svg> Shared &amp; collaborative lists</li>
           <li><svg class="ico"><use href="#ic-check-circle"/></svg> Gift mode with reservations</li>
-          <li><svg class="ico"><use href="#ic-check-circle"/></svg> Savings goals &amp; spending stats</li>
-          <li><svg class="ico"><use href="#ic-check-circle"/></svg> Reminders &amp; price history</li>
-          <li><svg class="ico"><use href="#ic-check-circle"/></svg> AI insights, advanced moodboards &amp; themes</li>
+          <li><svg class="ico"><use href="#ic-check-circle"/></svg> Savings goals</li>
+          <li><svg class="ico"><use href="#ic-check-circle"/></svg> Reminders &amp; one-tap save</li>
         </ul>
-        <a class="btn btn-gold" href="app.html">Get Vault Plus</a>
+        <a class="btn btn-line" href="app.html">Choose Keeper</a>
+      </div>
+
+      <div class="pcard gold reveal">
+        <span class="pbadge">MOST POPULAR</span>
+        <div class="pn">Collector</div>
+        <div class="amt">€4.99 <span>/ mo</span></div>
+        <div class="per">or €49.99 / year · save 17%</div>
+        <ul>
+          <li><svg class="ico"><use href="#ic-crown"/></svg> <b>Everything in Keeper, and:</b></li>
+          <li><svg class="ico"><use href="#ic-check-circle"/></svg> <b>150</b> active items</li>
+          <li><svg class="ico"><use href="#ic-check-circle"/></svg> Price history</li>
+          <li><svg class="ico"><use href="#ic-check-circle"/></svg> Taste insights</li>
+          <li><svg class="ico"><use href="#ic-check-circle"/></svg> Advanced statistics</li>
+        </ul>
+        <a class="btn btn-gold" href="app.html">Choose Collector</a>
+      </div>
+
+      <div class="pcard reveal">
+        <div class="pn">Vaulter</div>
+        <div class="amt">€9.99 <span>/ mo</span></div>
+        <div class="per">or €99.99 / year · save 17%</div>
+        <ul>
+          <li><svg class="ico"><use href="#ic-crown"/></svg> <b>Everything in Collector, and:</b></li>
+          <li><svg class="ico"><use href="#ic-check-circle"/></svg> <b>Unlimited</b> items</li>
+          <li><svg class="ico"><use href="#ic-check-circle"/></svg> The globe map for places</li>
+          <li><svg class="ico"><use href="#ic-check-circle"/></svg> Advanced moodboards &amp; premium themes</li>
+          <li><svg class="ico"><use href="#ic-check-circle"/></svg> Cloud sync &amp; priority access</li>
+        </ul>
+        <a class="btn btn-line" href="app.html">Choose Vaulter</a>
       </div>
     </div>
 
-    <div class="cmp-wrap reveal" style="max-width:640px;margin:44px auto 0;overflow-x:auto">
-      <table class="cmp" style="width:100%;border-collapse:collapse;font-size:14px;min-width:420px">
+    <div class="cmp-wrap reveal" style="max-width:760px;margin:44px auto 0;overflow-x:auto">
+      <table class="cmp" style="width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px">
         <thead>
           <tr>
             <th style="text-align:left;padding:12px 10px;color:var(--silver,#b8b8b8);font-weight:600;border-bottom:1px solid var(--bd,#2a2a2a)">Compare plans</th>
-            <th style="padding:12px 10px;color:var(--t1,#f0f0f0);font-weight:700;border-bottom:1px solid var(--bd,#2a2a2a);width:80px">Free</th>
-            <th style="padding:12px 10px;color:#c9a227;font-weight:700;border-bottom:1px solid var(--bd,#2a2a2a);width:80px">Plus</th>
+            <th style="padding:12px 8px;color:var(--t1,#f0f0f0);font-weight:700;border-bottom:1px solid var(--bd,#2a2a2a);width:74px">Free</th>
+            <th style="padding:12px 8px;color:var(--t1,#f0f0f0);font-weight:700;border-bottom:1px solid var(--bd,#2a2a2a);width:74px">Keeper</th>
+            <th style="padding:12px 8px;color:#c9a227;font-weight:700;border-bottom:1px solid var(--bd,#2a2a2a);width:74px">Collector</th>
+            <th style="padding:12px 8px;color:var(--t1,#f0f0f0);font-weight:700;border-bottom:1px solid var(--bd,#2a2a2a);width:74px">Vaulter</th>
           </tr>
         </thead>
         <tbody id="cmpBody"></tbody>
@@ -740,29 +771,33 @@
   </div>
   <script>
     (function(){
+      // [label, free, keeper, collector, vaulter]
       var rows=[
-        ["Save products & places from most sites",1,1],
-        ["Sections, filters, search & sorting",1,1],
-        ["Grid, list, globe & moodboard views",1,1],
-        ["Private cloud sync across devices",1,1],
-        ["Public @profile you can share",1,1],
-        ["Export to CSV anytime",1,1],
-        ["Active items","20","Unlimited"],
-        ["Shared & collaborative lists",0,1],
-        ["Gift mode with reservations",0,1],
-        ["Reminders & price history",0,1],
-        ["Savings goals & spending stats",0,1],
-        ["Advanced moodboards & premium themes",0,1],
-        ["Taste insights",0,1]
+        ["Save products & places from most sites",1,1,1,1],
+        ["Sections, filters, search & sorting",1,1,1,1],
+        ["Grid, list & moodboard views",1,1,1,1],
+        ["Public @profile you can share",1,1,1,1],
+        ["Private sync & CSV export",1,1,1,1],
+        ["Active items","20","75","150","∞"],
+        ["Shared & collaborative lists",0,1,1,1],
+        ["Gift mode with reservations",0,1,1,1],
+        ["Savings goals",0,1,1,1],
+        ["Reminders & one-tap save",0,1,1,1],
+        ["Price history",0,0,1,1],
+        ["Taste insights",0,0,1,1],
+        ["Advanced statistics",0,0,1,1],
+        ["The globe map for places",0,0,0,1],
+        ["Advanced moodboards & premium themes",0,0,0,1],
+        ["Cloud sync & priority access",0,0,0,1]
       ];
       function cell(v){
-        if(v===1) return '<td style="text-align:center;padding:11px 10px;border-bottom:1px solid rgba(255,255,255,.06);color:#c9a227">✓</td>';
-        if(v===0) return '<td style="text-align:center;padding:11px 10px;border-bottom:1px solid rgba(255,255,255,.06);color:#555">—</td>';
-        return '<td style="text-align:center;padding:11px 10px;border-bottom:1px solid rgba(255,255,255,.06);color:#e0e0e0;font-size:12px">'+v+'</td>';
+        if(v===1) return '<td style="text-align:center;padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);color:#c9a227">✓</td>';
+        if(v===0) return '<td style="text-align:center;padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);color:#555">—</td>';
+        return '<td style="text-align:center;padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);color:#e0e0e0;font-size:12px;font-weight:700">'+v+'</td>';
       }
       var b=document.getElementById('cmpBody');
       if(b) b.innerHTML=rows.map(function(r){
-        return '<tr><td style="text-align:left;padding:11px 10px;border-bottom:1px solid rgba(255,255,255,.06);color:#b8b8b8">'+r[0]+'</td>'+cell(r[1])+cell(r[2])+'</tr>';
+        return '<tr><td style="text-align:left;padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.06);color:#b8b8b8">'+r[0]+'</td>'+cell(r[1])+cell(r[2])+cell(r[3])+cell(r[4])+'</tr>';
       }).join('');
     })();
   </script>
@@ -777,7 +812,7 @@
     </div>
     <div class="faq">
       <details class="reveal"><summary>Is Vault really free?<span class="q-ico">+</span></summary>
-        <div class="a">Yes. The free plan is free forever, save products and places from most sites, organise them into sections, use the grid, list, globe and moodboard views, and sync privately across your devices. Vault Plus (€4.99/month) is optional and adds sharing, gift lists, reminders and more.</div></details>
+        <div class="a">Yes. The free plan is free forever (up to 20 active items), save products and places from most sites, organise them into sections, use the grid, list and moodboard views, and sync privately across your devices. Paid plans are optional and start at <b>€2.99/month</b> (Keeper), with Collector (€4.99) and Vaulter (€9.99) adding more items and features.</div></details>
 
       <details class="reveal"><summary>How does saving from a website work?<span class="q-ico">+</span></summary>
         <div class="a">Copy the link of anything you like, a product, a restaurant, a hotel, and paste it into Vault. It reads the page and fills in the title, image and price automatically. On iPhone you can also save straight from Safari's share menu, tap Share → Vault.</div></details>
@@ -785,8 +820,8 @@
       <details class="reveal"><summary>Which websites are supported?<span class="q-ico">+</span></summary>
         <div class="a">Most of the web works out of the box, shops, marketplaces, Google Maps, Booking and countless others. A few large brands use aggressive bot protection that can block automatic reading; on those, Vault still saves the item with a clean name from the link, and you can add the photo and price yourself in a couple of seconds.</div></details>
 
-      <details class="reveal"><summary>What exactly do I get with Vault Plus?<span class="q-ico">+</span></summary>
-        <div class="a">Everything in Free, plus: shared &amp; collaborative lists, gift mode with reservations, savings goals, reminders, price history, AI insights into your taste and spending, advanced moodboards and premium themes. See the <a href="#plus">Plus section</a> above for the full breakdown.</div></details>
+      <details class="reveal"><summary>What do the paid plans include?<span class="q-ico">+</span></summary>
+        <div class="a"><b>Keeper</b> (€2.99/mo) adds 75 items, shared &amp; gift lists, savings goals, reminders and one-tap save. <b>Collector</b> (€4.99/mo) adds 150 items, price history, taste insights and advanced statistics. <b>Vaulter</b> (€9.99/mo) unlocks unlimited items, the globe map for places, advanced moodboards, premium themes, cloud sync and priority access. See the <a href="#pricing">pricing table</a> for the full breakdown.</div></details>
 
       <details class="reveal"><summary>Can I share a list with other people?<span class="q-ico">+</span></summary>
         <div class="a">Yes, with Vault Plus. Shared lists let you invite anyone and edit together in real time, ideal for couples, families or a group trip. Gift lists go a step further: share one link (no account needed to open it) and friends quietly reserve what they'll buy, so nobody gifts the same thing twice.</div></details>
