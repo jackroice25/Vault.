@@ -2370,7 +2370,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.22-social43';
+const APP_BUILD='2026.09.22-social44';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -4680,7 +4680,7 @@ function _renderThemePanel(){
   const cc=S.customColors||{};
   popup.innerHTML=`<div class="lang-popup-nav">
       <button class="lang-popup-nav-back" onclick="openSettings()">${t('back')}</button>
-      <span class="lang-popup-nav-title">${ico('palette',13)} Tema</span>
+      <span class="lang-popup-nav-title">${ico('palette',13)} ${_lbl({it:'Tema',en:'Theme',es:'Tema',fr:'Thème',de:'Thema',pt:'Tema',nl:'Thema'})}</span>
       <div style="width:60px"></div>
     </div>
     <div class="tp-divider">Preset</div>
@@ -5865,7 +5865,7 @@ function openSettings(btn){
     </div>
     <div class="lang-opt" onclick="_renderThemePanel()">
       <span class="lang-opt-icon">${ico('palette',17)}</span>
-      <span class="lang-opt-name">Tema</span>
+      <span class="lang-opt-name">${_lbl({it:'Tema',en:'Theme',es:'Tema',fr:'Thème',de:'Thema',pt:'Tema',nl:'Thema'})}</span>
       <span style="color:var(--t3);font-size:12px;margin-left:auto;display:flex;align-items:center">${_tLabel} ›</span>
     </div>
     <div class="lang-opt" onclick="openStatusColors()">
@@ -5875,7 +5875,7 @@ function openSettings(btn){
     </div>
     <div class="lang-opt" onclick="hideLangPopup();openHelp()">
       <span class="lang-opt-icon">${ico('book',17)}</span>
-      <span class="lang-opt-name">Guida &amp; aiuto</span>
+      <span class="lang-opt-name">${_lbl({it:'Guida & aiuto',en:'Help & guide',es:'Ayuda y guía',fr:'Aide & guide',de:'Hilfe & Anleitung',pt:'Ajuda e guia',nl:'Hulp & gids'})}</span>
       <span style="color:var(--t3);font-size:12px;margin-left:auto">›</span>
     </div>`;
   _positionPopup(popup, _settingsBtn);
@@ -7571,7 +7571,7 @@ function _initAuthSession(){
 // ── 3-TIER PLAN MODEL (Keeper / Collector / Vaulter) ──
 // rank: free 0 < keeper 1 < collector 2 < vaulter 3.  Legacy 'plus' (lifetime grants) = top tier.
 const PLAN_RANK={free:0,keeper:1,collector:2,vaulter:3,plus:3};
-const PLAN_LIMITS={free:20,keeper:75,collector:150,vaulter:Infinity,plus:Infinity};
+const PLAN_LIMITS={free:20,keeper:75,collector:250,vaulter:Infinity,plus:Infinity};
 const PLAN_NAMES={free:'Free',keeper:'Keeper',collector:'Collector',vaulter:'Vaulter',plus:'Plus'};
 const PLAN_PRICES={keeper:{m:'€2.99',y:'€29.99'},collector:{m:'€4.99',y:'€49.99'},vaulter:{m:'€9.99',y:'€99.99'}};
 // which tier unlocks each feature
@@ -7617,7 +7617,7 @@ function showPlusModal(featureName){
 function closePlusModal(){document.getElementById('plusOv').classList.remove('open');_plusTriggeredFeature=null;}
 const TIER_FEATURES={
   keeper:['75 active items','Shared & collaborative lists','Gift mode with reservations','Savings goals','Reminders'],
-  collector:['150 active items','Everything in Keeper','Price history','Taste insights','Advanced statistics'],
+  collector:['250 active items','Everything in Keeper','Price history','Taste insights','Advanced statistics'],
   vaulter:['Unlimited items','Everything in Collector','The globe map for places','Advanced moodboards','Premium themes & early access']
 };
 function _tierCardHTML(slug){
@@ -7680,6 +7680,15 @@ function showCheckout(tier){
     closePlusModal();
     showToast(_lbl({it:"Crea prima un account gratuito per abbonarti.",en:"Create a free account first to subscribe.",es:"Crea primero una cuenta gratis para suscribirte.",fr:"Crée d'abord un compte gratuit pour t'abonner.",de:"Erstelle zuerst ein kostenloses Konto, um zu abonnieren.",pt:"Crie primeiro uma conta grátis para assinar.",nl:"Maak eerst een gratis account om te abonneren."}));
     setTimeout(()=>document.getElementById('authOv')?.style.setProperty('display','flex'),400);
+    return;
+  }
+  // Already on a paid plan → NEVER open a new Payment Link (would create a 2nd subscription
+  // = double billing). Route to the Stripe billing portal to switch tiers on the existing sub.
+  // (Lifetime-grant users have no Stripe sub and see no "Choose" buttons, so they never reach here.)
+  if(isPaid() && !_isNativePlatform()){
+    closePlusModal();
+    showToast(_lbl({it:"Hai già un piano attivo — cambia tier dal portale di fatturazione.",en:"You already have a plan — switch tiers in the billing portal.",es:"Ya tienes un plan — cambia de nivel en el portal de facturación.",fr:"Tu as déjà un plan — change d'offre dans le portail de facturation.",de:"Du hast bereits einen Plan — wechsle im Abrechnungsportal.",pt:"Você já tem um plano — troque no portal de faturamento.",nl:"Je hebt al een plan — wissel in het factuurportaal."}));
+    try{openStripePortal();}catch(e){}
     return;
   }
   // iOS: subscriptions consumed in-app MUST go through Apple IAP (App Store rule
