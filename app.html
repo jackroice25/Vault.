@@ -76,6 +76,7 @@ button,a,.card,.chip,.si,.sb-util,.mtab,.newsec,.disc-row,.pubi-card,[onclick]{t
 .si{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--t2);transition:background .1s,color .1s;user-select:none;margin-bottom:1px}
 .si:hover{background:var(--s2);color:var(--t1)}
 .si.on{background:var(--ax);color:var(--accent)}
+.si.si-drop{background:rgba(201,162,39,.18);outline:1px dashed #c9a227;color:var(--accent)}
 .si-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0;color:#9c7f3a}
 .si-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;background:linear-gradient(135deg,#8a6d31 0%,#c2a458 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
 .si-count{font-size:11px;background:var(--s2);padding:1px 6px;border-radius:10px;color:var(--t3);min-width:20px;text-align:center}
@@ -237,7 +238,8 @@ button,a,.card,.chip,.si,.sb-util,.mtab,.newsec,.disc-row,.pubi-card,[onclick]{t
 .c-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:42px;background:var(--s2)}
 
 /* status pill on image */
-.c-st{position:absolute;top:8px;left:8px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.2px;}
+.c-st{position:absolute;top:8px;left:8px;display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:800;padding:4px 10px 4px 7px;border-radius:20px;letter-spacing:.2px;background:rgba(10,10,12,.86);color:#fff;box-shadow:0 3px 10px rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.10);}
+.c-st::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--stc,#c9a227);flex-shrink:0;box-shadow:0 0 6px var(--stc,#c9a227)}
 .st-voglio{background:rgba(210,210,210,.90);color:#111}
 .st-ordinato{background:rgba(140,140,140,.85);color:#111}
 .st-comprato{background:rgba(255,255,255,.92);color:#111}
@@ -2397,7 +2399,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.20-social34';
+const APP_BUILD='2026.09.21-social35';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -3251,7 +3253,9 @@ function renderSidebar(){
     // Explicit, tappable delete for real sections (mobile: long-press ctx menu is
     // undiscoverable, and tapping the collapse X looked like delete → confusing loop).
     const delBtn=(s.id!==null&&isOn)?`<span class="si-del" onclick="event.stopPropagation();delSec('${s.id}')" title="${t('ctxDeleteSec')}" style="display:inline-flex;align-items:center;padding:5px;margin-left:1px;color:#e06666;cursor:pointer">${ico('trash',13)}</span>`:'';
-    return `<div class="si ${isOn?'on':''}" onclick="setActive(${clickArg})" ${ctx} ${accent}>
+    const dropId=s.id===null?'null':`'${s.id}'`;
+    return `<div class="si ${isOn?'on':''}" onclick="setActive(${clickArg})" ${ctx} ${accent}
+      ondragover="onSecDragOver(event)" ondragleave="onSecDragLeave(event)" ondrop="onSecDrop(event,${dropId})">
       <span class="si-icon">${s._allIcon?ico('layers',15):secIcon(s,15)}</span>
       ${dot}<span class="si-name">${esc(s.name)}</span>
       <span class="si-count">${count}</span>
@@ -5085,7 +5089,22 @@ function onDragStart(e,id){
   e.dataTransfer.effectAllowed='move';
   e.currentTarget.classList.add('dragging');
 }
-function onDragEnd(e){e.currentTarget.classList.remove('dragging');document.querySelectorAll('.drag-over').forEach(el=>el.classList.remove('drag-over'));}
+function onDragEnd(e){e.currentTarget.classList.remove('dragging');document.querySelectorAll('.drag-over,.si-drop').forEach(el=>el.classList.remove('drag-over','si-drop'));}
+// Drag a card onto a sidebar section to (re)assign its category. Dropping on "All" unfiles it.
+function onSecDragOver(e){ if(!dragSrcId) return; e.preventDefault(); e.dataTransfer.dropEffect='move'; e.currentTarget.classList.add('si-drop'); }
+function onSecDragLeave(e){ e.currentTarget.classList.remove('si-drop'); }
+function onSecDrop(e,sid){
+  e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.remove('si-drop');
+  if(!dragSrcId) return;
+  const it=S.items.find(i=>i.id===dragSrcId); dragSrcId=null;
+  if(!it || it.sid===sid) return;
+  it.sid=sid;
+  try{_haptic('light');}catch(_){}
+  save(); renderSidebar(); render();
+  const sec=sid?S.sections.find(s=>s.id===sid):null;
+  const name=sec?sec.name:t('allItems');
+  showToast(_lbl({it:'Spostato in {s}',en:'Moved to {s}',es:'Movido a {s}',fr:'Déplacé vers {s}',de:'Verschoben nach {s}',pt:'Movido para {s}',nl:'Verplaatst naar {s}'}).replace('{s}',name));
+}
 function onDragOver(e,id){
   e.preventDefault();e.dataTransfer.dropEffect='move';
   if(id===dragSrcId)return;
@@ -6569,7 +6588,7 @@ function _renderStatsPlus(){
 }
 
 // ── STATUS COLORS ──
-const DEFAULT_STATUS_COLORS={voglio:'#b8b8b8',ordinato:'#787878',comprato:'#a0a0a0',visitare:'#606060',visitato:'#707070'};
+const DEFAULT_STATUS_COLORS={voglio:'#e0b45c',ordinato:'#6aa9e0',comprato:'#63c088',visitare:'#b08fe0',visitato:'#57c4b8'};
 function applyStatusColors(){
   const c={...DEFAULT_STATUS_COLORS,...(S.statusColors||{})};
   let styleEl=document.getElementById('statusColorStyle');
@@ -6580,6 +6599,11 @@ function applyStatusColors(){
     .st-comprato{color:${c.comprato}!important;background:${c.comprato}22!important;border-color:${c.comprato}55!important}
     .st-visitare{color:${c.visitare}!important;background:${c.visitare}22!important;border-color:${c.visitare}55!important}
     .st-visitato{color:${c.visitato||'#707070'}!important;background:${c.visitato||'#707070'}22!important;border-color:${c.visitato||'#707070'}55!important}
+    .c-st.st-voglio{background:rgba(10,10,12,.86)!important;color:#fff!important;border-color:rgba(255,255,255,.10)!important;--stc:${c.voglio}}
+    .c-st.st-ordinato{background:rgba(10,10,12,.86)!important;color:#fff!important;border-color:rgba(255,255,255,.10)!important;--stc:${c.ordinato}}
+    .c-st.st-comprato{background:rgba(10,10,12,.86)!important;color:#fff!important;border-color:rgba(255,255,255,.10)!important;--stc:${c.comprato}}
+    .c-st.st-visitare{background:rgba(10,10,12,.86)!important;color:#fff!important;border-color:rgba(255,255,255,.10)!important;--stc:${c.visitare}}
+    .c-st.st-visitato{background:rgba(10,10,12,.86)!important;color:#fff!important;border-color:rgba(255,255,255,.10)!important;--stc:${c.visitato||'#57c4b8'}}
     .bud-dot[style*="accent"]{background:${c.voglio}!important}
     .bud-dot[style*="yellow"]{background:${c.ordinato}!important}
     .bud-dot[style*="green"]{background:${c.comprato}!important}
