@@ -2,6 +2,19 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script>
+/* Smart root: a brand-new visitor on the live web sees the presentation (welcome.html);
+   returning users, guests-with-data, deep links, the iOS/desktop apps and previews go
+   straight into the app. Runs first so the app never flashes before the redirect. */
+(function(){try{
+  if(location.hostname!=='vaultwishlist.com')return;            // only the live web (never native/desktop/preview)
+  if(navigator.userAgent.indexOf('Electron')>-1)return;         // desktop app is the app
+  if(location.search||location.hash)return;                     // deep/share links go straight in
+  if(sessionStorage.getItem('vaultEnter'))return;               // arrived via "Open Vault" from the landing
+  for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i)||'';if(k.indexOf('vault5')===0||k.indexOf('auth-token')>-1)return;} // returning user/guest
+  location.replace('/welcome.html');
+}catch(e){}})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vault — the wishlist for everything you want</title>
 <meta name="description" content="Vault is a beautiful wishlist for products, places and gifts. Save from any link, organise, and share a public profile. Private by default. Free to start.">
@@ -2370,7 +2383,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.22-social44';
+const APP_BUILD='2026.09.24-social45';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
