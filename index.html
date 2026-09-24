@@ -2394,7 +2394,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.24-social47';
+const APP_BUILD='2026.09.24-social48';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -4868,10 +4868,20 @@ function importCSV(e){
 }
 
 // ── SHARE ──
-function shareItem(id){
+// Short share links: stash the payload server-side and share a tiny #s=<id> link.
+// Falls back to the old base64-in-URL link if the backend isn't reachable (e.g. guest offline).
+async function _makeShortLink(kind,data){
+  if(!_sb) return null;
+  try{
+    const {data:id,error}=await _sb.rpc('create_share',{p_kind:kind,p_payload:{data:data}});
+    if(error||!id) return null;
+    return window.location.href.split('#')[0]+'#s='+id;
+  }catch(e){ return null; }
+}
+async function shareItem(id){
   const item=S.items.find(i=>i.id===id);if(!item)return;
-  const data=btoa(unescape(encodeURIComponent(JSON.stringify(item))));
-  const url=window.location.href.split('#')[0]+'#share='+data;
+  let url=await _makeShortLink('item',item);
+  if(!url){ url=window.location.href.split('#')[0]+'#share='+btoa(unescape(encodeURIComponent(JSON.stringify(item)))); }
   navigator.clipboard.writeText(url).then(()=>{
     const m=document.getElementById('ctxMenu');
     if(m){
@@ -4898,6 +4908,23 @@ function checkShareParam(){
     const url=decodeURIComponent(hash.slice(5));
     history.replaceState(null,'',location.pathname);
     if(/^https?:\/\//i.test(url)) _extAdd(url.slice(0,2048));
+    return;
+  }
+  if(hash.startsWith('#s=')){ // compact server-stored share
+    const id=hash.slice(3).replace(/[^a-z0-9]/gi,'');
+    history.replaceState(null,'',location.pathname);
+    if(id&&_sb){
+      _sb.rpc('get_share',{p_id:id}).then(({data})=>{
+        if(!data||!data.ok) return;
+        const p=data.payload&&data.payload.data;
+        if(data.kind==='item'){
+          const item=_sanitizeImportedItem(p);
+          if(item){ item.id='shared-preview'; S.items.unshift(item); setTimeout(()=>openDetMo('shared-preview'),300); }
+        } else if(p&&Array.isArray(p.items)){
+          showReadOnlyVault(_sanitizeImportedVault(p));
+        }
+      }).catch(()=>{});
+    }
     return;
   }
   if(hash.startsWith('#vault=')){
@@ -4958,13 +4985,13 @@ async function generateShareLink(sid){
   const items=S.items.filter(i=>!i.archived&&(sid===null?true:i.sid===sid));
   if(!items.length){alert(t('nothingShare'));return;}
   const payload={items,exportedAt:Date.now(),by:S.profile?.name||'Vault'};
-  let b64;
-  try{b64=await _compress(payload);}
-  catch(e){
-    // fallback: plain base64 JSON (no compression)
-    b64=btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  let url=await _makeShortLink('vault',payload);
+  if(!url){
+    let b64;
+    try{b64=await _compress(payload);}
+    catch(e){ b64=btoa(unescape(encodeURIComponent(JSON.stringify(payload)))); }
+    url=window.location.href.split('#')[0]+'#vault='+b64;
   }
-  const url=window.location.href.split('#')[0]+'#vault='+b64;
   window._shareUrl=url;
   document.getElementById('shareUrlText').textContent=url;
   document.getElementById('shareUrlBox').style.display='block';
