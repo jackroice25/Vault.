@@ -98,6 +98,10 @@ button,a,.card,.chip,.si,.sb-util,.mtab,.newsec,.disc-row,.pubi-card,[onclick]{t
 .si:hover{background:var(--s2);color:var(--t1)}
 .si.on{background:var(--ax);color:var(--accent)}
 .si.si-drop{background:rgba(201,162,39,.18);outline:1px dashed #c9a227;color:var(--accent)}
+.si-del{opacity:0;transition:opacity .12s}
+.si:hover .si-del,.si.on .si-del{opacity:1}
+.si:hover .si-arrow{visibility:hidden}
+@media(hover:none){.si-del{opacity:0}.si.on .si-del{opacity:1}}
 .si-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0;color:#9c7f3a}
 .si-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;background:linear-gradient(135deg,#8a6d31 0%,#c2a458 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
 .si-count{font-size:11px;background:var(--s2);padding:1px 6px;border-radius:10px;color:var(--t3);min-width:20px;text-align:center}
@@ -277,7 +281,9 @@ button,a,.card,.chip,.si,.sb-util,.mtab,.newsec,.disc-row,.pubi-card,[onclick]{t
   .card:hover{transform:none;box-shadow:none;border-color:var(--bd)}
   .card:hover .c-img img{transform:none}
   .card:hover .c-car-slide img{transform:none}
-  .card:hover .c-car-btn{opacity:0;pointer-events:none}}
+  /* touch has no hover → keep the carousel arrows visible & tappable (bigger hit area) so
+     multi-image cards can still be scrolled; they stopPropagation so they don't open the sheet */
+  .c-car-btn{opacity:.92;pointer-events:auto;width:34px;height:34px;font-size:13px}}
 .ca{width:27px;height:27px;border-radius:6px;background:rgba(0,0,0,.92);border:1px solid rgba(255,255,255,.28);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;font-weight:700;text-decoration:none;transition:all .12s;box-shadow:0 1px 4px rgba(0,0,0,.5)}
 .ca svg{stroke-width:2}
 .ca:hover{color:#fff;background:#000;border-color:rgba(255,255,255,.45)}
@@ -691,6 +697,10 @@ body.light{--bg:#f0f0f2;--s1:#ffffff;--s2:#f5f5f7;--s3:#e8e8ec;--bd:#d0d0d6;--bd
 .tp-custom-row{display:flex;align-items:center;justify-content:space-between;padding:7px 12px}
 .tp-custom-row label{font-size:12px;color:var(--t2)}
 .tp-color-inp{width:36px;height:26px;border:1.5px solid var(--bd2);border-radius:6px;cursor:pointer;padding:2px;background:var(--s1)}
+.addr-sug{position:absolute;left:0;right:0;top:100%;z-index:50;background:var(--s2);border:1px solid var(--bd2);border-radius:10px;margin-top:4px;max-height:220px;overflow-y:auto;display:none;box-shadow:0 12px 32px rgba(0,0,0,.55)}
+.addr-sug-item{padding:9px 12px;font-size:12px;color:var(--t2);cursor:pointer;border-bottom:1px solid var(--bd);line-height:1.35}
+.addr-sug-item:last-child{border-bottom:none}
+.addr-sug-item:hover{background:var(--s3);color:var(--t1)}
 .tp-divider{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--t3);padding:8px 12px 4px}
 
 /* ── CONTEXT MENU ── */
@@ -1900,7 +1910,7 @@ body.pp-open{overflow:hidden}
 <!-- ═══ SOCIAL: NOTIFICATIONS ═══ -->
 <div class="ov" id="notifOv">
   <div class="mo" style="max-width:440px">
-    <div class="mo-hd"><svg class="ico" width="16" height="16" viewBox="0 0 16 16" style="margin-right:6px"><use href="#ic-bell-ring"/></svg>Notifications</div>
+    <div class="mo-hd" style="display:flex;align-items:center"><svg class="ico" width="16" height="16" viewBox="0 0 16 16" style="margin-right:6px"><use href="#ic-bell-ring"/></svg><span id="notifHdTitle">Notifications</span><button id="notifClearBtn" onclick="_clearNotifs()" style="margin-left:auto;background:none;border:none;color:var(--t3);cursor:pointer;font-size:12px;font-family:inherit;text-decoration:underline">Clear all</button></div>
     <div id="notifIn" class="notif-list"></div>
     <div class="mo-acts"><button class="btn-s" onclick="closeNotifs()">Close</button></div>
   </div>
@@ -2059,9 +2069,10 @@ body.pp-open{overflow:hidden}
     </div>
 
     <!-- Address, shown only for places -->
-    <div class="fl" id="addressWrap" style="display:none">
+    <div class="fl" id="addressWrap" style="display:none;position:relative">
       <label class="lb" id="lbl-address">Address</label>
-      <input class="inp" type="text" id="addressI" placeholder="Via Roma 1, Milan...">
+      <input class="inp" type="text" id="addressI" placeholder="Via Roma 1, Milan..." autocomplete="off" oninput="_addrAutocomplete(this.value)" onblur="setTimeout(function(){var s=document.getElementById('addrSug');if(s)s.style.display='none';},180)">
+      <div id="addrSug" class="addr-sug"></div>
     </div>
 
     <!-- User rating widget, shown only for places -->
@@ -2383,7 +2394,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.09.24-social46';
+const APP_BUILD='2026.09.24-social47';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -3236,7 +3247,7 @@ function renderSidebar(){
     const arrow=(s.id!==null&&!isOn)?`<span class="si-arrow">${ico('chevron-right',10)}</span>`:'';
     // Explicit, tappable delete for real sections (mobile: long-press ctx menu is
     // undiscoverable, and tapping the collapse X looked like delete → confusing loop).
-    const delBtn=(s.id!==null&&isOn)?`<span class="si-del" onclick="event.stopPropagation();delSec('${s.id}')" title="${t('ctxDeleteSec')}" style="display:inline-flex;align-items:center;padding:5px;margin-left:1px;color:#e06666;cursor:pointer">${ico('trash',13)}</span>`:'';
+    const delBtn=(s.id!==null)?`<span class="si-del" onclick="event.stopPropagation();delSec('${s.id}')" title="${t('ctxDeleteSec')}" style="display:inline-flex;align-items:center;padding:5px;margin-left:1px;color:#e06666;cursor:pointer">${ico('trash',13)}</span>`:'';
     const dropId=s.id===null?'null':`'${s.id}'`;
     return `<div class="si ${isOn?'on':''}" onclick="setActive(${clickArg})" ${ctx} ${accent}
       ondragover="onSecDragOver(event)" ondragleave="onSecDragLeave(event)" ondrop="onSecDrop(event,${dropId})">
@@ -3607,6 +3618,7 @@ function openDetMo(id){
     ${item.archived?`<button class="btn-s" style="flex:1" onclick="unarchiveItem('${item.id}');closeDetMo()">${ico('upload',13)} ${t('unarchive')}</button>`:`<button class="btn-s" style="flex:1" onclick="archiveItem('${item.id}');closeDetMo()">${ico('archive',13)} ${t('archive')}</button>`}
   </div>`;
   document.getElementById('detIn').innerHTML=h;
+  document.getElementById('detIn').scrollTop=0; // always open a product box scrolled to the top
   {const _dl=document.getElementById('detLink'); _dl.href=safeUrl(item.url); _dl.onclick=()=>_biTrackClick(item.id);} // Vault Business: outbound click
   document.getElementById('detOv').classList.add('open');
   document.body.classList.add('sheet-open');
@@ -3627,7 +3639,7 @@ function galGo(idx){
 function closeDetMo(skipAnim){
   const ov=document.getElementById('detOv'); if(!ov) return;
   const mo=ov.querySelector('.mo');
-  const finish=()=>{ ov.classList.remove('open'); document.body.classList.remove('sheet-open'); if(mo){mo.style.animation='';mo.style.transform='';mo.style.opacity='';} };
+  const finish=()=>{ ov.classList.remove('open'); document.body.classList.remove('sheet-open'); if(mo){mo.style.animation='';mo.style.transform='';mo.style.opacity='';} const di=document.getElementById('detIn'); if(di) di.scrollTop=0; };
   // Mobile: slide the sheet out to the right (mirrors the open animation). Desktop / already-swiped: just close.
   if(skipAnim===true || !ov.classList.contains('open') || !mo || window.innerWidth>768){ finish(); return; }
   mo.style.animation='sheetOutRight .24s cubic-bezier(.4,0,.7,1) forwards';
@@ -3998,6 +4010,13 @@ function addManualImg(){
 function removeImg(i){
   extraImages.splice(i,1);
   renderImgStrip();
+  checkCanSave();
+  // refresh the main preview: show the new first image, or clear it if none are left
+  const pvImg=document.getElementById('pvImg'), pvWrap=document.getElementById('pvWrap');
+  if(pvImg&&pvWrap){
+    if(extraImages.length){ pvImg.src=extraImages[0]; pvImg.style.display='block'; pvWrap.classList.add('show'); }
+    else { pvImg.removeAttribute('src'); pvImg.style.display='none'; pvWrap.classList.remove('show'); }
+  }
 }
 function _resizeImg(file,maxPx,quality){
   return new Promise(resolve=>{
@@ -4302,6 +4321,10 @@ function saveItem(){
   const userRatingRaw=curType==='luogo'?parseFloat(document.getElementById('ratingAddWrap')?.dataset.val||'0'):0;
   const userRating=isNaN(userRatingRaw)?0:userRatingRaw;
   const giftFor=(document.getElementById('giftForI')?.value||'').trim();
+  // coords from a picked autocomplete address (so the place plots on the map immediately)
+  const _addrEl=document.getElementById('addressI');
+  const _pickLat=_addrEl&&_addrEl.dataset.lat?parseFloat(_addrEl.dataset.lat):null;
+  const _pickLng=_addrEl&&_addrEl.dataset.lng?parseFloat(_addrEl.dataset.lng):null;
   // pending img
   const pendingImg=document.getElementById('imgAddInp')?.value.trim();
   if(pendingImg && !extraImages.includes(pendingImg)) extraImages.push(pendingImg);
@@ -4323,13 +4346,14 @@ function saveItem(){
       const history=old.priceHistory||[];
       if(price&&old.price&&price!==old.price) history.push({price:old.price,date:new Date().toISOString().slice(0,10)});
       S.items[idx]={...old,mod:Date.now(),url,type:curType,status,title,note,sid,giftFor,
-        price:price||(fetched?.price||old.price||0),
+        price:price,
         priceFound,deadline,tags:[...editTags],variant,qty,
         voiceMemo:pendingVoice||old.voiceMemo||null,
         priceHistory:history,userRating,
         images:[...extraImages],
         isPlace:curType==='luogo',
         address:document.getElementById('addressI')?.value.trim()||fetched?.address||old.address||null,
+        lat:_pickLat!=null?_pickLat:(old.lat||null), lng:_pickLng!=null?_pickLng:(old.lng||null),
         ...(fetched?{desc:fetched.desc,rating:fetched.rating,reviewCount:fetched.reviewCount,
           priceRange:fetched.priceRange,phone:fetched.phone,
           cuisine:fetched.cuisine,hours:fetched.hours,menu:fetched.menu,reviews:fetched.reviews}:{})
@@ -4350,6 +4374,7 @@ function saveItem(){
       rating:fetched?.rating||null,reviewCount:fetched?.reviewCount||null,
       priceRange:fetched?.priceRange||null,
       address:document.getElementById('addressI')?.value.trim()||fetched?.address||null,
+      lat:_pickLat!=null?_pickLat:null, lng:_pickLng!=null?_pickLng:null,
       phone:fetched?.phone||null,cuisine:fetched?.cuisine||null,
       hours:fetched?.hours||null,menu:fetched?.menu||[],reviews:fetched?.reviews||[],
       at:Date.now(),mod:Date.now()
@@ -4684,6 +4709,12 @@ function applyCustomTheme(){
   }
   Object.entries(vars).forEach(([k,v])=>root.style.setProperty(k,v));
   document.body.classList.toggle('light',!_isDark(vars['--bg']));
+  // Custom overrides: user-chosen text colour + card/surface colour on top of the derived palette
+  if(S.themePreset==='custom'&&S.customColors){
+    const cc2=S.customColors;
+    if(cc2.text){ const [r,g,b]=_h2r(cc2.text); root.style.setProperty('--t1',cc2.text); root.style.setProperty('--t2',`rgba(${r},${g},${b},.72)`); root.style.setProperty('--t3',`rgba(${r},${g},${b},.46)`); }
+    if(cc2.surface){ root.style.setProperty('--s1',cc2.surface); root.style.setProperty('--s2',cc2.surface); }
+  }
 }
 function _renderThemePanel(){
   const popup=document.getElementById('langPopup');
@@ -4708,6 +4739,14 @@ function _renderThemePanel(){
     <div class="tp-custom-row">
       <label>${t('themeAccent')}</label>
       <input class="tp-color-inp" type="color" value="${cc.accent||'#b8b8b8'}" oninput="setCustomColor('accent',this.value)">
+    </div>
+    <div class="tp-custom-row">
+      <label>${_lbl({it:'Testo',en:'Text',es:'Texto',fr:'Texte',de:'Text',pt:'Texto',nl:'Tekst'})}</label>
+      <input class="tp-color-inp" type="color" value="${cc.text||'#f0f0f0'}" oninput="setCustomColor('text',this.value)">
+    </div>
+    <div class="tp-custom-row">
+      <label>${_lbl({it:'Schede',en:'Cards',es:'Tarjetas',fr:'Cartes',de:'Karten',pt:'Cartões',nl:'Kaarten'})}</label>
+      <input class="tp-color-inp" type="color" value="${cc.surface||'#141414'}" oninput="setCustomColor('surface',this.value)">
     </div>
     <div style="padding:4px 12px 10px">
       <button class="btn-s" style="width:100%;font-size:11px;padding:6px" onclick="resetTheme()">${t('reset')}</button>
@@ -5376,7 +5415,7 @@ let mediaRecorder=null,voiceChunks=[],voiceBlob=null,voiceTimerInt=null,voiceSec
 let pendingVoice=null;
 function toggleVoiceRec(){
   if(mediaRecorder&&mediaRecorder.state==='recording'){stopVoiceRec();return;}
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){alert('Microfono non supportato da questo browser');return;}
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){alert(_lbl({it:'Microfono non supportato da questo browser',en:'Microphone not supported by this browser',es:'Micrófono no compatible con este navegador',fr:'Micro non pris en charge par ce navigateur',de:'Mikrofon von diesem Browser nicht unterstützt',pt:'Microfone não suportado por este navegador',nl:'Microfoon niet ondersteund door deze browser'}));return;}
   navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
     const mimeType=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':MediaRecorder.isTypeSupported('audio/mp4')?'audio/mp4':'';
     mediaRecorder=mimeType?new MediaRecorder(stream,{mimeType}):new MediaRecorder(stream);
@@ -6802,7 +6841,10 @@ function pickAvatar(icon){
   S.profile.emoji=icon;save();renderProfile();
 }
 function saveProfile(){
-  S.profile.name=document.getElementById('profNameInp')?.value.trim()||'';
+  // Only touch the name when the input is actually on screen — otherwise a save triggered
+  // from elsewhere (avatar pick, etc.) would silently wipe the saved display name.
+  const _nel=document.getElementById('profNameInp');
+  if(_nel) S.profile.name=_nel.value.trim();
   save();
   const btn=document.getElementById('profileBtn');
   if(btn) btn.innerHTML=ico('id-card',14)+' '+(S.profile.name||'Profile');
@@ -7156,8 +7198,22 @@ function _renderNotifs(){
     }
     return `<div class="notif-row${n.read?'':' unread'}">
       <button class="notif-av" onclick="closeNotifs();openPublicProfile('${esc(n.actor_nick)}')">${av}</button>
-      <div class="notif-body"><div class="notif-txt">${txt} <span class="notif-ago">· ${_fmtAgo(n.created_at)}</span></div>${act}</div></div>`;
+      <div class="notif-body"><div class="notif-txt">${txt} <span class="notif-ago">· ${_fmtAgo(n.created_at)}</span></div>${act}</div>
+      <button class="notif-del" title="${_lbl({it:'Elimina',en:'Delete',es:'Eliminar',fr:'Supprimer',de:'Löschen',pt:'Excluir',nl:'Verwijderen'})}" onclick="event.stopPropagation();_deleteNotif('${n.id}',this)" style="flex-shrink:0;background:none;border:none;color:var(--t3);cursor:pointer;font-size:15px;padding:4px 6px;line-height:1;align-self:center">✕</button></div>`;
   }).join('');
+}
+async function _deleteNotif(id,btn){
+  const row=btn&&btn.closest('.notif-row'); if(row){row.style.opacity='.35';row.style.pointerEvents='none';}
+  try{ await _sb.rpc('delete_notification',{p_id:id}); }catch(e){}
+  if(_notifData&&_notifData.items) _notifData.items=_notifData.items.filter(n=>String(n.id)!==String(id));
+  _renderNotifs();
+}
+async function _clearNotifs(){
+  if(!_notifData||!(_notifData.items||[]).length) return;
+  if(!confirm(_lbl({it:'Eliminare tutte le notifiche?',en:'Delete all notifications?',es:'¿Eliminar todas las notificaciones?',fr:'Supprimer toutes les notifications ?',de:'Alle Benachrichtigungen löschen?',pt:'Excluir todas as notificações?',nl:'Alle meldingen verwijderen?'}))) return;
+  try{ await _sb.rpc('clear_notifications'); }catch(e){}
+  if(_notifData) _notifData.items=[];
+  _renderNotifs(); _setNotifBadge(0);
 }
 function closeNotifs(){ document.getElementById('notifOv').classList.remove('open'); }
 async function _acceptReq(nick,btn){
@@ -8772,6 +8828,31 @@ function closeMapMo(){
   if(_globeInst){try{_globeInst._destructor&&_globeInst._destructor();}catch(e){} _globeInst=null;}
 }
 
+// Address autocomplete for places: live suggestions from Nominatim; picking one fills a
+// standardised address AND stashes lat/lng on the input so the place plots on the map at once.
+let _addrSugT=null,_addrSugData=[];
+function _addrAutocomplete(q){
+  const box=document.getElementById('addrSug'); if(!box) return;
+  const inp=document.getElementById('addressI'); if(inp){delete inp.dataset.lat;delete inp.dataset.lng;} // typing invalidates a prior pick
+  q=(q||'').trim();
+  clearTimeout(_addrSugT);
+  if(q.length<3){ box.style.display='none'; return; }
+  _addrSugT=setTimeout(async()=>{
+    try{
+      const r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&q=${encodeURIComponent(q)}`,{headers:{'Accept-Language':navigator.language||'en'}});
+      _addrSugData=await r.json()||[];
+      if(!_addrSugData.length){ box.style.display='none'; return; }
+      box.innerHTML=_addrSugData.map((s,i)=>`<div class="addr-sug-item" onmousedown="_pickAddr(${i})">${ico('pin',11)} ${esc(s.display_name)}</div>`).join('');
+      box.style.display='block';
+    }catch(e){ box.style.display='none'; }
+  },350);
+}
+function _pickAddr(i){
+  const s=_addrSugData[i]; if(!s) return;
+  const inp=document.getElementById('addressI');
+  if(inp){ inp.value=s.display_name; inp.dataset.lat=s.lat; inp.dataset.lng=s.lon; }
+  const box=document.getElementById('addrSug'); if(box) box.style.display='none';
+}
 async function _geocodeAddress(addr){
   try{
     const r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(addr)}`,
@@ -8887,9 +8968,9 @@ async function _initGlobe(){
       if(items.length===1){closeMapMo();openDetMo(items[0].id);}
       else _globeInst.pointOfView({lat:p.lat,lng:p.lng,altitude:Math.max(0.4,(_globeInst.pointOfView().altitude||2)/2)},700);
     })
-    .ringsData(pts.filter(p=>p.status==='visitare'))
+    .ringsData(pts)
     .ringLat(p=>p.lat).ringLng(p=>p.lng)
-    .ringColor(()=>t=>`rgba(${_hexToRgb(_mapColors.toVisit)},${(1-t)*0.7})`)
+    .ringColor(p=>{const c=p.status==='visitato'?_mapColors.visited:_mapColors.toVisit;return t=>`rgba(${_hexToRgb(c)},${(1-t)*0.7})`;})
     .ringMaxRadius(2.8).ringPropagationSpeed(0.9).ringRepeatPeriod(2000)
     (mount);
 
@@ -8897,7 +8978,10 @@ async function _initGlobe(){
 
   const ctrl=_globeInst.controls();
   ctrl.autoRotate=true;ctrl.autoRotateSpeed=0.4;
-  ctrl.addEventListener('end',()=>{ctrl.autoRotate=true;});
+  // Pause spinning while the user is moving the globe; resume after 20s of no interaction.
+  let _rotResume=null;
+  ctrl.addEventListener('start',()=>{ ctrl.autoRotate=false; clearTimeout(_rotResume); });
+  ctrl.addEventListener('end',()=>{ clearTimeout(_rotResume); _rotResume=setTimeout(()=>{ try{if(_globeInst)_globeInst.controls().autoRotate=true;}catch(e){} },20000); });
 
   // Continuous formula: bigger when zoomed out, smaller when zoomed in
   const radiusForAlt=alt=>Math.max(0.04, 0.28*Math.pow(Math.max(alt,0.05),0.75));
