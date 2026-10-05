@@ -1920,6 +1920,7 @@ body.pp-open{overflow:hidden}
       <button class="rep-chip" onclick="_pickReportReason(this)">Harassment or hate</button>
       <button class="rep-chip" onclick="_pickReportReason(this)">Spam or scam</button>
       <button class="rep-chip" onclick="_pickReportReason(this)">Impersonation</button>
+      <button class="rep-chip" onclick="_pickReportReason(this)">Illegal content</button>
       <button class="rep-chip" onclick="_pickReportReason(this)">Something else</button>
     </div>
     <textarea id="reportReason" class="soc-inp" rows="3" maxlength="500" placeholder="Add details (optional)…" style="margin-top:10px"></textarea>
@@ -2446,6 +2447,18 @@ const _SI18N={
  'Elke nieuwe functie komt eerst bij Vaulter-leden: nieuwe winkelintegraties, nieuwe itemtypes, nieuwe weergaven en verbeteringen. Je hoeft niets te doen: ze verschijnen zodra ze uitkomen.'],
 'Features marked as early access in the menu are previews reserved for Vaulter.':['Le funzioni segnate come accesso anticipato nel menu sono anteprime riservate a Vaulter.','Las funciones marcadas como acceso anticipado son avances reservados a Vaulter.','Les fonctions marquées « accès anticipé » sont des avant-premières réservées à Vaulter.','Als Vorabzugang markierte Funktionen sind Vorschauen exklusiv für Vaulter.','Os recursos marcados como acesso antecipado são pré-visualizações reservadas ao Vaulter.','Functies gemarkeerd als vroege toegang zijn previews voor Vaulter.'],
 'Start exploring':['Inizia a esplorare','Empieza a explorar','Commencer à explorer','Loslegen','Começar a explorar','Begin met ontdekken'],
+// report window
+'Report':['Segnala','Denunciar','Signaler','Melden','Denunciar','Melden'],
+'Tell us what’s wrong. Your report is sent privately to the Vault team for review.':['Dicci cosa non va. La segnalazione arriva in privato al team di Vault per la verifica.','Cuéntanos qué pasa. Tu denuncia llega en privado al equipo de Vault para revisarla.','Dis-nous ce qui ne va pas. Ton signalement est envoyé en privé à l’équipe Vault.','Sag uns, was nicht stimmt. Deine Meldung geht privat an das Vault-Team zur Prüfung.','Diga-nos o que se passa. A denúncia é enviada em privado à equipa do Vault.','Vertel wat er mis is. Je melding gaat privé naar het Vault-team.'],
+'Inappropriate photo or content':['Foto o contenuto inappropriato','Foto o contenido inapropiado','Photo ou contenu inapproprié','Unangemessenes Foto oder Inhalt','Foto ou conteúdo impróprio','Ongepaste foto of inhoud'],
+'Harassment or hate':['Molestie o odio','Acoso u odio','Harcèlement ou haine','Belästigung oder Hass','Assédio ou ódio','Intimidatie of haat'],
+'Spam or scam':['Spam o truffa','Spam o estafa','Spam ou arnaque','Spam oder Betrug','Spam ou burla','Spam of oplichting'],
+'Impersonation':['Furto d’identità','Suplantación','Usurpation d’identité','Identitätsmissbrauch','Falsificação de identidade','Imitatie'],
+'Illegal content':['Contenuto illegale','Contenido ilegal','Contenu illégal','Rechtswidriger Inhalt','Conteúdo ilegal','Illegale inhoud'],
+'Something else':['Altro','Otra cosa','Autre chose','Etwas anderes','Outra coisa','Iets anders'],
+'Add details (optional)…':['Aggiungi dettagli (facoltativo)…','Añade detalles (opcional)…','Ajoute des détails (facultatif)…','Details hinzufügen (optional)…','Adicione detalhes (opcional)…','Voeg details toe (optioneel)…'],
+'Cancel':['Annulla','Cancelar','Annuler','Abbrechen','Cancelar','Annuleren'],
+'Send report':['Invia segnalazione','Enviar denuncia','Envoyer','Meldung senden','Enviar denúncia','Melding versturen'],
 // profile / stats / sidebar
 'Close':['Chiudi','Cerrar','Fermer','Schließen','Fechar','Sluiten'],
 'Save':['Salva','Guardar','Enregistrer','Speichern','Guardar','Opslaan'],
@@ -2590,7 +2603,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.10.05-social51';
+const APP_BUILD='2026.10.05-social52';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -7332,7 +7345,10 @@ function closePubProf(){
 }
 // ── Report profile (opens a card → emails vaultwishlist@gmail.com via edge fn) ──
 let _reportTarget=null;
-const _REPORT_REASONS=['Inappropriate photo or content','Harassment or hate','Spam or scam','Impersonation','Something else'];
+const _REPORT_REASONS=['Inappropriate photo or content','Harassment or hate','Spam or scam','Impersonation','Illegal content','Something else'];
+// English reason text (chips are localized on screen; the report we receive stays in English)
+const _repEn=el=>{const n=el&&el.firstChild;return (n&&n.__en)||((el&&el.textContent)||'').trim();};
+const _REP_ILLEGAL_PH={it:'Obbligatorio: quale contenuto (profilo o elemento), dove si trova e perché ritieni che sia illegale. Ti risponderemo all’email del tuo account.',en:'Required: which content (profile or item), where it is and why you believe it is illegal. We’ll answer at your account email.',es:'Obligatorio: qué contenido (perfil o elemento), dónde está y por qué crees que es ilegal. Te responderemos al email de tu cuenta.',fr:'Obligatoire : quel contenu (profil ou élément), où il se trouve et pourquoi tu le crois illégal. Nous répondrons à l’email de ton compte.',de:'Pflichtfeld: welcher Inhalt (Profil oder Eintrag), wo er ist und warum du ihn für rechtswidrig hältst. Wir antworten an deine Konto-E-Mail.',pt:'Obrigatório: que conteúdo (perfil ou item), onde está e porque acha que é ilegal. Responderemos para o email da sua conta.',nl:'Verplicht: welke inhoud (profiel of item), waar die staat en waarom je denkt dat die illegaal is. We antwoorden op het e-mailadres van je account.'};
 function _reportProfile(nick){
   if(!_sbUser){ closePubProf(); setAuthMode('login'); const o=document.getElementById('authOv'); if(o)o.style.display='flex'; return; }
   _reportTarget=_normNick(nick);
@@ -7341,30 +7357,36 @@ function _reportProfile(nick){
   document.getElementById('reportMsg').textContent='';
   document.querySelectorAll('#reportReasons .rep-chip').forEach(c=>c.classList.remove('on'));
   document.getElementById('reportOv').classList.add('open');
+  _i18nTree(document.getElementById('reportOv'));
 }
 function _pickReportReason(el){
   document.querySelectorAll('#reportReasons .rep-chip').forEach(c=>c.classList.remove('on'));
   el.classList.add('on');
   document.getElementById('reportMsg').textContent='';
+  // DSA notice: illegal-content reports must explain what, where and why
+  const ta=document.getElementById('reportReason');
+  if(_repEn(el)==='Illegal content'){ ta.placeholder=_lbl(_REP_ILLEGAL_PH); ta.rows=5; ta.focus(); }
+  else { ta.placeholder=_lbl({it:'Aggiungi dettagli (facoltativo)…',en:'Add details (optional)…',es:'Añade detalles (opcional)…',fr:'Ajoute des détails (facultatif)…',de:'Details hinzufügen (optional)…',pt:'Adicione detalhes (opcional)…',nl:'Voeg details toe (optioneel)…'}); ta.rows=3; }
 }
 function closeReport(){ document.getElementById('reportOv').classList.remove('open'); }
 async function submitReport(btn){
   const msg=document.getElementById('reportMsg');
   const chosen=document.querySelector('#reportReasons .rep-chip.on');
   const extra=(document.getElementById('reportReason').value||'').trim();
-  const reason=[chosen?chosen.textContent:'',extra].filter(Boolean).join(' — ').slice(0,500);
-  if(!reason){ msg.textContent='Pick a reason or write what’s wrong.'; msg.style.color='var(--red)'; return; }
+  const reason=[chosen?_repEn(chosen):'',extra].filter(Boolean).join(' — ').slice(0,500);
+  if(!reason){ msg.textContent=_lbl({it:'Scegli un motivo o scrivi cosa non va.',en:'Pick a reason or write what’s wrong.',es:'Elige un motivo o escribe qué pasa.',fr:'Choisis un motif ou écris ce qui ne va pas.',de:'Wähle einen Grund oder beschreibe das Problem.',pt:'Escolha um motivo ou escreva o que se passa.',nl:'Kies een reden of beschrijf wat er mis is.'}); msg.style.color='var(--red)'; return; }
+  if(chosen&&_repEn(chosen)==='Illegal content'&&extra.length<20){ msg.textContent=_lbl({it:'Per i contenuti illegali spiega quale contenuto, dove si trova e perché è illegale.',en:'For illegal content, explain which content, where it is and why it is illegal.',es:'Para contenido ilegal, explica qué contenido, dónde está y por qué es ilegal.',fr:'Pour un contenu illégal, explique lequel, où il est et pourquoi il est illégal.',de:'Bei rechtswidrigen Inhalten: erkläre welcher Inhalt, wo und warum.',pt:'Para conteúdo ilegal, explique qual, onde está e porque é ilegal.',nl:'Leg bij illegale inhoud uit welke inhoud, waar en waarom die illegaal is.'}); msg.style.color='var(--red)'; return; }
   if(btn){btn.disabled=true;btn.style.opacity=.6;}
-  msg.textContent='Sending…'; msg.style.color='var(--t3)';
+  msg.textContent=_lbl({it:'Invio…',en:'Sending…',es:'Enviando…',fr:'Envoi…',de:'Wird gesendet…',pt:'A enviar…',nl:'Versturen…'}); msg.style.color='var(--t3)';
   try{
     const {data,error}=await _sb.functions.invoke('report-profile',{body:{target:_reportTarget,reason}});
     if(error) throw error;
-    msg.textContent='✓ Report sent. Thanks — we’ll review @'+_reportTarget+'.'; msg.style.color='var(--green)';
+    msg.textContent='✓ '+_lbl({it:'Segnalazione inviata. Grazie, verificheremo @',en:'Report sent. Thanks — we’ll review @',es:'Denuncia enviada. Gracias, revisaremos @',fr:'Signalement envoyé. Merci, nous examinerons @',de:'Meldung gesendet. Danke, wir prüfen @',pt:'Denúncia enviada. Obrigado, vamos analisar @',nl:'Melding verstuurd. Bedankt, we bekijken @'})+_reportTarget+'.'; msg.style.color='var(--green)';
     setTimeout(closeReport,1400);
   }catch(e){
     // fallback: at least log it to the DB
     try{ await _sb.rpc('report_profile',{p_nick:_reportTarget,p_reason:reason}); }catch(_){}
-    msg.textContent='✓ Report received. Thanks.'; msg.style.color='var(--green)';
+    msg.textContent='✓ '+_lbl({it:'Segnalazione ricevuta. Grazie.',en:'Report received. Thanks.',es:'Denuncia recibida. Gracias.',fr:'Signalement reçu. Merci.',de:'Meldung erhalten. Danke.',pt:'Denúncia recebida. Obrigado.',nl:'Melding ontvangen. Bedankt.'}); msg.style.color='var(--green)';
     setTimeout(closeReport,1400);
   }
 }

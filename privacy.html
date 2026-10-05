@@ -35,7 +35,7 @@
   <div class="updated">Last updated: 5 October 2026 · Applies to vaultwishlist.com and the Vault app</div>
 
   <div class="box">
-    <strong>In short:</strong> Vault stores your account email and the wishlist data you create, so the app can work and sync across your devices. We don't run ads, we don't sell your data, and we don't use advertising or cross-site tracking. Your account is <strong>private by default</strong>: nothing you save is public unless you choose to turn on a public profile or share a list. Payments are handled entirely by Stripe, we never see your card details.
+    <strong>In short:</strong> Vault stores your account email and the wishlist data you create, so the app can work and sync across your devices. We don't run ads, we don't sell your data, and we don't use advertising or cross-site tracking. Your account is <strong>private by default</strong>: nothing you save is public unless you choose to turn on a public profile or share a list. Web subscriptions are processed by Stripe; subscriptions bought in the iOS app are processed by Apple. Vault never receives your full payment-card details.
   </div>
 
   <h2>1. Data Controller</h2>
@@ -69,6 +69,7 @@
     <tr><th>Provider</th><th>Role</th><th>Location / transfers</th></tr>
     <tr><td><strong>Supabase</strong> (Supabase Inc.)</td><td>Database, authentication, backend functions, stores your account and vault data</td><td>Project hosted in the EU. <a href="https://supabase.com/privacy" target="_blank" rel="noopener">Supabase privacy policy</a></td></tr>
     <tr><td><strong>Stripe</strong> (Stripe, Inc.)</td><td>Payment processing for Vault subscriptions, card data is entered on Stripe's own pages and never touches our servers</td><td>EU/US, Stripe participates in the EU-US Data Privacy Framework. <a href="https://stripe.com/privacy" target="_blank" rel="noopener">Stripe privacy policy</a></td></tr>
+    <tr><td><strong>Apple</strong> (Apple Inc. / Apple Distribution International)</td><td>App Store distribution and in-app purchases: if you subscribe in the iOS app, Apple processes the payment, renewals and refunds as an independent controller and tells us only which plan is active</td><td>EU/US, Apple participates in the EU-US Data Privacy Framework. <a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener">Apple privacy policy</a></td></tr>
     <tr><td><strong>Google</strong> (Google LLC — Gmail)</td><td>Our support mailbox: if you email us, or a report is sent to us, the message is received and stored in Gmail</td><td>EU/US, Google participates in the EU-US Data Privacy Framework. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google privacy policy</a></td></tr>
     <tr><td><strong>Resend</strong> (Resend, Inc.)</td><td>Delivers the notification email when a profile is reported</td><td>US, standard contractual clauses. <a href="https://resend.com/legal/privacy-policy" target="_blank" rel="noopener">Resend privacy policy</a></td></tr>
     <tr><td><strong>OpenStreetMap / Nominatim</strong> (OSM Foundation)</td><td>Address suggestions when you type a place; receives only the typed text</td><td>UK/EU. <a href="https://osmfoundation.org/wiki/Privacy_Policy" target="_blank" rel="noopener">OSMF privacy policy</a></td></tr>
@@ -89,7 +90,12 @@
   <ul>
     <li><strong>Account and vault data</strong>, for as long as your account exists. If you delete your account, data is deleted from the production database within 30 days (backup copies expire within a further 30 days).</li>
     <li><strong>Gift list reservations</strong>, until the list owner deletes the gift list, or the reservation is cancelled.</li>
-    <li><strong>Payment records</strong>, kept by Stripe according to legal retention duties (tax law requires up to 10 years for invoicing data).</li>
+    <li><strong>Payment records</strong>, kept by Stripe or Apple according to legal retention duties (tax law requires up to 10 years for invoicing data).</li>
+    <li><strong>Photos and voice notes</strong> attached to items, stored in Supabase Storage for as long as the item exists; deleted together with the item or your account.</li>
+    <li><strong>Reports and moderation records</strong> (profile or content reports, the decision taken), for as long as necessary to investigate and resolve the report, and afterwards only where needed for legal claims, repeat-abuse prevention or security — at most 2 years.</li>
+    <li><strong>Support and privacy emails</strong>, for as long as needed to handle your request, and afterwards only where needed to document how a legal request was answered — at most 2 years.</li>
+    <li><strong>Security and technical logs</strong> kept by our infrastructure providers, for their short rolling periods (typically days to a few weeks), unless needed to investigate a specific security incident.</li>
+    <li><strong>Insights</strong> (taste and spending statistics) are computed on your device when you open them and are not stored separately on our servers.</li>
   </ul>
 
   <h2>7. Your rights (GDPR Articles 15–22)</h2>
@@ -107,9 +113,9 @@
   <h2>8. Security</h2>
   <ul>
     <li>All traffic is encrypted in transit (HTTPS/TLS).</li>
-    <li>Database access is protected by row-level security: each account can only read and write its own data.</li>
+    <li>Database access is protected by row-level security. Private Vault data is restricted to its owner; shared and public data (shared lists, gift lists, public profiles and items) is accessible only according to the sharing settings you choose.</li>
     <li>Passwords are bcrypt-hashed (see section 3).</li>
-    <li>Payment data is handled exclusively by Stripe, a PCI-DSS Level 1 certified provider.</li>
+    <li>Payment-card data is handled exclusively by Stripe (web) or Apple (iOS in-app purchases), both PCI-DSS certified; it never reaches our servers.</li>
   </ul>
 
   <h2>9. Social profiles and public content</h2>
@@ -122,9 +128,11 @@
   </ul>
   <p>Because public profile fields are shown to others, please don't put anything there you wouldn't want to be public. We recommend using a nickname rather than your full legal name.</p>
 
-  <h2>10. Taste &amp; spending insights (Collector &amp; Vaulter)</h2>
-  <p>The paid Collector and Vaulter plans include optional insights features (taste insights, spending statistics). These are simple statistics, not artificial intelligence. These are <strong>computed on your own device from your own vault data</strong> — for example your average price, most-used category, or how many items you've bought. They produce a summary shown only to you.</p>
-  <p><strong>No ads. No advertising profiling. No cross-site tracking.</strong> These insights are not advertising or cross-site behavioural profiling: your vault content is never sold, never shared with advertisers, and is not used to track you across other websites or to build a marketing profile. We do not make automated decisions that produce legal or similarly significant effects about you (GDPR Art. 22).</p>
+  <h2>10. Personalised insights</h2>
+  <p>Collector and Vaulter include optional personalised insights based on the items you have saved in Vault. To generate statistics and personal summaries, Vault analyses information such as product categories, prices, saved/bought status and favourites.</p>
+  <p>Today these insights are <strong>computed entirely on your own device</strong>: the underlying Vault content is not sent to any external AI provider for this processing, and the result is shown only to you.</p>
+  <p>These features only provide personal insights. They are <strong>not</strong> used for advertising, credit scoring, eligibility decisions, pricing decisions or any other automated decision that produces legal or similarly significant effects concerning you within the meaning of Article 22 GDPR. <strong>No ads. No advertising profiling. No cross-site tracking.</strong> Your vault content is never sold or shared with advertisers.</p>
+  <p>If Vault introduces features that send personal data to a third-party AI provider, this Privacy Policy will identify the provider, the data involved, the purpose of the processing and the applicable safeguards <strong>before</strong> such processing starts.</p>
 
   <h2>11. Children</h2>
   <p>Vault is not directed at children under 16. We do not knowingly collect data from children. If you believe a child has created an account, contact us and we will delete it.</p>
