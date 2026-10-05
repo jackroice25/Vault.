@@ -5,17 +5,14 @@
 <script>
 /* vaultwishlist.com = the presentation; the app lives at /app.
    Forward straight to the app: the desktop app, app deep links (old #s= / #u= / #gift= / #join= /
-   #add= links and Supabase #access_token returns), auth/checkout returns, and returning users.
-   Visitors who clicked here from our own pages (e.g. the app's links) stay on the home page. */
+   #add= links and Supabase #access_token returns) and auth/checkout returns.
+   Everyone else — signed-in users included — always sees the home page; "Open Vault" leads to /app. */
 (function(){try{
   var h=location.hash||'', q=location.search||'';
   function go(){location.replace('/app'+q+h);}
   if(navigator.userAgent.indexOf('Electron')>-1) return go();
   if(h.indexOf('=')>-1) return go();
-  if(/[?&](code|token_hash|type|error|error_description|checkout|session_id)=/.test(q)) return go();
-  if(/[?&]home\b/.test(q)) return;
-  try{if(document.referrer&&new URL(document.referrer).hostname===location.hostname)return;}catch(e){}
-  for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i)||'';if(k.indexOf('vault5')===0||k.indexOf('auth-token')>-1)return go();}
+  if(/[?&](code|token_hash|type|error|error_description|checkout|session_id|u)=/.test(q)) return go(); // u= : update-reload of old app tabs
 }catch(e){}})();
 </script>
 <meta name="viewport" content="width=device-width,initial-scale=1">

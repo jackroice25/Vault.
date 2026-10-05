@@ -2590,7 +2590,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.10.05-social50';
+const APP_BUILD='2026.10.05-social51';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -6161,6 +6161,11 @@ function openSettings(btn){
       <span class="lang-opt-icon">${ico('book',17)}</span>
       <span class="lang-opt-name">${_lbl({it:'Guida & aiuto',en:'Help & guide',es:'Ayuda y guía',fr:'Aide & guide',de:'Hilfe & Anleitung',pt:'Ajuda e guia',nl:'Hulp & gids'})}</span>
       <span style="color:var(--t3);font-size:12px;margin-left:auto">›</span>
+    </div>
+    <div class="lang-opt" onclick="hideLangPopup();window.open('https://vaultwishlist.com/','_blank')">
+      <span class="lang-opt-icon">${ico('globe',17)}</span>
+      <span class="lang-opt-name">${_lbl({it:'Sito di Vault',en:'Vault website',es:'Web de Vault',fr:'Site de Vault',de:'Vault-Website',pt:'Site do Vault',nl:'Vault-website'})}</span>
+      <span style="color:var(--t3);font-size:12px;margin-left:auto">↗</span>
     </div>`;
   _positionPopup(popup, _settingsBtn);
 }
