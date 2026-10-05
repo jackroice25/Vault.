@@ -2603,7 +2603,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.10.05-social52';
+const APP_BUILD='2026.10.05-social53';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -2867,6 +2867,14 @@ try{
 // base64 data-URL images and voice memos dropped (they live in memory + the cloud
 // anyway), so a cold start still boots with the correct items/count/order instead
 // of reverting to an older snapshot that still fits. Returns true if anything stuck.
+var _cacheLightWarned=false;
+// Signature of what a sync cares about: every item/section id with its last-modified stamp.
+// Equal signatures = cloud already holds exactly this union → no push needed (bug-hunter #4:
+// comparing only the item COUNT missed "+1 added and −1 deleted" in the same merge).
+function _syncSig(st){
+  const f=a=>(Array.isArray(a)?a:[]).map(x=>x&&(x.id+':'+(x.mod||x.at||0))).sort().join('|');
+  return f(st&&st.items)+'#'+f(st&&st.sections);
+}
 function _cacheLocal(){
   try{ localStorage.setItem(vaultKey(),JSON.stringify(S)); return true; }
   catch(e){
@@ -2874,9 +2882,15 @@ function _cacheLocal(){
       const light={...S, items:(S.items||[]).map(it=>({
         ...it,
         images:(it.images||[]).filter(u=>typeof u==='string' && /^https?:\/\//i.test(u)), // keep URL images, drop base64
+        img:(typeof it.img==='string' && /^data:/i.test(it.img))?null:it.img,               // legacy single image can be base64 too
         voiceMemo:null
       }))};
       localStorage.setItem(vaultKey(),JSON.stringify(light));
+      // Signed-in users keep the photos in the cloud; a guest has no cloud, so warn once.
+      if((!_sb||!_sbUser) && !_cacheLightWarned){
+        _cacheLightWarned=true;
+        try{ showToast(_lbl({it:'⚠ Memoria del dispositivo piena: le foto caricate non possono essere salvate qui. Crea un account gratuito per tenerle nel cloud.',en:'⚠ Device storage is full: uploaded photos can’t be kept here. Create a free account to keep them in the cloud.',es:'⚠ Almacenamiento lleno: las fotos subidas no se pueden guardar aquí. Crea una cuenta gratis para guardarlas en la nube.',fr:'⚠ Stockage plein : les photos importées ne peuvent pas être gardées ici. Crée un compte gratuit pour les garder dans le cloud.',de:'⚠ Speicher voll: Hochgeladene Fotos können hier nicht gespeichert werden. Erstelle ein kostenloses Konto, um sie in der Cloud zu behalten.',pt:'⚠ Armazenamento cheio: as fotos carregadas não podem ser guardadas aqui. Crie uma conta grátis para as guardar na nuvem.',nl:'⚠ Opslag vol: geüploade foto’s kunnen hier niet bewaard worden. Maak een gratis account om ze in de cloud te bewaren.'})); }catch(_){}
+      }
       return true;
     }catch(e2){ return false; }
   }
@@ -2943,14 +2957,14 @@ async function _sbPull(){
     if(data){
       if(data.plan){ _sbPlan=data.plan; try{ if(data.plan==='plus') localStorage.setItem('vaultPlan','plus'); else localStorage.removeItem('vaultPlan'); }catch(e){} }
       const remote=data.data;
-      const remoteItems=(remote&&Array.isArray(remote.items))?remote.items.length:0;
+      const remoteSig=remote?_syncSig(remote):'';
       // BUG-1 FIX: the old "cloud empty → just push local back up" shortcut bypassed
       // _mergeRemoteData and therefore IGNORED remote tombstones — so a vault that was
       // intentionally wiped on another device (items:[], tomb: full) got resurrected
       // on a device that still held a stale local copy. Now EVERY case (including an
       // empty cloud) flows through the merge below: it keeps local items ONLY when no
       // tombstone covers them (a genuine cloud data-loss is still repaired by the
-      // length!==remoteItems push right after), and drops the ones the cloud deleted.
+      // content-signature push right after), and drops the ones the cloud deleted.
       if(remote){
         _mergeRemoteData(remote);                    // MERGE, never overwrite, local additions survive
         // Best-effort local cache. If localStorage is full ("quota exceeded" —
@@ -2962,7 +2976,7 @@ async function _sbPull(){
         _cacheLocal();
         _syncReady=true;
         // If the merge kept local-only items the cloud didn't have, push the union up.
-        if((S.items||[]).length!==remoteItems){ _lastPushedJSON=''; await _sbPushNow(); }
+        if(_syncSig(S)!==remoteSig){ _lastPushedJSON=''; await _sbPushNow(); }
         else { _lastPushedJSON=JSON.stringify(S); }
         return true;
       }
@@ -4118,6 +4132,9 @@ async function _quickAddFromUrl(url){
 // ── ADD MODAL ──
 function openAddMo(prefillUrl){
   // Reset all state before opening
+  // (an edit closed with Esc / tap-outside used to leave editingItemId set → the next
+  //  "new item" saved OVER the edited one, bug-hunter #1)
+  editingItemId=null;
   fetched=null;
   if(ftimer)clearTimeout(ftimer);
   extraImages=[];renderImgStrip();
@@ -5936,7 +5953,7 @@ document.querySelectorAll('.ov').forEach(o=>{
   let downOnBackdrop=false;
   o.addEventListener('pointerdown',e=>{downOnBackdrop=(e.target===o);});
   o.addEventListener('click',e=>{
-    if(e.target===o && downOnBackdrop){ o.classList.remove('open'); document.body.classList.remove('sheet-open'); }
+    if(e.target===o && downOnBackdrop){ if(o.id==='addOv') closeAddMo(); else o.classList.remove('open'); document.body.classList.remove('sheet-open'); }
     downOnBackdrop=false;
   });
 });
@@ -5947,7 +5964,7 @@ document.addEventListener('keydown',e=>{
     const kbo=document.getElementById('kbOv');
     if(kbo&&kbo.style.display==='flex'){kbo.style.display='none';return;}
     if(document.getElementById('kbarOv').classList.contains('open')){closeKbar();return;}
-    document.querySelectorAll('.ov.open').forEach(o=>o.classList.remove('open'));
+    document.querySelectorAll('.ov.open').forEach(o=>{ if(o.id==='addOv') closeAddMo(); else o.classList.remove('open'); });
     const roOv=document.getElementById('roOv');if(roOv&&roOv.style.display!=='none'){roOv.style.display='none';}
     return;
   }
@@ -7788,7 +7805,7 @@ async function _doRegister(email,pass,nick){
     if(SOCIAL_ON&&nick){ try{ const {data:nr}=await _sb.rpc('set_nickname',{p_nick:nick}); if(nr&&nr.ok){ _myProfile={nickname:nick,avatar_url:null,bio:null,is_public:false,badges:[]}; } }catch(e){} }
     const eHash=await _sha256(email);
     const guest=localStorage.getItem('vault5');
-    if(guest) localStorage.setItem('vault5_'+eHash,guest);
+    if(guest){ try{ localStorage.setItem('vault5_'+eHash,guest); localStorage.removeItem('vault5'); }catch(e){} }
     _startSession(eHash,{email,joined:new Date().toISOString()},true);
     return;
   }
@@ -7800,14 +7817,42 @@ async function _doRegister(email,pass,nick){
   accounts[eHash]={email,pHash,joined:new Date().toISOString()};
   localStorage.setItem('vault_accounts',JSON.stringify(accounts));
   const guest=localStorage.getItem('vault5');
-  if(guest) localStorage.setItem('vault5_'+eHash,guest);
+  if(guest){ try{ localStorage.setItem('vault5_'+eHash,guest); localStorage.removeItem('vault5'); }catch(e){} }
   _startSession(eHash,accounts[eHash],true);
+}
+// Guest → existing account (bug-hunter #3). Only when this device was really in guest
+// mode right before signing in (vault_guest==='1'), so another person's old guest copy on
+// a shared device never leaks into an account. The guest copy is removed once absorbed.
+function _takeGuestData(){
+  try{
+    if(localStorage.getItem('vault_guest')!=='1') return null;
+    const g=JSON.parse(localStorage.getItem('vault5')||'null');
+    return (g&&Array.isArray(g.items)&&g.items.length)?g:null;
+  }catch(e){ return null; }
+}
+function _absorbGuestData(g){
+  if(!g) return 0;
+  const have=new Set((S.items||[]).map(i=>i.id)), tomb=S.tomb||{};
+  const add=g.items.filter(it=>it&&it.id&&!have.has(it.id)&&!tomb[it.id]);
+  if(add.length){
+    const haveSec=new Set((S.sections||[]).map(x=>x.id));
+    const secs=(g.sections||[]).filter(x=>x&&x.id&&!haveSec.has(x.id)&&add.some(it=>it.sid===x.id));
+    S.sections=[...(S.sections||[]),...secs];
+    S.items=[...add,...(S.items||[])];
+  }
+  try{ localStorage.removeItem('vault5'); }catch(e){}
+  return add.length;
+}
+function _guestAbsorbedToast(n){
+  if(!n) return;
+  showToast(_lbl({it:`✓ ${n} elementi salvati da ospite aggiunti al tuo account`,en:`✓ ${n} items you saved as a guest were added to your account`,es:`✓ ${n} elementos guardados como invitado añadidos a tu cuenta`,fr:`✓ ${n} éléments enregistrés en invité ajoutés à ton compte`,de:`✓ ${n} als Gast gespeicherte Einträge zu deinem Konto hinzugefügt`,pt:`✓ ${n} itens guardados como convidado adicionados à sua conta`,nl:`✓ ${n} als gast opgeslagen items toegevoegd aan je account`}));
 }
 async function _doLogin(email,pass){
   if(_sb){
     const {data,error}=await _sb.auth.signInWithPassword({email,password:pass});
     if(error){_authErr('Incorrect email or password.');return;}
     _sbUser=data.user;
+    const _guest=_takeGuestData();
     const eHash=await _sha256(email);
     _currentUser={eHash,email};
     // Persist the session locally so the NEXT reload restores _currentUser
@@ -7826,6 +7871,7 @@ async function _doLogin(email,pass){
     setTimeout(async()=>{
       const synced=await _sbPull();
       if(synced){renderSidebar();render();_showSyncDot('ok');}
+      {const n=_absorbGuestData(_guest); if(n){ save(); renderSidebar(); render(); _guestAbsorbedToast(n); }}
       _renderOnbLang();initOnboarding();
       _consumePendingJoin();
       if(SOCIAL_ON)_socialInit();
@@ -7845,7 +7891,9 @@ async function _doLogin(email,pass){
     ok=true; rec.pHash=await _hashPassword(pass); accounts[eHash]=rec; localStorage.setItem('vault_accounts',JSON.stringify(accounts));
   }
   if(!ok){_authErr('Incorrect password.');return;}
+  const _guest=_takeGuestData();
   _startSession(eHash,accounts[eHash]);
+  {const n=_absorbGuestData(_guest); if(n){ save(); renderSidebar(); render(); _guestAbsorbedToast(n); }}
 }
 function _startSession(eHash,account,isNew=false){
   localStorage.setItem('vault_session',JSON.stringify({eHash}));
@@ -8975,11 +9023,11 @@ setTimeout(_hideBootLoader, (_sb && _hasSession && !_wasGuest) ? 5000 : 2000);
             if(n.data){
               const incoming=JSON.stringify(n.data);
               if(incoming!==_lastPushedJSON){                    // not our own echo
-                const rlen=(n.data.items||[]).length;
+                const rsig=_syncSig(n.data);
                 _mergeRemoteData(n.data);                        // safe union merge, never deletes local data
                 _cacheLocal(); // quota-safe write (falls back to an image-light copy instead of throwing, see _cacheLocal)
                 renderSidebar();render();_updatePlusSideBtn();
-                if((S.items||[]).length!==rlen){ _lastPushedJSON=''; _sbPushNow(); } // we had extra locals → push the union up
+                if(_syncSig(S)!==rsig){ _lastPushedJSON=''; _sbPushNow(); } // local had changes the cloud lacks → push the union up
                 else { _lastPushedJSON=JSON.stringify(S); }
               }
             }
