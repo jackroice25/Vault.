@@ -2673,7 +2673,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.10.15-social59';
+const APP_BUILD='2026.10.15-social60';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -3112,7 +3112,8 @@ async function _sbPullRetry(tries=6, base=600){
 function _normalizeState(remote){
   const def={sections:[],items:[],active:null,view:'grid',chip:'tutti',currency:'EUR',lang:'en',theme:'dark',statusColors:{},onboardingDone:false,profile:{name:'',emoji:'🔐',joined:null},tomb:{},tombSec:{},insightsOptIn:true};
   const st={...def,...remote};
-  st.items=(st.items||[]).map(it=>{
+  st.items=(st.items||[]).filter(it=>it&&typeof it==='object').map(it=>{
+    if(!it.id||/[^A-Za-z0-9_.:-]/.test(String(it.id))) it.id=uid();   // ids end up inside onclick handlers
     if(!it.images) it.images=it.img?[it.img]:[];
     if(!it.tags) it.tags=[];
     if(!it.priceHistory) it.priceHistory=[];
@@ -4159,7 +4160,7 @@ async function _omniPeople(q){
     const {data}=await _sb.rpc('search_profiles',{p_q:q});
     const res=(data&&data.results)||[];
     if(!res.length){ drop.innerHTML='<div class="omni-empty">No people found for “@'+esc(q)+'”.</div>'; return; }
-    drop.innerHTML=res.map(p=>`<button class="omni-row" onclick="_omniOpen('${esc(p.nickname)}')">
+    drop.innerHTML=res.map(p=>`<button class="omni-row" onclick="_omniOpen('${_normNick(p.nickname)}')">
       <span class="disc-av">${p.avatar_url?`<img src="${esc(p.avatar_url)}" alt="">`:_avInitial(p.nickname)}</span>
       <span class="disc-nick">@${esc(p.nickname)}${p.is_public===false?` <span class="disc-lock">${ico('lock',10)}</span>`:''}</span>
       <span class="disc-badges">${_badgesHTML(p.badges)}</span></button>`).join('');
@@ -4768,7 +4769,7 @@ function showCtxCard(e,id){
   m.innerHTML=`
     <div class="ctx-item" onclick="hideCtx();editItem('${id}')"><span class="ctx-ico">${ico('pencil',13)}</span> ${t('ctxEdit')}</div>
     <div class="ctx-item" onclick="hideCtx();star('${id}');"><span class="ctx-ico">${item.star?ico('star',13):ico('star-filled',13)}</span> ${item.star?t('ctxRmPrio'):t('ctxAddPrio')}</div>
-    <div class="ctx-item" onclick="hideCtx();_openExt('${esc(item.url)}')"><span class="ctx-ico">${ico('external',13)}</span> ${t('ctxOpen')}</div>
+    <div class="ctx-item" onclick="hideCtx();_openExt('${_jsUrl(item.url)}')"><span class="ctx-ico">${ico('external',13)}</span> ${t('ctxOpen')}</div>
     <div class="ctx-item" onclick="hideCtx();shareItem('${id}')"><span class="ctx-ico">${ico('share',13)}</span> ${t('shareLink')}</div>
     <div class="ctx-item" onclick="hideCtx();${item.archived?`unarchiveItem('${id}')`:`archiveItem('${id}')`}"><span class="ctx-ico">${item.archived?ico('upload',13):ico('archive',13)}</span> ${item.archived?t('unarchive'):t('archive')}</div>
     ${SOCIAL_ON?`<div class="ctx-div"></div>
@@ -6014,6 +6015,16 @@ function esc(s){if(s==null)return'';return String(s).replace(/&/g,'&amp;').repla
 // Neutralise dangerous URL schemes (javascript:, data:, vbscript:) before putting a URL in href/window.open.
 // Only http(s), mailto and protocol-relative/relative links are allowed through; everything else becomes a no-op.
 // Open an untrusted URL in a new tab only if it uses a safe scheme.
+// ── Values placed INSIDE a JS string in an HTML attribute (onclick="fn('…')") ──
+// HTML-escaping is not enough there: the browser turns &#39; back into ' BEFORE running the
+// JS, so a crafted value from another user could break out of the string and run code.
+// These helpers only ever emit characters that cannot do that.
+function _jsId(v){ return String(v==null?'':v).replace(/[^A-Za-z0-9_.:-]/g,'').slice(0,80); }
+function _jsUrl(u){
+  const s=String(u==null?'':u).trim();
+  if(!/^https?:\/\//i.test(s)) return '';                                  // only real web links
+  return s.replace(/['"\\<>`\s]/g,c=>'%'+c.charCodeAt(0).toString(16).toUpperCase().padStart(2,'0')).slice(0,2048);
+}
 function _openExt(u){if(u==null)return;const scheme=String(u).trim().replace(/[\x00-\x1f\x7f-\x9f\s]/g,'').toLowerCase();if(/^(?:javascript|data|vbscript|file):/i.test(scheme))return;window.open(String(u),'_blank','noopener');}
 // ── Sanitise items coming from an untrusted shared link before they touch app state ──
 const IMPORT_MAX_ITEMS=1000, IMPORT_STR_MAX=2000, IMPORT_URL_MAX=2048;
@@ -7448,7 +7459,7 @@ async function _doSearch(){
     const {data}=await _sb.rpc('search_profiles',{p_q:q});
     const res=(data&&data.results)||[];
     if(!res.length){box.innerHTML='<div class="disc-empty">No profiles found for “@'+esc(q)+'”.</div>';return;}
-    box.innerHTML=res.map(p=>`<button class="disc-row" onclick="openPublicProfile('${esc(p.nickname)}')">
+    box.innerHTML=res.map(p=>`<button class="disc-row" onclick="openPublicProfile('${_normNick(p.nickname)}')">
       <span class="disc-av">${p.avatar_url?`<img src="${esc(p.avatar_url)}" alt="">`:_avInitial(p.nickname)}</span>
       <span class="disc-nick">@${esc(p.nickname)}${p.is_public===false?` <span class="disc-lock">${ico('lock',10)}</span>`:''}</span>
       <span class="disc-badges">${_badgesHTML(p.badges)}</span></button>`).join('');
@@ -7496,7 +7507,7 @@ function _followBtnHTML(d){
 }
 function _renderPubProfile(){
   const box=document.getElementById('pubProfIn'); const d=_pubData; if(!box||!d) return;
-  const nk=esc(d.nickname);
+  const nk=_normNick(d.nickname);
   const av=d.avatar_url?`<img src="${esc(d.avatar_url)}" alt="">`:esc((d.nickname||'?').slice(0,1).toUpperCase());
   const topbar=`<div class="pp-topbar"><button class="pp-back" onclick="closePubProf()">${ico('back',14)} Back</button><div class="pp-topbar-handle">@${nk}</div><div style="width:70px"></div></div>`;
   const stats=`<div class="pp-stats">
@@ -7523,7 +7534,7 @@ function _renderPubProfile(){
     const price=(it.price&&+it.price>0)?`<span class="pubi-price">${cur()}${fmt(+it.price)}</span>`:'';
     const st=_PUB_STATUS[it.status]?`<span class="pubi-status">${_PUB_STATUS[it.status]}</span>`:'';
     const img=it.img?`<img src="${esc(it.img)}" alt="" loading="lazy">`:`<div class="pubi-noimg">${ico(it.place?'map':'bag',22)}</div>`;
-    const open=it.url?`onclick="window.open('${esc(it.url)}','_blank','noopener')"`:'';
+    const _u=_jsUrl(it.url), open=_u?`onclick="window.open('${_u}','_blank','noopener')"`:'';
     const fstar=it.featured?`<span class="pubi-fstar" title="Featured">${ico('star',11)}</span>`:'';
     return `<div class="pubi-card" ${open}><div class="pubi-img">${img}${fstar}</div>
       <div class="pubi-body"><div class="pubi-title">${esc(it.title||'Item')}</div><div class="pubi-row">${price}${st}</div></div></div>`;
@@ -7531,7 +7542,7 @@ function _renderPubProfile(){
   // Featured row (up to 5 highlighted items) at the top of the profile.
   const feat=(d.featured||[]).map(it=>{
     const img=it.img?`<img src="${esc(it.img)}" alt="" loading="lazy">`:`<div class="ppf-noimg">${ico(it.place?'map':'bag',18)}</div>`;
-    const open=it.url?`onclick="window.open('${esc(it.url)}','_blank','noopener')"`:'';
+    const _u=_jsUrl(it.url), open=_u?`onclick="window.open('${_u}','_blank','noopener')"`:'';
     return `<div class="ppf-cell" ${open}><div class="ppf-img">${img}</div><div class="ppf-t">${esc(it.title||'')}</div></div>`;
   }).join('');
   const featRow=feat?`<div class="pp-featured-hd">${ico('star',12)} Featured</div><div class="pp-featured">${feat}</div>`:'';
@@ -7620,7 +7631,7 @@ async function openFollowList(nick,kind){
     if(!data||!data.ok){ box.innerHTML='<div class="disc-empty">'+((data&&data.error==='locked')?'This list is private.':'Couldn’t load this list.')+'</div>'; return; }
     const res=data.results||[];
     if(!res.length){ box.innerHTML='<div class="disc-empty">'+(kind==='followers'?'No followers yet.':'Not following anyone yet.')+'</div>'; return; }
-    box.innerHTML=res.map(p=>`<button class="disc-row" onclick="openPublicProfile('${esc(p.nickname)}')">
+    box.innerHTML=res.map(p=>`<button class="disc-row" onclick="openPublicProfile('${_normNick(p.nickname)}')">
       <span class="disc-av">${p.avatar_url?`<img src="${esc(p.avatar_url)}" alt="">`:_avInitial(p.nickname)}</span>
       <span class="disc-nick">@${esc(p.nickname)}</span>
       <span class="disc-badges">${_badgesHTML(p.badges)}</span></button>`).join('');
@@ -7682,7 +7693,7 @@ function _renderNotifs(){
   const items=d.items||[];
   if(!items.length){ box.innerHTML='<div class="disc-empty" style="padding:56px 20px">'+T({it:'Nessuna notifica.<br>Quando qualcuno ti segue, lo vedrai qui.',en:'No notifications yet.<br>When people follow you, they’ll show up here.',es:'Aún no hay notificaciones.<br>Cuando alguien te siga, aparecerá aquí.',fr:'Aucune notification.<br>Quand quelqu’un te suit, ça apparaît ici.',de:'Noch keine Benachrichtigungen.<br>Wenn dir jemand folgt, erscheint es hier.',pt:'Ainda não há notificações.<br>Quando alguém o seguir, aparece aqui.',nl:'Nog geen meldingen.<br>Als iemand je volgt, zie je het hier.'})+'</div>'; return; }
   box.innerHTML=items.map(n=>{
-    const nk=esc(n.actor_nick||'');
+    const nk=_normNick(n.actor_nick||'');
     const av=n.avatar?`<img src="${esc(n.avatar)}" alt="">`:_avInitial(n.actor_nick);
     const who=`<button class="notif-nick" onclick="openPublicProfile('${nk}')">@${nk}</button>`;
     let txt='', act='';
@@ -7802,9 +7813,10 @@ function _subscribeNotifs(){
       .on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:`recipient=eq.${_sbUser.id}`},(payload)=>{
         const n=payload.new; if(!n) return;
         _loadNotifBadge();
-        let msg = n.type==='follow' ? `@${n.actor_nick} started following you`
-                : n.type==='follow_request' ? `@${n.actor_nick} requested to follow you`
-                : n.type==='request_accepted' ? `@${n.actor_nick} accepted your request` : 'New notification';
+        const _an=esc(_normNick(n.actor_nick));
+        let msg = n.type==='follow' ? `@${_an} ${_lbl({it:'ha iniziato a seguirti',en:'started following you',es:'empezó a seguirte',fr:'a commencé à te suivre',de:'folgt dir jetzt',pt:'começou a segui-lo',nl:'volgt je nu'})}`
+                : n.type==='follow_request' ? `@${_an} ${_lbl({it:'vuole seguirti',en:'requested to follow you',es:'quiere seguirte',fr:'demande à te suivre',de:'möchte dir folgen',pt:'pediu para o seguir',nl:'wil je volgen'})}`
+                : n.type==='request_accepted' ? `@${_an} ${_lbl({it:'ha accettato la tua richiesta',en:'accepted your request',es:'aceptó tu solicitud',fr:'a accepté ta demande',de:'hat deine Anfrage angenommen',pt:'aceitou o seu pedido',nl:'heeft je verzoek geaccepteerd'})}` : _lbl({it:'Nuova notifica',en:'New notification',es:'Nueva notificación',fr:'Nouvelle notification',de:'Neue Benachrichtigung',pt:'Nova notificação',nl:'Nieuwe melding'});
         try{ showToast('🔔 '+msg); }catch(e){}
       }).subscribe();
   }catch(e){}
@@ -7828,7 +7840,7 @@ function _renderSocialEditHTML(){
     ${(p.badges&&p.badges.length)?`<div style="margin-top:8px">${_badgesHTML(p.badges)}</div>`:''}
     <div class="soc-err" id="socErr"></div>
     <button class="prof-btn" style="width:100%;margin-top:8px;background:var(--accent);color:#111;border-color:var(--accent);font-weight:700" onclick="saveSocialProfile(this)">${ico('id-card',12)} Save social profile</button>
-    ${nick?`<button class="prof-btn" style="width:100%;margin-top:8px" onclick="closeProfileMo();openPublicProfile('${esc(nick)}')">${ico('eye',12)} View my profile</button>`:''}
+    ${nick?`<button class="prof-btn" style="width:100%;margin-top:8px" onclick="closeProfileMo();openPublicProfile('${_normNick(nick)}')">${ico('eye',12)} View my profile</button>`:''}
   </div>`;
 }
 function _pickAvatar(input){
@@ -8687,13 +8699,13 @@ function renderSharedView(){
     const count=(l.data&&Array.isArray(l.data.items))?l.data.items.length:0;
     const isOwner=l.owner===_sbUser.id;
     const memCount=(Array.isArray(l.members)?l.members.length:0)+1;
-    return `<div class="shared-row" onclick="openSharedList('${esc(l.id)}')">
+    return `<div class="shared-row" onclick="openSharedList('${_jsId(l.id)}')">
       <div class="shared-row-emoji">${esc(l.emoji||'👥')}</div>
       <div style="flex:1;min-width:0">
         <div class="shared-row-name">${esc(l.name||t('shDefault'))}</div>
         <div class="shared-row-sub">${count} ${t('shItems')} · ${memCount} ${t('shMembers')}${isOwner?' · '+t('shYouOwn'):''}</div>
       </div>
-      ${isOwner?`<button class="btn-s" style="padding:6px 8px;color:#cc4444;flex-shrink:0" onclick="event.stopPropagation();deleteSharedList('${esc(l.id)}')" title="${t('ttDelete')}">${ico('trash',12)}</button>`:''}
+      ${isOwner?`<button class="btn-s" style="padding:6px 8px;color:#cc4444;flex-shrink:0" onclick="event.stopPropagation();deleteSharedList('${_jsId(l.id)}')" title="${t('ttDelete')}">${ico('trash',12)}</button>`:''}
       <span class="shared-row-arrow">›</span>
     </div>`;
   }).join('')||`<div style="text-align:center;padding:24px;color:var(--t3);font-size:13px;line-height:1.6">${t('shEmpty1')}<br>${t('shEmpty2')}</div>`;
@@ -8735,20 +8747,20 @@ function _sharedDetailHTML(){
     const price=it.price?`<div class="shared-card-price">${cur()}${fmt(it.price)}</div>`:'';
     const dom=it.url?getDomain(it.url):'';
     const clickable=it.url?' clickable':'';
-    const openAttr=it.url?`onclick="sharedOpenItem('${esc(it.id)}')"`:'';
+    const openAttr=it.url?`onclick="sharedOpenItem('${_jsId(it.id)}')"`:'';
     return `<div class="shared-card${clickable}" ${openAttr}>${img}
       <div class="shared-card-body">
         <div class="shared-card-title">${esc(it.title||dom||'Item')}</div>
         ${price}
-        <div class="shared-card-foot"><span class="shared-card-dom">${esc(dom)}${it.url?' ↗':''}</span><button class="shared-card-x" onclick="event.stopPropagation();sharedRemoveItem('${esc(it.id)}')" title="${t('ttDelete')}">✕</button></div>
+        <div class="shared-card-foot"><span class="shared-card-dom">${esc(dom)}${it.url?' ↗':''}</span><button class="shared-card-x" onclick="event.stopPropagation();sharedRemoveItem('${_jsId(it.id)}')" title="${t('ttDelete')}">✕</button></div>
       </div></div>`;
   }).join('')||`<div style="grid-column:1/-1;text-align:center;padding:28px;color:var(--t3);font-size:13px">${t('shNoItems')}<br>${t('shPasteFirst')}</div>`;
   return `
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
       <button class="btn-s" style="padding:6px 9px" onclick="_sharedBack()">←</button>
       <div style="flex:1;font-size:15px;font-weight:800;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.emoji||'👥')} ${esc(l.name||t('shDefault'))}</div>
-      <button class="btn-s" style="padding:6px 10px;display:flex;align-items:center;gap:5px" onclick="copySharedInvite('${esc(l.id)}')">${ico('link',12)} ${t('shInvite')}</button>
-      ${isOwner?`<button class="btn-s" style="padding:6px 9px;color:#cc4444" onclick="deleteSharedList('${esc(l.id)}')" title="${t('ttDelete')}">${ico('trash',12)}</button>`:''}
+      <button class="btn-s" style="padding:6px 10px;display:flex;align-items:center;gap:5px" onclick="copySharedInvite('${_jsId(l.id)}')">${ico('link',12)} ${t('shInvite')}</button>
+      ${isOwner?`<button class="btn-s" style="padding:6px 9px;color:#cc4444" onclick="deleteSharedList('${_jsId(l.id)}')" title="${t('ttDelete')}">${ico('trash',12)}</button>`:''}
     </div>
     <div class="shared-sub">${items.length} ${items.length===1?t('shItemsOne'):t('shItems')}${total>0?` · <b>${cur()}${fmt(total)}</b> ${t('shTotal')}`:''}</div>
     <div class="shared-add">
@@ -9010,8 +9022,8 @@ function renderGiftMode(){
         <div class="shared-row-name">${esc(r.name||t('gfDefault'))}</div>
         <div class="shared-row-sub">${items.length} ${t('gfGiftsLbl')} · ${resCount} ${t('gfReservedLbl')}</div>
       </div>
-      <button class="btn-s" style="padding:5px 9px;font-size:11px" onclick="copyGiftLink('${esc(r.id)}')">${ico('link',11)} ${t('gfCopyLink')}</button>
-      <button class="shared-card-x" onclick="deleteGiftRegistry('${esc(r.id)}')" title="Delete">✕</button>
+      <button class="btn-s" style="padding:5px 9px;font-size:11px" onclick="copyGiftLink('${_jsId(r.id)}')">${ico('link',11)} ${t('gfCopyLink')}</button>
+      <button class="shared-card-x" onclick="deleteGiftRegistry('${_jsId(r.id)}')" title="Delete">✕</button>
     </div>`;
   }).join('')||`<div style="text-align:center;padding:24px;color:var(--t3);font-size:13px;line-height:1.6">${t('gfEmptyHtml')}</div>`;
   const _gfHint=hasFeature('giftMode')?'':`<div style="font-size:11.5px;color:var(--t3);text-align:center;margin:-6px 0 12px">${_lbl({it:'Gratis: 1 lista regalo · Keeper: illimitate',en:'Free: 1 gift list · Keeper: unlimited',es:'Gratis: 1 lista de regalos · Keeper: ilimitadas',fr:'Gratuit : 1 liste de cadeaux · Keeper : illimitées',de:'Gratis: 1 Geschenkliste · Keeper: unbegrenzt',pt:'Grátis: 1 lista de presentes · Keeper: ilimitadas',nl:'Gratis: 1 cadeaulijst · Keeper: onbeperkt'})}</div>`;
@@ -9113,9 +9125,9 @@ function _renderGiftPub(){
     const price=it.price?`<div class="gift-card-price">${cur()}${fmt(it.price)}</div>`:'';
     const dom=it.url?`<a href="${safeUrl(it.url)}" target="_blank" rel="noopener noreferrer" style="font-size:10px;color:var(--t3);text-decoration:none">${esc(getDomain(it.url))} ↗</a>`:'';
     let action;
-    if(mine) action=`<button class="gift-mine-btn" onclick="giftUnreserve('${esc(it.id)}')">${t('gfMineUndo')}</button>`;
+    if(mine) action=`<button class="gift-mine-btn" onclick="giftUnreserve('${_jsId(it.id)}')">${t('gfMineUndo')}</button>`;
     else if(r) action=`<div class="gift-taken-tag">${t('gfTakenBy')} ${esc(r.name||t('gfSomeone'))}</div>`;
-    else action=`<button class="gift-reserve-btn" onclick="giftReserve('${esc(it.id)}')">${t('gfTake')}</button>`;
+    else action=`<button class="gift-reserve-btn" onclick="giftReserve('${_jsId(it.id)}')">${t('gfTake')}</button>`;
     return `<div class="gift-card${r?' taken':''}">${img}
       <div class="gift-card-body">
         <div class="gift-card-title">${esc(it.title||t('gfDefault'))}</div>
