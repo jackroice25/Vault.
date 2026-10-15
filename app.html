@@ -1271,6 +1271,15 @@ body.pp-open{overflow:hidden}
 .pp-locked-t{font-size:16px;font-weight:800;color:var(--t1)}
 .pp-locked-s{font-size:13px;color:var(--t3)}
 .notif-list{max-height:60vh;overflow-y:auto;display:flex;flex-direction:column;gap:2px;min-height:120px}
+#notifPage .notif-list{max-height:none;overflow:visible;padding-top:6px}
+#notifPage .notif-row{padding:12px 10px;border-bottom:1px solid var(--bd);border-radius:0}
+.notif-nick{font-weight:700;color:var(--t1);cursor:pointer;background:none;border:none;padding:0;font:inherit}
+.notif-nick:hover{text-decoration:underline}
+.notif-fbtn{flex-shrink:0;align-self:center;border-radius:9px;padding:7px 13px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;border:1px solid transparent;background:var(--accent);color:#111}
+.notif-fbtn.muted{background:var(--s3);color:var(--t2);border-color:var(--bd)}
+.notif-fbtn:disabled{opacity:.55;cursor:default}
+#ptrInd{position:fixed;left:50%;top:env(safe-area-inset-top,0px);z-index:1000003;width:46px;height:46px;margin-left:-23px;border-radius:50%;background:rgba(14,14,14,.94);border:1px solid rgba(255,255,255,.12);box-shadow:0 6px 22px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;transform:translateY(-60px);opacity:0;pointer-events:none}
+#ptrInd.go{transition:transform .25s ease,opacity .25s ease}
 .notif-row{display:flex;gap:11px;align-items:flex-start;padding:11px 8px;border-radius:11px}
 .notif-row.unread{background:var(--ax,rgba(255,255,255,.03))}
 .notif-av{width:40px;height:40px;min-width:40px;border-radius:50%;overflow:hidden;border:none;padding:0;cursor:pointer;background:linear-gradient(135deg,var(--s3),var(--s2));display:flex;align-items:center;justify-content:center;color:var(--t2);font-weight:800}
@@ -1866,6 +1875,43 @@ body.pp-open{overflow:hidden}
   </div>
 </div>
 <!-- ═══ SOCIAL: PUBLIC PROFILE (full page) ═══ -->
+<div id="notifPage" class="profile-page">
+  <div class="pp-topbar">
+    <button class="pp-back" onclick="closeNotifs()"><svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-back"/></svg> <span id="notifBackLbl">Back</span></button>
+    <div class="pp-topbar-handle" id="notifHdTitle">Notifications</div>
+    <div style="width:70px;display:flex;justify-content:flex-end"><button id="notifClearBtn" onclick="_clearNotifs()" style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:12px;font-family:inherit;text-decoration:underline;padding:4px 10px">Clear all</button></div>
+  </div>
+  <div class="set-wrap pp-wrap"><div id="notifIn" class="notif-list"></div></div>
+</div>
+<!-- pull-to-refresh indicator: same vault-door dial as the opening screen -->
+<div id="ptrInd" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 200 200" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="100" cy="100" r="92"/>
+      <circle cx="100" cy="100" r="86"/>
+      <rect x="14" y="80" width="22" height="40" rx="7"/>
+      <line x1="36" y1="92" x2="47" y2="92"/>
+      <line x1="36" y1="108" x2="47" y2="108"/>
+      <g>
+        <animateTransform attributeName="transform" type="rotate" from="0 100 100" to="360 100 100" dur="2.6s" repeatCount="indefinite"/>
+        <line x1="100" y1="73" x2="100" y2="34"/>
+        <line x1="119.1" y1="80.9" x2="146.7" y2="53.3"/>
+        <line x1="127" y1="100" x2="166" y2="100"/>
+        <line x1="119.1" y1="119.1" x2="146.7" y2="146.7"/>
+        <line x1="100" y1="127" x2="100" y2="166"/>
+        <line x1="80.9" y1="119.1" x2="53.3" y2="146.7"/>
+        <line x1="73" y1="100" x2="34" y2="100"/>
+        <line x1="80.9" y1="80.9" x2="53.3" y2="53.3"/>
+        <circle cx="100" cy="34" r="13"/>
+        <circle cx="146.7" cy="53.3" r="13"/>
+        <circle cx="166" cy="100" r="13"/>
+        <circle cx="146.7" cy="146.7" r="13"/>
+        <circle cx="100" cy="166" r="13"/>
+        <circle cx="53.3" cy="146.7" r="13"/>
+        <circle cx="34" cy="100" r="13"/>
+        <circle cx="53.3" cy="53.3" r="13"/>
+        <circle cx="100" cy="100" r="27"/>
+        <circle cx="100" cy="100" r="20"/>
+      </g>
+    </svg></div>
 <div id="pubProfOv" class="profile-page"><div id="pubProfIn"></div></div>
 
 <!-- ═══ HELP / GUIDE CENTER ═══ -->
@@ -1922,13 +1968,6 @@ body.pp-open{overflow:hidden}
 </div>
 
 <!-- ═══ SOCIAL: NOTIFICATIONS ═══ -->
-<div class="ov" id="notifOv">
-  <div class="mo" style="max-width:440px">
-    <div class="mo-hd" style="display:flex;align-items:center"><svg class="ico" width="16" height="16" viewBox="0 0 16 16" style="margin-right:6px"><use href="#ic-bell-ring"/></svg><span id="notifHdTitle">Notifications</span><button id="notifClearBtn" onclick="_clearNotifs()" style="margin-left:auto;background:none;border:none;color:var(--t3);cursor:pointer;font-size:12px;font-family:inherit;text-decoration:underline">Clear all</button></div>
-    <div id="notifIn" class="notif-list"></div>
-    <div class="mo-acts"><button class="btn-s" onclick="closeNotifs()">Close</button></div>
-  </div>
-</div>
 <!-- ═══ SOCIAL: FOLLOWERS / FOLLOWING LIST ═══ -->
 <div class="ov" id="followListOv">
   <div class="mo" style="max-width:420px">
@@ -2634,7 +2673,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.10.15-social57';
+const APP_BUILD='2026.10.15-social58';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -6252,7 +6291,7 @@ function openSettings(btn){
 function closeSettingsPage(){
   hideLangPopup();
   const pg=document.getElementById('setPage'); if(pg) pg.classList.remove('open');
-  if(!document.querySelector('.profile-page.open')) document.body.classList.remove('pp-open');
+  _ppBodyClass();
 }
 function _setPageOpen(){ const pg=document.getElementById('setPage'); return !!(pg&&pg.classList.contains('open')); }
 // Language / theme / status-colour panels still use the small popup: open it next to the tapped row.
@@ -7418,13 +7457,24 @@ async function _doSearch(){
 // ── Public profile view ──
 let _pubData=null;
 const _PUB_STATUS={voglio:'Want',ordinato:'Ordered',comprato:'Bought',visitare:'To visit',visitato:'Visited'};
-async function openPublicProfile(nick){
+// Where "Back" on a profile should return to (the profile page is a single element,
+// so opening profile B from profile A's follower list needs A + its list remembered).
+let _pubBack=[];
+async function openPublicProfile(nick,_fromBack){
   if(!SOCIAL_ON) return;
   nick=_normNick(nick);
   const ov=document.getElementById('pubProfOv'),box=document.getElementById('pubProfIn');
   if(!ov||!box) return;
+  if(!_fromBack){
+    const disc=document.getElementById('discoverOv');
+    if(disc&&disc.classList.contains('open')) _pubBack.push({discover:true});           // came from people search
+    else if(ov.classList.contains('open')&&_pubData&&_pubData.nickname&&_normNick(_pubData.nickname)!==nick)
+      _pubBack.push({nick:_pubData.nickname,list:(_followListCtx&&_normNick(_followListCtx.nick)===_normNick(_pubData.nickname))?_followListCtx.kind:null});
+    if(_pubBack.length>20) _pubBack.shift();
+  }
   // close any open modal/drawer so the profile page takes over cleanly
   try{ closeDiscover(); }catch(e){}
+  try{ closeFollowList(); }catch(e){}
   ov.classList.add('open');
   document.body.classList.add('pp-open');
   try{ history.replaceState(null,'','#u='+encodeURIComponent(nick)); }catch(e){}
@@ -7503,8 +7553,11 @@ async function _toggleFollow(){
   _renderPubProfile();
 }
 function closePubProf(){
+  const b=_pubBack.pop();
+  if(b&&b.nick){ openPublicProfile(b.nick,true).then(()=>{ if(b.list) openFollowList(b.nick,b.list); }); return; }
   document.getElementById('pubProfOv').classList.remove('open');
-  document.body.classList.remove('pp-open');
+  _ppBodyClass();
+  if(b&&b.discover){ try{ openDiscover(); }catch(e){} }
   if((location.hash||'').startsWith('#u=')) history.replaceState(null,'',location.pathname+location.search);
 }
 // ── Report profile (opens a card → emails vaultwishlist@gmail.com via edge fn) ──
@@ -7555,8 +7608,10 @@ async function submitReport(btn){
   }
 }
 // ── Followers / following list ──
+let _followListCtx=null;
 async function openFollowList(nick,kind){
   const ov=document.getElementById('followListOv'); if(!ov) return;
+  _followListCtx={nick,kind};
   document.getElementById('followListHd').textContent=(kind==='followers'?'Followers':'Following');
   const box=document.getElementById('followListIn'); box.innerHTML='<div class="disc-empty">Loading…</div>';
   ov.classList.add('open');
@@ -7565,16 +7620,16 @@ async function openFollowList(nick,kind){
     if(!data||!data.ok){ box.innerHTML='<div class="disc-empty">'+((data&&data.error==='locked')?'This list is private.':'Couldn’t load this list.')+'</div>'; return; }
     const res=data.results||[];
     if(!res.length){ box.innerHTML='<div class="disc-empty">'+(kind==='followers'?'No followers yet.':'Not following anyone yet.')+'</div>'; return; }
-    box.innerHTML=res.map(p=>`<button class="disc-row" onclick="closeFollowList();openPublicProfile('${esc(p.nickname)}')">
+    box.innerHTML=res.map(p=>`<button class="disc-row" onclick="openPublicProfile('${esc(p.nickname)}')">
       <span class="disc-av">${p.avatar_url?`<img src="${esc(p.avatar_url)}" alt="">`:_avInitial(p.nickname)}</span>
       <span class="disc-nick">@${esc(p.nickname)}</span>
       <span class="disc-badges">${_badgesHTML(p.badges)}</span></button>`).join('');
   }catch(e){ box.innerHTML='<div class="disc-empty">Something went wrong.</div>'; }
 }
-function closeFollowList(){ document.getElementById('followListOv').classList.remove('open'); }
+function closeFollowList(){ document.getElementById('followListOv').classList.remove('open'); _followListCtx=null; }
 // ── Notifications ──
 let _notifData=null;
-function _fmtAgo(iso){ try{ const s=(Date.now()-new Date(iso).getTime())/1000; if(s<60)return 'now'; if(s<3600)return Math.floor(s/60)+'m'; if(s<86400)return Math.floor(s/3600)+'h'; return Math.floor(s/86400)+'d'; }catch(e){ return ''; } }
+function _fmtAgo(iso){ try{ const s=(Date.now()-new Date(iso).getTime())/1000; if(s<60)return _lbl({it:'ora',en:'now',es:'ahora',fr:'maintenant',de:'jetzt',pt:'agora',nl:'nu'}); if(s<3600)return Math.floor(s/60)+'m'; if(s<86400)return Math.floor(s/3600)+'h'; return Math.floor(s/86400)+_lbl({it:'g',en:'d',es:'d',fr:'j',de:'T',pt:'d',nl:'d'}); }catch(e){ return ''; } }
 async function _loadNotifBadge(){
   if(!SOCIAL_ON||!_sb||!_sbUser) return;
   try{ const {data}=await _sb.rpc('notification_count'); if(data&&data.ok) _setNotifBadge(data.unread||0); }catch(e){}
@@ -7585,35 +7640,64 @@ function _setNotifBadge(n){
 async function openNotifs(){
   if(!SOCIAL_ON) return;
   if(!_sbUser){ closeDiscover&&closeDiscover(); setAuthMode('login'); const o=document.getElementById('authOv'); if(o)o.style.display='flex'; return; }
-  const ov=document.getElementById('notifOv'); if(!ov) return;
-  const box=document.getElementById('notifIn'); box.innerHTML='<div class="disc-empty">Loading…</div>';
-  ov.classList.add('open');
+  const pg=document.getElementById('notifPage'); if(!pg) return;
+  const box=document.getElementById('notifIn');
+  if(!pg.classList.contains('open')||!_notifData) box.innerHTML='<div class="disc-empty">'+_lbl({it:'Caricamento…',en:'Loading…',es:'Cargando…',fr:'Chargement…',de:'Wird geladen…',pt:'A carregar…',nl:'Laden…'})+'</div>';
+  pg.classList.add('open'); document.body.classList.add('pp-open');
+  _notifChrome();
   try{
     const {data}=await _sb.rpc('get_notifications');
-    if(!data||!data.ok){ box.innerHTML='<div class="disc-empty">Couldn’t load notifications.</div>'; return; }
+    if(!data||!data.ok){ box.innerHTML='<div class="disc-empty">'+_lbl({it:'Impossibile caricare le notifiche.',en:'Couldn’t load notifications.',es:'No se pudieron cargar las notificaciones.',fr:'Impossible de charger les notifications.',de:'Benachrichtigungen konnten nicht geladen werden.',pt:'Não foi possível carregar as notificações.',nl:'Meldingen konden niet worden geladen.'})+'</div>'; return; }
     _notifData=data; _renderNotifs();
     // mark read
     try{ await _sb.rpc('mark_notifications_read'); _setNotifBadge(0); }catch(e){}
   }catch(e){ box.innerHTML='<div class="disc-empty">Something went wrong.</div>'; }
 }
+function _notifChrome(){
+  const T=d=>_lbl(d);
+  const a=document.getElementById('notifHdTitle'); if(a) a.textContent=T({it:'Notifiche',en:'Notifications',es:'Notificaciones',fr:'Notifications',de:'Benachrichtigungen',pt:'Notificações',nl:'Meldingen'});
+  const b=document.getElementById('notifBackLbl'); if(b) b.textContent=T({it:'Indietro',en:'Back',es:'Atrás',fr:'Retour',de:'Zurück',pt:'Voltar',nl:'Terug'});
+  const c=document.getElementById('notifClearBtn'); if(c) c.textContent=T({it:'Cancella tutto',en:'Clear all',es:'Borrar todo',fr:'Tout effacer',de:'Alle löschen',pt:'Limpar tudo',nl:'Alles wissen'});
+}
+// quick follow / request button next to each person
+function _notifFollowBtn(n){
+  const T=d=>_lbl(d), nk=esc(n.actor_nick);
+  if(!n.actor_exists||!n.actor_nick) return '';
+  if(n.i_follow) return `<button class="notif-fbtn muted" disabled>${T({it:'Segui già',en:'Following',es:'Siguiendo',fr:'Abonné',de:'Folgst du',pt:'A seguir',nl:'Volgend'})}</button>`;
+  if(n.i_requested) return `<button class="notif-fbtn muted" disabled>${T({it:'Richiesto',en:'Requested',es:'Solicitado',fr:'Demandé',de:'Angefragt',pt:'Pedido',nl:'Aangevraagd'})}</button>`;
+  return n.actor_public
+    ? `<button class="notif-fbtn" onclick="event.stopPropagation();_notifFollow('${nk}',this)">${T({it:'Segui',en:'Follow',es:'Seguir',fr:'Suivre',de:'Folgen',pt:'Seguir',nl:'Volgen'})}</button>`
+    : `<button class="notif-fbtn" onclick="event.stopPropagation();_notifFollow('${nk}',this)">${T({it:'Richiedi',en:'Request',es:'Solicitar',fr:'Demander',de:'Anfragen',pt:'Pedir',nl:'Aanvragen'})}</button>`;
+}
+async function _notifFollow(nick,btn){
+  if(btn){ btn.disabled=true; btn.textContent='…'; }
+  let state=null;
+  try{ const {data}=await _sb.rpc('follow_user',{p_nick:_normNick(nick)}); state=data&&data.ok?data.state:null; }catch(e){}
+  (_notifData&&_notifData.items||[]).forEach(n=>{ if(_normNick(n.actor_nick)===_normNick(nick)){ if(state==='following') n.i_follow=true; else if(state==='requested') n.i_requested=true; } });
+  _renderNotifs();
+}
 function _renderNotifs(){
   const box=document.getElementById('notifIn'); const d=_notifData; if(!box||!d) return;
+  const T=x=>_lbl(x);
   const items=d.items||[];
-  if(!items.length){ box.innerHTML='<div class="disc-empty" style="padding:40px">No notifications yet.<br>When people follow you, they’ll show up here.</div>'; return; }
+  if(!items.length){ box.innerHTML='<div class="disc-empty" style="padding:56px 20px">'+T({it:'Nessuna notifica.<br>Quando qualcuno ti segue, lo vedrai qui.',en:'No notifications yet.<br>When people follow you, they’ll show up here.',es:'Aún no hay notificaciones.<br>Cuando alguien te siga, aparecerá aquí.',fr:'Aucune notification.<br>Quand quelqu’un te suit, ça apparaît ici.',de:'Noch keine Benachrichtigungen.<br>Wenn dir jemand folgt, erscheint es hier.',pt:'Ainda não há notificações.<br>Quando alguém o seguir, aparece aqui.',nl:'Nog geen meldingen.<br>Als iemand je volgt, zie je het hier.'})+'</div>'; return; }
   box.innerHTML=items.map(n=>{
+    const nk=esc(n.actor_nick||'');
     const av=n.avatar?`<img src="${esc(n.avatar)}" alt="">`:_avInitial(n.actor_nick);
+    const who=`<button class="notif-nick" onclick="openPublicProfile('${nk}')">@${nk}</button>`;
     let txt='', act='';
-    if(n.type==='follow'){ txt=`<b>@${esc(n.actor_nick)}</b> started following you`; }
-    else if(n.type==='request_accepted'){ txt=`<b>@${esc(n.actor_nick)}</b> accepted your follow request`; }
-    else if(n.type==='follow_request'){ txt=`<b>@${esc(n.actor_nick)}</b> requested to follow you`;
+    if(n.type==='follow'){ txt=`${who} ${T({it:'ha iniziato a seguirti',en:'started following you',es:'empezó a seguirte',fr:'a commencé à te suivre',de:'folgt dir jetzt',pt:'começou a segui-lo',nl:'volgt je nu'})}`; }
+    else if(n.type==='request_accepted'){ txt=`${who} ${T({it:'ha accettato la tua richiesta',en:'accepted your follow request',es:'aceptó tu solicitud',fr:'a accepté ta demande',de:'hat deine Anfrage angenommen',pt:'aceitou o seu pedido',nl:'heeft je verzoek geaccepteerd'})}`; }
+    else if(n.type==='follow_request'){ txt=`${who} ${T({it:'vuole seguirti',en:'requested to follow you',es:'quiere seguirte',fr:'demande à te suivre',de:'möchte dir folgen',pt:'pediu para o seguir',nl:'wil je volgen'})}`;
       act = n.pending
-        ? `<div class="notif-acts"><button class="notif-accept" onclick="_acceptReq('${esc(n.actor_nick)}',this)">Accept</button><button class="notif-reject" onclick="_rejectReq('${esc(n.actor_nick)}',this)">Decline</button></div>`
-        : `<span class="notif-done">Handled</span>`;
+        ? `<div class="notif-acts"><button class="notif-accept" onclick="_acceptReq('${nk}',this)">${T({it:'Accetta',en:'Accept',es:'Aceptar',fr:'Accepter',de:'Annehmen',pt:'Aceitar',nl:'Accepteren'})}</button><button class="notif-reject" onclick="_rejectReq('${nk}',this)">${T({it:'Rifiuta',en:'Decline',es:'Rechazar',fr:'Refuser',de:'Ablehnen',pt:'Recusar',nl:'Weigeren'})}</button></div>`
+        : `<span class="notif-done">${T({it:'Gestita',en:'Handled',es:'Gestionada',fr:'Traitée',de:'Erledigt',pt:'Tratado',nl:'Afgehandeld'})}</span>`;
     }
     return `<div class="notif-row${n.read?'':' unread'}">
-      <button class="notif-av" onclick="closeNotifs();openPublicProfile('${esc(n.actor_nick)}')">${av}</button>
+      <button class="notif-av" onclick="openPublicProfile('${nk}')">${av}</button>
       <div class="notif-body"><div class="notif-txt">${txt} <span class="notif-ago">· ${_fmtAgo(n.created_at)}</span></div>${act}</div>
-      <button class="notif-del" title="${_lbl({it:'Elimina',en:'Delete',es:'Eliminar',fr:'Supprimer',de:'Löschen',pt:'Excluir',nl:'Verwijderen'})}" onclick="event.stopPropagation();_deleteNotif('${n.id}',this)" style="flex-shrink:0;background:none;border:none;color:var(--t3);cursor:pointer;font-size:15px;padding:4px 6px;line-height:1;align-self:center">✕</button></div>`;
+      ${_notifFollowBtn(n)}
+      <button class="notif-del" title="${T({it:'Elimina',en:'Delete',es:'Eliminar',fr:'Supprimer',de:'Löschen',pt:'Excluir',nl:'Verwijderen'})}" onclick="event.stopPropagation();_deleteNotif('${n.id}',this)" style="flex-shrink:0;background:none;border:none;color:var(--t3);cursor:pointer;font-size:15px;padding:4px 6px;line-height:1;align-self:center">✕</button></div>`;
   }).join('');
 }
 async function _deleteNotif(id,btn){
@@ -7629,7 +7713,69 @@ async function _clearNotifs(){
   if(_notifData) _notifData.items=[];
   _renderNotifs(); _setNotifBadge(0);
 }
-function closeNotifs(){ document.getElementById('notifOv').classList.remove('open'); }
+function closeNotifs(){ const pg=document.getElementById('notifPage'); if(pg) pg.classList.remove('open'); _ppBodyClass(); }
+// keep the body's page-open class only while some full page is still showing
+function _ppBodyClass(){ if(!document.querySelector('.profile-page.open')) document.body.classList.remove('pp-open'); }
+
+// ── PULL TO REFRESH (phones / touch screens) ─────────────────────────────────
+// At the top of the main list or of a full page, pull down: the opening-screen vault
+// dial comes down and spins; release past the threshold to refresh.
+//  · signed in → sync the vault from the cloud + reload notifications / the open profile
+//  · guest → full reload (nothing to fetch from the cloud)
+//  · a newer web version is out → full reload so you get it
+async function _pullRefresh(){
+  const t0=Date.now();
+  try{
+    if(location.hostname==='vaultwishlist.com'){
+      const r=await fetch('https://vaultwishlist.com/version.json?cb='+Date.now(),{cache:'no-store'});
+      if(r.ok){ const j=await r.json(); if(j&&j.build&&j.build!==APP_BUILD){ location.replace(location.pathname+'?u='+Date.now()+location.hash); return; } }
+    }
+  }catch(e){}
+  if(!(typeof _sbUser!=='undefined'&&_sbUser)){ location.reload(); return; }
+  try{ await _forcePull(); }catch(e){}
+  try{ await _loadNotifBadge(); }catch(e){}
+  try{ if(document.getElementById('notifPage')?.classList.contains('open')) await openNotifs(); }catch(e){}
+  try{ const pp=document.getElementById('pubProfOv'); if(pp&&pp.classList.contains('open')&&_pubData&&_pubData.nickname) await openPublicProfile(_pubData.nickname,true); }catch(e){}
+  try{ if(_setPageOpen()) _renderSettingsPage(); }catch(e){}
+  const left=700-(Date.now()-t0); if(left>0) await new Promise(r=>setTimeout(r,left)); // let the dial be seen
+}
+(function(){
+  if(!('ontouchstart' in window)) return;
+  const TH=70, MAX=115;
+  let y0=null, sc=null, d=0, busy=false;
+  const ind=()=>document.getElementById('ptrInd');
+  function scroller(t){
+    if(!t||!t.closest) return null;
+    if(t.closest('input,textarea,select,#mapOv,.lang-popup,#authOv,#ptrInd')) return null;
+    if(document.querySelector('.ov.open')) return null;
+    const pg=t.closest('.profile-page.open'); if(pg) return pg;
+    const c=t.closest('.content'); if(c&&!document.querySelector('.profile-page.open')) return c;
+    return null;
+  }
+  function show(dist,anim){
+    const el=ind(); if(!el) return;
+    el.classList.toggle('go',!!anim);
+    el.style.transform=`translateY(${Math.min(dist,MAX)-50}px) rotate(${dist*2.5}deg)`;
+    el.style.opacity=String(Math.max(0,Math.min(1,dist/TH)));
+  }
+  document.addEventListener('touchstart',e=>{
+    if(busy||e.touches.length!==1){ y0=null; return; }
+    sc=scroller(e.target); y0=(sc&&sc.scrollTop<=0)?e.touches[0].clientY:null; d=0;
+  },{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(y0===null||!sc) return;
+    const dy=e.touches[0].clientY-y0;
+    if(dy<=0||sc.scrollTop>0){ if(d>0){ d=0; show(0,true); } return; }
+    d=dy*0.5; if(e.cancelable) e.preventDefault(); show(d,false);
+  },{passive:false});
+  document.addEventListener('touchend',()=>{
+    if(y0===null) return; y0=null;
+    if(d>=TH&&!busy){
+      busy=true; show(TH,true); try{ navigator.vibrate&&navigator.vibrate(8); }catch(e){} try{ _haptic('light'); }catch(e){}
+      _pullRefresh().finally(()=>{ busy=false; d=0; show(0,true); });
+    } else { d=0; show(0,true); }
+  },{passive:true});
+})();
 async function _acceptReq(nick,btn){
   if(btn){ btn.disabled=true; btn.textContent='…'; }
   try{ await _sb.rpc('accept_follow_request',{p_nick:_normNick(nick)}); }catch(e){}
@@ -9264,6 +9410,8 @@ function openMapMo(){
 }
 // Footer navigation: keep the bottom bar usable from any section.
 function _closeSections(){
+  _pubBack=[];
+  ['notifPage','setPage','helpOv'].forEach(id=>document.getElementById(id)?.classList.remove('open'));
   const m=document.getElementById('mapOv'); if(m) m.style.display='none';
   document.getElementById('profileOv')?.classList.remove('open');
   document.getElementById('pubProfOv')?.classList.remove('open');
@@ -9272,7 +9420,7 @@ function _closeSections(){
 function _setTab(name){ document.querySelectorAll('#mtabs .mtab').forEach(b=>b.classList.toggle('on', b.dataset.tab===name)); }
 function goHome(){ _haptic('light');
   _closeSections();
-  ['detOv','addOv','notifOv','statsOv','shareOv'].forEach(id=>document.getElementById(id)?.classList.remove('open'));
+  ['detOv','addOv','statsOv','shareOv'].forEach(id=>document.getElementById(id)?.classList.remove('open'));
   document.body.classList.remove('sheet-open','sb-open');
   // Land on the "Tutti" (All) view: clear section filter + reset chip to all items
   S.active=null;
