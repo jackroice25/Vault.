@@ -2673,7 +2673,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.10.15-social60';
+const APP_BUILD='2026.10.15-social62';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -4379,6 +4379,45 @@ async function addQuickPhoto(files){
   const ti=document.getElementById('titleI');
   if(ti) setTimeout(()=>ti.focus(),80);
 }
+// ── ON-DEVICE PHOTO SAFETY CHECK (App Store guideline 1.2) ───────────────────
+// Photos uploaded from the device (item photos, avatars) are checked on the phone itself
+// by an open-source image classifier (nsfwjs/MobileNetV2) before they're accepted.
+// Nothing is sent anywhere. The model (~5 MB) is fetched only on the first upload.
+// Item photos: only explicit content is refused (swimwear/lingerie are legit products).
+// Avatars: stricter. If the checker can't load (offline…), the upload is allowed —
+// reports + moderation stay the second line of defence.
+let _nsfwModelP=null;
+function _nsfwLoad(){
+  if(_nsfwModelP) return _nsfwModelP;
+  const ld=src=>new Promise((res,rej)=>{ if(document.querySelector('script[src="'+src+'"]')) return res(); const sc=document.createElement('script'); sc.src=src; sc.onload=res; sc.onerror=()=>rej(new Error('load '+src)); document.head.appendChild(sc); });
+  const B='https://cdn.jsdelivr.net/npm/nsfwjs@4.2.1/dist/';
+  _nsfwModelP=(async()=>{
+    if(typeof tf==='undefined') await ld('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js');
+    if(typeof nsfwjs==='undefined') await ld(B+'browser/nsfwjs.min.js');
+    await ld(B+'models/mobilenet_v2/model.min.js');
+    await ld(B+'models/mobilenet_v2/group1-shard1of1.min.js');
+    return nsfwjs.load('MobileNetV2');
+  })();
+  _nsfwModelP.catch(()=>{ _nsfwModelP=null; });
+  return _nsfwModelP;
+}
+async function _nsfwCheck(dataUrl,kind){
+  try{
+    let shown=false; const slow=setTimeout(()=>{ shown=true; try{ showToast(_lbl({it:'Controllo la foto…',en:'Checking photo…',es:'Revisando la foto…',fr:'Vérification de la photo…',de:'Foto wird geprüft…',pt:'A verificar a foto…',nl:'Foto controleren…'})); }catch(e){} },600);
+    const model=await Promise.race([_nsfwLoad(), new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),25000))]);
+    clearTimeout(slow);
+    const img=new Image(); img.src=dataUrl; await img.decode();
+    const c=document.createElement('canvas'); c.width=224; c.height=224; c.getContext('2d').drawImage(img,0,0,224,224);
+    const p={}; (await model.classify(c,5)).forEach(x=>{ p[x.className]=x.probability; });
+    const explicit=(p.Porn||0)+(p.Hentai||0);
+    if(explicit>=(kind==='avatar'?0.5:0.7)) return 'block';
+    if(kind==='avatar'&&(p.Sexy||0)>=0.85) return 'block';
+    return 'ok';
+  }catch(e){ return 'unknown'; }
+}
+function _nsfwRefusedToast(){
+  showToast('⚠ '+_lbl({it:'Questa foto non rispetta le regole della community e non può essere caricata.',en:'This photo doesn’t meet our community guidelines and can’t be uploaded.',es:'Esta foto no cumple las normas de la comunidad y no se puede subir.',fr:'Cette photo ne respecte pas les règles de la communauté et ne peut pas être importée.',de:'Dieses Foto verstößt gegen unsere Community-Richtlinien und kann nicht hochgeladen werden.',pt:'Esta foto não cumpre as regras da comunidade e não pode ser carregada.',nl:'Deze foto voldoet niet aan de communityregels en kan niet worden geüpload.'}));
+}
 async function addFileImgs(files){
   if(!files||!files.length)return;
   const lbl=document.getElementById('imgUploadLbl');
@@ -4386,6 +4425,7 @@ async function addFileImgs(files){
   for(const file of files){
     const dataUrl=await _resizeImg(file,1400,0.82);
     if(!dataUrl) continue;
+    if(await _nsfwCheck(dataUrl,'item')==='block'){ _nsfwRefusedToast(); continue; }
     // Upload to storage IMMEDIATELY so base64 never enters the saved vault (no quota
     // overflow, so it can never be stripped and lost). Offline/guest → keep the
     // base64 as a fallback; _migratePhotos swaps it for a URL on the next sync.
@@ -6374,6 +6414,7 @@ function _renderSettingsPage(){
       <div class="set-row" onclick="_toggleStats()"><span class="set-ico">${ico('line-chart',16)}</span>
         <span class="set-lbl">${T({it:'Statistiche anonime',en:'Anonymous usage stats',es:'Estadísticas anónimas',fr:'Statistiques anonymes',de:'Anonyme Statistiken',pt:'Estatísticas anónimas',nl:'Anonieme statistieken'})}<span class="set-sub">${T({it:'Ci aiutano a migliorare Vault. Niente di ciò che salvi viene letto.',en:'Help us improve Vault. Nothing you save is ever read.',es:'Nos ayudan a mejorar Vault. Nunca leemos lo que guardas.',fr:'Elles nous aident à améliorer Vault. Rien de ce que tu enregistres n’est lu.',de:'Helfen uns, Vault zu verbessern. Was du speicherst, wird nie gelesen.',pt:'Ajudam-nos a melhorar o Vault. Nada do que guarda é lido.',nl:'Helpen ons Vault te verbeteren. Wat je opslaat wordt nooit gelezen.'})}</span></span>
         <span class="set-sw ${_statsOn()?'on':''}"></span></div>
+      ${signedIn&&SOCIAL_ON?row('user',T({it:'Utenti bloccati',en:'Blocked users',es:'Usuarios bloqueados',fr:'Utilisateurs bloqués',de:'Blockierte Nutzer',pt:'Utilizadores bloqueados',nl:'Geblokkeerde gebruikers'}),chev,"openBlockedList()"):''}
       ${row('book',T({it:'Termini di servizio',en:'Terms of Service',es:'Términos del servicio',fr:'Conditions d’utilisation',de:'Nutzungsbedingungen',pt:'Termos de serviço',nl:'Servicevoorwaarden'}),'↗',"window.open('terms.html','_blank')")}
     </div>
 
@@ -7499,11 +7540,12 @@ async function openPublicProfile(nick,_fromBack){
   }catch(e){box.innerHTML='<div class="pp-loading">Something went wrong.</div>';}
 }
 function _followBtnHTML(d){
-  if(d.is_me) return `<button class="pub-act pub-act-edit" onclick="closePubProf();openProfileMo();">${ico('pencil',13)} Edit profile</button>`;
-  if(d.is_following) return `<button class="pub-act pub-act-following" id="pubFollowBtn" onclick="_toggleFollow()">${ico('user-check',13)} Following</button>`;
-  if(d.has_request) return `<button class="pub-act pub-act-following" id="pubFollowBtn" onclick="_toggleFollow()">${ico('user-check',13)} Requested</button>`;
-  if(d.is_public===false) return `<button class="pub-act pub-act-follow" id="pubFollowBtn" onclick="_toggleFollow()">${ico('user-plus',13)} Request to follow</button>`;
-  return `<button class="pub-act pub-act-follow" id="pubFollowBtn" onclick="_toggleFollow()">${ico('user-plus',13)} Follow</button>`;
+  if(d.blocked) return `<button class="pub-act pub-act-following" onclick="_unblockUser('${_normNick(d.nickname)}')">${ico('user-check',13)} ${_lbl({it:'Sblocca',en:'Unblock',es:'Desbloquear',fr:'Débloquer',de:'Entsperren',pt:'Desbloquear',nl:'Deblokkeren'})}</button>`;
+  if(d.is_me) return `<button class="pub-act pub-act-edit" onclick="closePubProf();openProfileMo();">${ico('pencil',13)} ${_lbl({it:'Modifica profilo',en:'Edit profile',es:'Editar perfil',fr:'Modifier le profil',de:'Profil bearbeiten',pt:'Editar perfil',nl:'Profiel bewerken'})}</button>`;
+  if(d.is_following) return `<button class="pub-act pub-act-following" id="pubFollowBtn" onclick="_toggleFollow()">${ico('user-check',13)} ${_lbl({it:'Segui già',en:'Following',es:'Siguiendo',fr:'Abonné',de:'Folgst du',pt:'A seguir',nl:'Volgend'})}</button>`;
+  if(d.has_request) return `<button class="pub-act pub-act-following" id="pubFollowBtn" onclick="_toggleFollow()">${ico('user-check',13)} ${_lbl({it:'Richiesto',en:'Requested',es:'Solicitado',fr:'Demandé',de:'Angefragt',pt:'Pedido',nl:'Aangevraagd'})}</button>`;
+  if(d.is_public===false) return `<button class="pub-act pub-act-follow" id="pubFollowBtn" onclick="_toggleFollow()">${ico('user-plus',13)} ${_lbl({it:'Richiedi di seguire',en:'Request to follow',es:'Solicitar seguir',fr:'Demander à suivre',de:'Folgen anfragen',pt:'Pedir para seguir',nl:'Volgverzoek sturen'})}</button>`;
+  return `<button class="pub-act pub-act-follow" id="pubFollowBtn" onclick="_toggleFollow()">${ico('user-plus',13)} ${_lbl({it:'Segui',en:'Follow',es:'Seguir',fr:'Suivre',de:'Folgen',pt:'Seguir',nl:'Volgen'})}</button>`;
 }
 function _renderPubProfile(){
   const box=document.getElementById('pubProfIn'); const d=_pubData; if(!box||!d) return;
@@ -7521,9 +7563,16 @@ function _renderPubProfile(){
         <div class="pp-name-row"><span class="pp-name">@${nk}</span><span class="pp-badges">${_badgesHTML(d.badges)}</span><span class="pp-action">${_followBtnHTML(d)}</span></div>
         ${stats}
         ${(!d.locked&&d.bio)?`<div class="pp-bio">${esc(d.bio)}</div>`:''}
-        ${d.is_me?'':`<button class="pp-report" onclick="_reportProfile('${nk}')">${ico('flag',11)} Report profile</button>`}
+        ${(d.is_me||d.blocked)?'':`<button class="pp-report" onclick="_reportProfile('${nk}')">${ico('flag',11)} ${_lbl({it:'Segnala profilo',en:'Report profile',es:'Denunciar perfil',fr:'Signaler le profil',de:'Profil melden',pt:'Denunciar perfil',nl:'Profiel melden'})}</button>
+        <button class="pp-report" onclick="_blockUser('${nk}')" style="margin-left:10px">${ico('lock',11)} ${_lbl({it:'Blocca',en:'Block',es:'Bloquear',fr:'Bloquer',de:'Blockieren',pt:'Bloquear',nl:'Blokkeren'})}</button>`}
       </div>
     </div>`;
+  if(d.blocked){
+    box.innerHTML=`${topbar}<div class="pp-wrap">${header}
+      <div class="pp-locked">${ico('lock',30)}<div class="pp-locked-t">${_lbl({it:'Hai bloccato @',en:'You blocked @',es:'Bloqueaste a @',fr:'Tu as bloqué @',de:'Du hast @',pt:'Bloqueou @',nl:'Je hebt @'})}${nk}${_lbl({it:'',en:'',es:'',fr:'',de:' blockiert',pt:'',nl:' geblokkeerd'})}</div><div class="pp-locked-s">${_lbl({it:'Non può vedere il tuo profilo, trovarti o seguirti.',en:'They can’t see your profile, find you or follow you.',es:'No puede ver tu perfil, encontrarte ni seguirte.',fr:'Il ne peut ni voir ton profil, ni te trouver, ni te suivre.',de:'Die Person kann dein Profil nicht sehen, dich nicht finden und dir nicht folgen.',pt:'Não pode ver o seu perfil, encontrá-lo nem segui-lo.',nl:'Diegene kan je profiel niet zien, je niet vinden en je niet volgen.'})}</div></div>
+    </div>`;
+    return;
+  }
   if(d.locked){
     box.innerHTML=`${topbar}<div class="pp-wrap">${header}
       <div class="pp-locked">${ico('lock',30)}<div class="pp-locked-t">This account is private</div><div class="pp-locked-s">Follow @${nk} to see their vault.</div></div>
@@ -7570,6 +7619,40 @@ function closePubProf(){
   _ppBodyClass();
   if(b&&b.discover){ try{ openDiscover(); }catch(e){} }
   if((location.hash||'').startsWith('#u=')) history.replaceState(null,'',location.pathname+location.search);
+}
+// ── Block / unblock (App Store guideline 1.2). Enforced server-side: blocked people
+// disappear from search, profiles, follower lists and notifications, and can't follow. ──
+async function _blockUser(nick){
+  nick=_normNick(nick);
+  if(!_sbUser){ closePubProf(); setAuthMode('login'); const o=document.getElementById('authOv'); if(o)o.style.display='flex'; return; }
+  if(!confirm(_lbl({it:`Bloccare @${nick}?\n\nNon potrà più vedere il tuo profilo, trovarti o seguirti, e smetterete di seguirvi a vicenda.`,en:`Block @${nick}?\n\nThey won’t be able to see your profile, find you or follow you, and you’ll stop following each other.`,es:`¿Bloquear a @${nick}?\n\nNo podrá ver tu perfil, encontrarte ni seguirte, y dejaréis de seguiros.`,fr:`Bloquer @${nick} ?\n\nIl ne pourra plus voir ton profil, te trouver ni te suivre, et vous ne vous suivrez plus.`,de:`@${nick} blockieren?\n\nDie Person kann dein Profil nicht mehr sehen, dich nicht finden und dir nicht folgen; ihr folgt euch nicht mehr.`,pt:`Bloquear @${nick}?\n\nNão poderá ver o seu perfil, encontrá-lo nem segui-lo, e deixam de se seguir.`,nl:`@${nick} blokkeren?\n\nDiegene kan je profiel niet meer zien, je niet vinden of volgen, en jullie volgen elkaar niet meer.`}))) return;
+  let ok=false; try{ const {data}=await _sb.rpc('block_user',{p_nick:nick}); ok=!!(data&&data.ok); }catch(e){}
+  showToast(ok?_lbl({it:`@${nick} bloccato`,en:`@${nick} blocked`,es:`@${nick} bloqueado`,fr:`@${nick} bloqué`,de:`@${nick} blockiert`,pt:`@${nick} bloqueado`,nl:`@${nick} geblokkeerd`})
+               :_lbl({it:'Non riuscito, riprova',en:'Didn’t work, try again',es:'No funcionó, inténtalo de nuevo',fr:'Échec, réessaie',de:'Hat nicht geklappt, bitte erneut versuchen',pt:'Não resultou, tente de novo',nl:'Mislukt, probeer opnieuw'}));
+  if(ok){ openPublicProfile(nick,true); try{ _loadNotifBadge(); }catch(e){} }
+}
+async function _unblockUser(nick,fromList){
+  nick=_normNick(nick);
+  let ok=false; try{ const {data}=await _sb.rpc('unblock_user',{p_nick:nick}); ok=!!(data&&data.ok); }catch(e){}
+  showToast(ok?_lbl({it:`@${nick} sbloccato`,en:`@${nick} unblocked`,es:`@${nick} desbloqueado`,fr:`@${nick} débloqué`,de:`@${nick} entsperrt`,pt:`@${nick} desbloqueado`,nl:`@${nick} gedeblokkeerd`}):_lbl({it:'Non riuscito, riprova',en:'Didn’t work, try again',es:'No funcionó',fr:'Échec',de:'Fehlgeschlagen',pt:'Falhou',nl:'Mislukt'}));
+  if(!ok) return;
+  if(fromList) openBlockedList(); else openPublicProfile(nick,true);
+}
+async function openBlockedList(){
+  if(!_sbUser) return;
+  const ov=document.getElementById('followListOv'); if(!ov) return;
+  _followListCtx=null;
+  document.getElementById('followListHd').textContent=_lbl({it:'Utenti bloccati',en:'Blocked users',es:'Usuarios bloqueados',fr:'Utilisateurs bloqués',de:'Blockierte Nutzer',pt:'Utilizadores bloqueados',nl:'Geblokkeerde gebruikers'});
+  const box=document.getElementById('followListIn'); box.innerHTML='<div class="disc-empty">…</div>';
+  ov.classList.add('open');
+  try{
+    const {data}=await _sb.rpc('get_blocked');
+    const res=(data&&data.results)||[];
+    if(!res.length){ box.innerHTML='<div class="disc-empty">'+_lbl({it:'Non hai bloccato nessuno.',en:'You haven’t blocked anyone.',es:'No has bloqueado a nadie.',fr:'Tu n’as bloqué personne.',de:'Du hast niemanden blockiert.',pt:'Não bloqueou ninguém.',nl:'Je hebt niemand geblokkeerd.'})+'</div>'; return; }
+    box.innerHTML=res.map(p=>{ const nk=_normNick(p.nickname); return `<div class="disc-row" style="cursor:default">
+      <span class="disc-av">${_avInitial(nk)}</span><span class="disc-nick">@${nk}</span>
+      <button class="notif-fbtn muted" style="margin-left:auto" onclick="_unblockUser('${nk}',true)">${_lbl({it:'Sblocca',en:'Unblock',es:'Desbloquear',fr:'Débloquer',de:'Entsperren',pt:'Desbloquear',nl:'Deblokkeren'})}</button></div>`; }).join('');
+  }catch(e){ box.innerHTML='<div class="disc-empty">Something went wrong.</div>'; }
 }
 // ── Report profile (opens a card → emails vaultwishlist@gmail.com via edge fn) ──
 let _reportTarget=null;
@@ -7847,7 +7930,7 @@ function _pickAvatar(input){
   const f=input.files&&input.files[0];if(!f) return;
   if(!/^image\//.test(f.type)){input.value='';return;}
   const r=new FileReader();
-  r.onload=e=>{ _cropOpen(e.target.result); };
+  r.onload=async e=>{ const d=e.target.result; if(await _nsfwCheck(d,'avatar')==='block'){ _nsfwRefusedToast(); return; } _cropOpen(d); };
   r.readAsDataURL(f);input.value='';
 }
 // ── Avatar cropper (drag to reposition + zoom, exported as a square) ──
