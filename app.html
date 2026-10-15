@@ -1181,6 +1181,24 @@ body.cmp-mode .card{cursor:default}
 .pubi-status{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.3px}
 /* Public profile — FULL PAGE (horizontal) */
 .profile-page{position:fixed;inset:0;z-index:9400;background:var(--bg);overflow-y:auto;display:none}
+.set-wrap{max-width:640px;margin:0 auto;padding:8px 18px 40px}
+.set-h1{font-size:26px;font-weight:800;letter-spacing:-.5px;color:var(--t1);margin:14px 2px 4px}
+.set-sec{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.1px;color:var(--t3);margin:24px 4px 8px}
+.set-card{background:var(--s2);border:1px solid var(--bd);border-radius:14px;overflow:hidden}
+.set-row{display:flex;align-items:center;gap:12px;padding:13px 16px;font-size:14px;color:var(--t1);cursor:pointer;border-top:1px solid var(--bd);transition:background .12s;position:relative}
+.set-row:first-child{border-top:none}
+.set-row:hover{background:var(--s3,rgba(255,255,255,.04))}
+.set-row.static{cursor:default}.set-row.static:hover{background:none}
+.set-ico{width:22px;display:flex;align-items:center;justify-content:center;color:var(--t2);flex-shrink:0}
+.set-lbl{flex:1;min-width:0}
+.set-sub{display:block;font-size:11.5px;color:var(--t3);margin-top:2px;line-height:1.35}
+.set-val{color:var(--t3);font-size:12.5px;display:flex;align-items:center;gap:6px;flex-shrink:0;max-width:52%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.set-row.danger,.set-row.danger .set-ico{color:#e05555}
+.set-sel{background:var(--s1,#0f0f0f);color:var(--t1);border:1px solid var(--bd2);border-radius:8px;padding:6px 8px;font:inherit;font-size:12.5px;max-width:170px}
+.set-sw{width:34px;height:20px;border-radius:20px;background:var(--bd2);position:relative;flex-shrink:0;transition:background .15s}
+.set-sw::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .15s}
+.set-sw.on{background:var(--accent)}.set-sw.on::after{transform:translateX(14px)}
+.set-foot{text-align:center;font-size:11px;color:var(--t3);margin:26px 0 6px}
 .profile-page.open{display:block}
 body.pp-open{overflow:hidden}
 /* These overlays can be opened FROM the full-screen profile page → must sit above it */
@@ -1851,6 +1869,15 @@ body.pp-open{overflow:hidden}
 <div id="pubProfOv" class="profile-page"><div id="pubProfIn"></div></div>
 
 <!-- ═══ HELP / GUIDE CENTER ═══ -->
+<div id="setPage" class="profile-page">
+  <div class="pp-topbar">
+    <button class="pp-back" onclick="closeSettingsPage()"><svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-back"/></svg> <span id="setBackLbl">Back</span></button>
+    <div class="pp-topbar-handle" id="setTitleBar">Settings</div>
+    <div style="width:70px"></div>
+  </div>
+  <div class="set-wrap pp-wrap" id="setIn"></div>
+  <input type="file" id="csvImportIn" accept=".csv,text/csv" style="display:none" onchange="importCSV(event);this.value=''">
+</div>
 <div id="helpOv" class="profile-page">
   <div class="pp-topbar">
     <button class="pp-back" onclick="closeHelp()"><svg class="ico" width="14" height="14" viewBox="0 0 16 16"><use href="#ic-back"/></svg> <span id="helpBack">Back</span></button>
@@ -2607,7 +2634,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.10.15-social56';
+const APP_BUILD='2026.10.15-social57';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -4997,7 +5024,7 @@ function _renderThemePanel(){
   const cur=S.themePreset||'';
   const cc=S.customColors||{};
   popup.innerHTML=`<div class="lang-popup-nav">
-      <button class="lang-popup-nav-back" onclick="openSettings()">${t('back')}</button>
+      <button class="lang-popup-nav-back" onclick="_settingsBack()">${t('back')}</button>
       <span class="lang-popup-nav-title">${ico('palette',13)} ${_lbl({it:'Tema',en:'Theme',es:'Tema',fr:'Thème',de:'Thema',pt:'Tema',nl:'Thema'})}</span>
       <div style="width:60px"></div>
     </div>
@@ -6012,6 +6039,8 @@ document.addEventListener('keydown',e=>{
     const kbo=document.getElementById('kbOv');
     if(kbo&&kbo.style.display==='flex'){kbo.style.display='none';return;}
     if(document.getElementById('kbarOv').classList.contains('open')){closeKbar();return;}
+    const _anyOv=!!document.querySelector('.ov.open');
+    if(!_anyOv && _setPageOpen() && !document.getElementById('langPopup').classList.contains('open')) closeSettingsPage();
     document.querySelectorAll('.ov.open').forEach(o=>{ if(o.id==='addOv') closeAddMo(); else o.classList.remove('open'); });
     const roOv=document.getElementById('roOv');if(roOv&&roOv.style.display!=='none'){roOv.style.display='none';}
     return;
@@ -6211,53 +6240,117 @@ function _positionPopup(popup,btn){
   requestAnimationFrame(()=>popup.style.top=(r.top-popup.offsetHeight-8)+'px');
 }
 
+// ── SETTINGS: one full page with every setting, grouped ──
 function openSettings(btn){
   if(btn) _settingsBtn=btn;
+  hideLangPopup();
+  const pg=document.getElementById('setPage'); if(!pg) return;
+  _renderSettingsPage();
+  pg.classList.add('open'); pg.scrollTop=0;
+  document.body.classList.add('pp-open');
+}
+function closeSettingsPage(){
+  hideLangPopup();
+  const pg=document.getElementById('setPage'); if(pg) pg.classList.remove('open');
+  if(!document.querySelector('.profile-page.open')) document.body.classList.remove('pp-open');
+}
+function _setPageOpen(){ const pg=document.getElementById('setPage'); return !!(pg&&pg.classList.contains('open')); }
+// Language / theme / status-colour panels still use the small popup: open it next to the tapped row.
+function _setPanel(el,fn){
+  _settingsBtn=el;
   const popup=document.getElementById('langPopup');
-  if(popup.classList.contains('open')&&popup.dataset.mode==='settings'){hideLangPopup();return;}
-  popup.dataset.mode='settings';
+  // open on the next tick: the document's "click outside closes the popup" handler runs on this same click
+  setTimeout(()=>{ _setPanelOpen(el,fn,popup); },0);
+}
+function _setPanelOpen(el,fn,popup){
+  fn();
+  if(!popup.classList.contains('open')) _positionPopup(popup,el);
+  // keep the panel on screen (rows near the top would push it above the viewport)
+  setTimeout(()=>{ try{ const r=popup.getBoundingClientRect(); if(r.top<8){ const er=el.getBoundingClientRect(); popup.style.top=Math.min(er.bottom+8, innerHeight-r.height-8)+'px'; } }catch(e){} },40);
+}
+function _settingsBack(){ hideLangPopup(); if(_setPageOpen()) _renderSettingsPage(); }
+function _renderSettingsPage(){
+  const box=document.getElementById('setIn'); if(!box) return;
+  const T=d=>_lbl(d);
+  const row=(icon,label,val,onclick,cls,sub)=>`<div class="set-row ${cls||''}" ${onclick?`onclick="${onclick}"`:''}>
+      <span class="set-ico">${ico(icon,16)}</span>
+      <span class="set-lbl">${label}${sub?`<span class="set-sub">${sub}</span>`:''}</span>
+      ${val!==undefined&&val!==null?`<span class="set-val">${val}</span>`:''}</div>`;
+  const chev='›';
+  const signedIn=!!(typeof _currentUser!=='undefined'&&_currentUser&&_currentUser.email);
+  const plan=getCurrentPlan(), planName=PLAN_NAMES[plan]||'Free';
   const _curP=S.themePreset?THEME_PRESETS.find(p=>p.id===S.themePreset):null;
-  const _tDot=_curP?`<span style="width:9px;height:9px;border-radius:50%;background:${_curP.accent};display:inline-block;margin-right:4px;vertical-align:middle"></span>`:'';
-  const _tLabel=_curP?_tDot+_curP.name:(S.themePreset==='custom'?'Custom':'Default');
-  popup.innerHTML=`<div class="lang-popup-hd">${ico('gear',10)} ${t('settingsTitle')}</div>
-    <div class="lang-opt" onclick="openLangPanel()">
-      <span class="lang-opt-icon">${ico('globe',17)}</span>
-      <span class="lang-opt-name">${t('langLabel')}</span>
-      <span style="color:var(--t3);font-size:12px;margin-left:auto">${TRANS[S.lang||'en'].flag} ›</span>
+  const themeName=_curP?_curP.name:(S.themePreset==='custom'?'Custom':'Default');
+  const modeName={dark:T({it:'Scuro',en:'Dark',es:'Oscuro',fr:'Sombre',de:'Dunkel',pt:'Escuro',nl:'Donker'}),light:T({it:'Chiaro',en:'Light',es:'Claro',fr:'Clair',de:'Hell',pt:'Claro',nl:'Licht'}),auto:'Auto'}[S.theme||'dark']||'Auto';
+  const curOpts=Object.keys(CURRENCIES).map(c=>`<option value="${c}" ${(S.currency||'EUR')===c?'selected':''}>${CURRENCIES[c]} ${c}</option>`).join('');
+  const sec=t=>`<div class="set-sec">${t}</div>`;
+  box.innerHTML=`
+    <div class="set-h1">${t('settingsTitle')}</div>
+
+    ${sec(T({it:'Account',en:'Account',es:'Cuenta',fr:'Compte',de:'Konto',pt:'Conta',nl:'Account'}))}
+    <div class="set-card">
+      ${signedIn
+        ? row('user','Email',esc(_currentUser.email),null,'static')
+        + row('crown',T({it:'Piano',en:'Plan',es:'Plan',fr:'Offre',de:'Plan',pt:'Plano',nl:'Abonnement'}),'Vault '+planName+' '+chev, isPaid()?"openStripePortal()":"showPlusModal('profile')")
+        + row('id-card',T({it:'Profilo',en:'Profile',es:'Perfil',fr:'Profil',de:'Profil',pt:'Perfil',nl:'Profiel'}),chev,"openProfileMo()")
+        + row('back',T({it:'Esci',en:'Sign out',es:'Cerrar sesión',fr:'Se déconnecter',de:'Abmelden',pt:'Terminar sessão',nl:'Uitloggen'}),null,"closeSettingsPage();logout()")
+        : row('user',T({it:'Accedi o crea un account',en:'Sign in or create an account',es:'Inicia sesión o crea una cuenta',fr:'Se connecter ou créer un compte',de:'Anmelden oder Konto erstellen',pt:'Iniciar sessão ou criar conta',nl:'Inloggen of account maken'}),chev,"closeSettingsPage();setAuthMode('login');document.getElementById('authOv').style.display='flex'",'',
+              T({it:'Sincronizza il tuo vault su tutti i dispositivi',en:'Sync your vault across all your devices',es:'Sincroniza tu vault en todos tus dispositivos',fr:'Synchronise ton vault sur tous tes appareils',de:'Synchronisiere deinen Vault auf allen Geräten',pt:'Sincronize o seu vault em todos os dispositivos',nl:'Synchroniseer je vault op al je apparaten'}))
+        + row('crown',T({it:'Piano',en:'Plan',es:'Plan',fr:'Offre',de:'Plan',pt:'Plano',nl:'Abonnement'}),'Vault '+planName+' '+chev,"showPlusModal('profile')")}
     </div>
-    <div class="lang-opt" onclick="_renderThemePanel()">
-      <span class="lang-opt-icon">${ico('palette',17)}</span>
-      <span class="lang-opt-name">${_lbl({it:'Tema',en:'Theme',es:'Tema',fr:'Thème',de:'Thema',pt:'Tema',nl:'Thema'})}</span>
-      <span style="color:var(--t3);font-size:12px;margin-left:auto;display:flex;align-items:center">${_tLabel} ›</span>
+
+    ${sec(T({it:'Aspetto',en:'Appearance',es:'Apariencia',fr:'Apparence',de:'Darstellung',pt:'Aparência',nl:'Weergave'}))}
+    <div class="set-card">
+      ${row('globe',t('langLabel'),(TRANS[S.lang||'en']||TRANS.en).lang+' '+chev,"_setPanel(this,openLangPanel)")}
+      ${row('palette',T({it:'Tema',en:'Theme',es:'Tema',fr:'Thème',de:'Thema',pt:'Tema',nl:'Thema'}),esc(themeName)+' '+chev,"_setPanel(this,_renderThemePanel)")}
+      ${row(S.theme==='light'?'sun':'moon',T({it:'Modalità',en:'Mode',es:'Modo',fr:'Mode',de:'Modus',pt:'Modo',nl:'Modus'}),modeName,"toggleTheme();_renderSettingsPage()",'',T({it:'Scuro → Chiaro → Auto',en:'Dark → Light → Auto',es:'Oscuro → Claro → Auto',fr:'Sombre → Clair → Auto',de:'Dunkel → Hell → Auto',pt:'Escuro → Claro → Auto',nl:'Donker → Licht → Auto'}))}
+      ${row('tag',t('settingsColors'),chev,"_setPanel(this,openStatusColors)")}
+      <div class="set-row static"><span class="set-ico">${ico('wallet',16)}</span><span class="set-lbl">${t('currency')}</span>
+        <select class="set-sel" onchange="setCurrency(this.value)" onclick="event.stopPropagation()">${curOpts}</select></div>
     </div>
-    <div class="lang-opt" onclick="openStatusColors()">
-      <span class="lang-opt-icon">${ico('tag',17)}</span>
-      <span class="lang-opt-name">${t('settingsColors')}</span>
-      <span style="color:var(--t3);font-size:12px;margin-left:auto">›</span>
+
+    ${sec(T({it:'I tuoi dati',en:'Your data',es:'Tus datos',fr:'Tes données',de:'Deine Daten',pt:'Os seus dados',nl:'Je gegevens'}))}
+    <div class="set-card">
+      ${row('upload',T({it:'Esporta in CSV',en:'Export to CSV',es:'Exportar a CSV',fr:'Exporter en CSV',de:'Als CSV exportieren',pt:'Exportar para CSV',nl:'Exporteren naar CSV'}),null,"exportCSV()",'',T({it:'Apribile con Excel, Numbers o Google Sheets',en:'Opens in Excel, Numbers or Google Sheets',es:'Se abre con Excel, Numbers o Google Sheets',fr:'S’ouvre avec Excel, Numbers ou Google Sheets',de:'Öffnet in Excel, Numbers oder Google Sheets',pt:'Abre no Excel, Numbers ou Google Sheets',nl:'Opent in Excel, Numbers of Google Sheets'}))}
+      ${row('book',T({it:'Backup completo',en:'Full backup',es:'Copia de seguridad completa',fr:'Sauvegarde complète',de:'Vollständiges Backup',pt:'Cópia de segurança completa',nl:'Volledige back-up'}),null,"exportVault()",'',T({it:'Tutto il vault in un file, da ripristinare quando vuoi',en:'Your whole vault in one file, to restore any time',es:'Todo tu vault en un archivo, para restaurarlo cuando quieras',fr:'Tout ton vault dans un fichier, à restaurer quand tu veux',de:'Dein ganzer Vault in einer Datei, jederzeit wiederherstellbar',pt:'Todo o seu vault num ficheiro, para restaurar quando quiser',nl:'Je hele vault in één bestand, altijd terug te zetten'}))}
+      ${row('refresh',T({it:'Ripristina un backup',en:'Restore a backup',es:'Restaurar una copia',fr:'Restaurer une sauvegarde',de:'Backup wiederherstellen',pt:'Restaurar uma cópia',nl:'Back-up terugzetten'}),chev,"document.getElementById('importFileIn').click()")}
+      ${row('upload',T({it:'Importa da CSV',en:'Import from CSV',es:'Importar desde CSV',fr:'Importer depuis un CSV',de:'Aus CSV importieren',pt:'Importar de CSV',nl:'Importeren uit CSV'}),chev,"document.getElementById('csvImportIn').click()")}
+      ${row('book',T({it:'Stampa o salva in PDF',en:'Print or save as PDF',es:'Imprimir o guardar en PDF',fr:'Imprimer ou enregistrer en PDF',de:'Drucken oder als PDF speichern',pt:'Imprimir ou guardar em PDF',nl:'Afdrukken of opslaan als PDF'}),null,"closeSettingsPage();setTimeout(exportPDF,250)")}
     </div>
-    <div class="lang-opt" onclick="hideLangPopup();openHelp()">
-      <span class="lang-opt-icon">${ico('book',17)}</span>
-      <span class="lang-opt-name">${_lbl({it:'Guida & aiuto',en:'Help & guide',es:'Ayuda y guía',fr:'Aide & guide',de:'Hilfe & Anleitung',pt:'Ajuda e guia',nl:'Hulp & gids'})}</span>
-      <span style="color:var(--t3);font-size:12px;margin-left:auto">›</span>
+
+    ${sec('Privacy')}
+    <div class="set-card">
+      ${row('lock','Privacy Policy','↗',"window.open('privacy.html','_blank')")}
+      <div class="set-row" onclick="_toggleStats()"><span class="set-ico">${ico('line-chart',16)}</span>
+        <span class="set-lbl">${T({it:'Statistiche anonime',en:'Anonymous usage stats',es:'Estadísticas anónimas',fr:'Statistiques anonymes',de:'Anonyme Statistiken',pt:'Estatísticas anónimas',nl:'Anonieme statistieken'})}<span class="set-sub">${T({it:'Ci aiutano a migliorare Vault. Niente di ciò che salvi viene letto.',en:'Help us improve Vault. Nothing you save is ever read.',es:'Nos ayudan a mejorar Vault. Nunca leemos lo que guardas.',fr:'Elles nous aident à améliorer Vault. Rien de ce que tu enregistres n’est lu.',de:'Helfen uns, Vault zu verbessern. Was du speicherst, wird nie gelesen.',pt:'Ajudam-nos a melhorar o Vault. Nada do que guarda é lido.',nl:'Helpen ons Vault te verbeteren. Wat je opslaat wordt nooit gelezen.'})}</span></span>
+        <span class="set-sw ${_statsOn()?'on':''}"></span></div>
+      ${row('book',T({it:'Termini di servizio',en:'Terms of Service',es:'Términos del servicio',fr:'Conditions d’utilisation',de:'Nutzungsbedingungen',pt:'Termos de serviço',nl:'Servicevoorwaarden'}),'↗',"window.open('terms.html','_blank')")}
     </div>
-    <div class="lang-opt" onclick="hideLangPopup();window.open('https://vaultwishlist.com/','_blank')">
-      <span class="lang-opt-icon">${ico('globe',17)}</span>
-      <span class="lang-opt-name">${_lbl({it:'Sito di Vault',en:'Vault website',es:'Web de Vault',fr:'Site de Vault',de:'Vault-Website',pt:'Site do Vault',nl:'Vault-website'})}</span>
-      <span style="color:var(--t3);font-size:12px;margin-left:auto">↗</span>
+
+    ${sec(T({it:'Aiuto',en:'Help',es:'Ayuda',fr:'Aide',de:'Hilfe',pt:'Ajuda',nl:'Hulp'}))}
+    <div class="set-card">
+      ${row('book',T({it:'Guida & aiuto',en:'Help & guide',es:'Ayuda y guía',fr:'Aide & guide',de:'Hilfe & Anleitung',pt:'Ajuda e guia',nl:'Hulp & gids'}),chev,"openHelp()")}
+      ${row('crown',T({it:'Piani e funzioni',en:'Plans & features',es:'Planes y funciones',fr:'Offres et fonctions',de:'Pläne & Funktionen',pt:'Planos e recursos',nl:'Abonnementen & functies'}),chev,"openPlusTutorial()")}
+      ${row('user',T({it:'Contatta il supporto',en:'Contact support',es:'Contactar con soporte',fr:'Contacter le support',de:'Support kontaktieren',pt:'Contactar o suporte',nl:'Contact met support'}),'↗',"location.href='mailto:vaultwishlist@gmail.com?subject=Vault%20support'")}
+      ${row('globe',T({it:'Sito di Vault',en:'Vault website',es:'Web de Vault',fr:'Site de Vault',de:'Vault-Website',pt:'Site do Vault',nl:'Vault-website'}),'↗',"window.open('https://vaultwishlist.com/','_blank')")}
     </div>
-    <div class="lang-opt" onclick="_toggleStats()">
-      <span class="lang-opt-icon">${ico('line-chart',17)}</span>
-      <span class="lang-opt-name">${_lbl({it:'Statistiche anonime',en:'Anonymous usage stats',es:'Estadísticas anónimas',fr:'Statistiques anonymes',de:'Anonyme Statistiken',pt:'Estatísticas anónimas',nl:'Anonieme statistieken'})}</span>
-      <span style="color:var(--t3);font-size:12px;margin-left:auto">${_statsOn()?'On':'Off'}</span>
-    </div>`;
-  _positionPopup(popup, _settingsBtn);
+
+    ${sec(T({it:'Zona pericolosa',en:'Danger zone',es:'Zona peligrosa',fr:'Zone dangereuse',de:'Gefahrenzone',pt:'Zona de perigo',nl:'Gevarenzone'}))}
+    <div class="set-card">
+      ${row('trash',T({it:'Cancella tutti i dati',en:'Clear all data',es:'Borrar todos los datos',fr:'Effacer toutes les données',de:'Alle Daten löschen',pt:'Apagar todos os dados',nl:'Alle gegevens wissen'}),null,"resetVault()",'danger')}
+      ${signedIn?row('trash',T({it:'Elimina account e tutti i dati',en:'Delete account & all data',es:'Eliminar cuenta y todos los datos',fr:'Supprimer le compte et toutes les données',de:'Konto & alle Daten löschen',pt:'Eliminar conta e todos os dados',nl:'Account & alle gegevens verwijderen'}),null,"_deleteAccount()",'danger'):''}
+    </div>
+
+    <div class="set-foot">Vault · ${esc(typeof APP_BUILD!=='undefined'?APP_BUILD:'')}</div>`;
+  const bl=document.getElementById('setBackLbl'); if(bl) bl.textContent=T({it:'Indietro',en:'Back',es:'Atrás',fr:'Retour',de:'Zurück',pt:'Voltar',nl:'Terug'});
+  const tb=document.getElementById('setTitleBar'); if(tb) tb.textContent=t('settingsTitle');
 }
 
 function openLangPanel(){
   const popup=document.getElementById('langPopup');
   popup.dataset.mode='lang';
   popup.innerHTML=`<div class="lang-popup-nav">
-      <button class="lang-popup-nav-back" onclick="openSettings()">${t('back')}</button>
+      <button class="lang-popup-nav-back" onclick="_settingsBack()">${t('back')}</button>
       <span class="lang-popup-nav-title">${t('langLabel')}</span>
       <div style="width:60px"></div>
     </div>`+
@@ -6275,6 +6368,7 @@ function openLangPanel(){
 }
 
 function hideLangPopup(){document.getElementById('langPopup').classList.remove('open');}
+setTimeout(()=>{ ['setLang','setCurrency','applyTheme'].forEach(fn=>{ const o=window[fn]; if(typeof o!=='function') return; window[fn]=function(){ const r=o.apply(this,arguments); try{ if(_setPageOpen()) _renderSettingsPage(); }catch(e){} return r; }; }); },0);
 
 // ══════════════════ HELP / GUIDE CENTER (multilingual) ══════════════════
 const HELP_LANGS=[['en','English'],['it','Italiano'],['es','Español'],['fr','Français'],['de','Deutsch'],['zh','中文'],['ja','日本語'],['ru','Русский'],['pl','Polski']];
@@ -6962,7 +7056,7 @@ function openStatusColors(){
   const popup=document.getElementById('langPopup');
   popup.dataset.mode='colors';
   popup.innerHTML=`<div class="lang-popup-nav">
-      <button class="lang-popup-nav-back" onclick="openSettings()">${t('back')}</button>
+      <button class="lang-popup-nav-back" onclick="_settingsBack()">${t('back')}</button>
       <span class="lang-popup-nav-title">${ico('tag',13)} ${t('settingsColors')}</span>
       <div style="width:60px"></div>
     </div>`+
@@ -6987,7 +7081,7 @@ function setStatusColor(key,color){
   S.statusColors[key]=color;
   save();applyStatusColors();
 }
-function resetStatusColors(){S.statusColors={};save();applyStatusColors();openSettings();}
+function resetStatusColors(){S.statusColors={};save();applyStatusColors();_settingsBack();}
 
 // ── ONBOARDING ──
 function onbVisualHTML(idx){
@@ -8741,7 +8835,7 @@ function _toggleStats(){
   try{ if(_statsOn()) localStorage.setItem(_STATS_OFF,'1'); else localStorage.removeItem(_STATS_OFF); }catch(e){}
   showToast(_statsOn()?_lbl({it:'Statistiche anonime attivate',en:'Anonymous stats on',es:'Estadísticas anónimas activadas',fr:'Statistiques anonymes activées',de:'Anonyme Statistiken an',pt:'Estatísticas anónimas ativadas',nl:'Anonieme statistieken aan'})
                       :_lbl({it:'Statistiche anonime disattivate',en:'Anonymous stats off',es:'Estadísticas anónimas desactivadas',fr:'Statistiques anonymes désactivées',de:'Anonyme Statistiken aus',pt:'Estatísticas anónimas desativadas',nl:'Anonieme statistieken uit'}));
-  try{ hideLangPopup(); openSettings(_settingsBtn||document.getElementById('settingsBtn')); }catch(e){} // reopen to refresh the On/Off label
+  try{ if(_setPageOpen()) _renderSettingsPage(); }catch(e){} // refresh the switch
 }
 function closeGiftMode(){document.getElementById('giftOv').classList.remove('open');}
 async function _loadGiftRegs(){
