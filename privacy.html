@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Privacy Policy · Vault</title>
-<meta name="description" content="How Vault handles your data: private by default, no ads, no cross-site tracking, GDPR rights, EU hosting, and full control over what you make public.">
+<meta name="description" content="How Vault handles your data: private by default, no behavioural advertising, no cross-site tracking, GDPR rights, EU hosting, and full control over what you make public.">
 <link rel="canonical" href="https://vaultwishlist.com/privacy.html">
 <meta name="robots" content="index,follow">
 <style>
@@ -32,10 +32,10 @@
 <div class="wrap">
   <a class="back" href="./">← Back to Vault</a>
   <h1>Privacy Policy</h1>
-  <div class="updated">Last updated: 5 October 2026 · Applies to vaultwishlist.com and the Vault app</div>
+  <div class="updated">Last updated: 15 October 2026 · Applies to vaultwishlist.com and the Vault app</div>
 
   <div class="box">
-    <strong>In short:</strong> Vault stores your account email and the wishlist data you create, so the app can work and sync across your devices. We don't run ads, we don't sell your data, and we don't use advertising or cross-site tracking. Your account is <strong>private by default</strong>: nothing you save is public unless you choose to turn on a public profile or share a list. Web subscriptions are processed by Stripe; subscriptions bought in the iOS app are processed by Apple. Vault never receives your full payment-card details.
+    <strong>In short:</strong> Vault stores your account email and the wishlist data you create, so the app can work and sync across your devices. We don't sell your data, and we don't use behavioural advertising or cross-site tracking. We keep anonymous first-party usage statistics (no third parties) to improve Vault, and you can turn them off in Settings. Your account is <strong>private by default</strong>: nothing you save is public unless you choose to turn on a public profile or share a list. Web subscriptions are processed by Stripe; subscriptions bought in the iOS app are processed by Apple. Vault never receives your full payment-card details.
   </div>
 
   <h2>1. Data Controller</h2>
@@ -56,6 +56,7 @@
     <tr><td>Names entered by guests when reserving a gift on a shared gift list</td><td>Showing other guests that a gift is taken, to avoid duplicates</td><td>Art. 6(1)(f), legitimate interest of the list participants</td></tr>
     <tr><td><strong>Public profile</strong> (nickname, optional display name, avatar, bio) — only if you turn on a public profile</td><td>Letting other users find and view the profile you chose to make public</td><td>Art. 6(1)(a), your consent (you opt in and can turn it off anytime)</td></tr>
     <tr><td><strong>Social connections</strong> (who you follow, who follows you) and items you mark as public/featured — only if you use social features</td><td>Operating the follow system and showing your chosen public items on your profile</td><td>Art. 6(1)(a), your consent</td></tr>
+    <tr><td><strong>Anonymous usage statistics</strong>: a random device identifier, your account ID if you are signed in, and events such as "app opened" (once a day), "item saved" (with the number of items you have, not what they are), sign-up/login, plan-limit reached, upgrade button tapped, gift list created, and link-import results (only the website's domain, e.g. zara.com, whether title/image/price were found, and how long it took). Never item titles, links, notes or photos.</td><td>Understanding where people get stuck (open → first save → come back → upgrade) and how reliably Vault reads each website, so we can improve the product</td><td>Art. 6(1)(f), our legitimate interest in improving the service; you can object anytime in Settings → Anonymous usage stats</td></tr>
     <tr><td>Technical logs (IP address, timestamps) processed by our infrastructure providers</td><td>Security, abuse prevention, service operation</td><td>Art. 6(1)(f), legitimate interest</td></tr>
   </table>
   <p>We do <strong>not</strong> collect: payment card numbers (handled by Stripe), your <strong>device's precise geolocation</strong> (GPS), contacts, advertising identifiers, or advertising / cross-site behavioural profiles. Addresses and places you intentionally type into Vault are part of your vault content (see above) — they are not tracking of where you are. When you type an address, the suggestions are looked up on OpenStreetMap (Nominatim), which receives only the text you typed.</p>
@@ -72,18 +73,20 @@
     <tr><td><strong>Apple</strong> (Apple Inc. / Apple Distribution International)</td><td>App Store distribution and in-app purchases: if you subscribe in the iOS app, Apple processes the payment, renewals and refunds as an independent controller and tells us only which plan is active</td><td>EU/US, Apple participates in the EU-US Data Privacy Framework. <a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener">Apple privacy policy</a></td></tr>
     <tr><td><strong>Google</strong> (Google LLC — Gmail)</td><td>Our support mailbox: if you email us, or a report is sent to us, the message is received and stored in Gmail</td><td>EU/US, Google participates in the EU-US Data Privacy Framework. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google privacy policy</a></td></tr>
     <tr><td><strong>Resend</strong> (Resend, Inc.)</td><td>Delivers the notification email when a profile is reported</td><td>US, standard contractual clauses. <a href="https://resend.com/legal/privacy-policy" target="_blank" rel="noopener">Resend privacy policy</a></td></tr>
+    <tr><td><strong>unpkg</strong> (CDN operated on Cloudflare)</td><td>Delivers the open-source globe-map library and map textures, only when you open the globe; like any website it sees your IP address and browser</td><td>Global CDN. <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">Cloudflare privacy policy</a></td></tr>
     <tr><td><strong>OpenStreetMap / Nominatim</strong> (OSM Foundation)</td><td>Address suggestions when you type a place; receives only the typed text</td><td>UK/EU. <a href="https://osmfoundation.org/wiki/Privacy_Policy" target="_blank" rel="noopener">OSMF privacy policy</a></td></tr>
     <tr><td><strong>GitHub Pages</strong> (GitHub, Inc.)</td><td>Hosting of the app's static files</td><td>Global CDN, GitHub participates in the EU-US Data Privacy Framework. <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">GitHub privacy statement</a></td></tr>
   </table>
   <p>When you use "fetch data" on a product link, the request to read that page is made by our backend on your behalf; the target site sees our server's request, not your identity.</p>
 
   <h2>5. Cookies and local storage</h2>
-  <p>Vault uses <strong>only technical storage that is strictly necessary</strong> for the app to function:</p>
+  <p>Vault uses no cookies of its own. It uses your browser's local storage for:</p>
   <ul>
-    <li><strong>localStorage</strong>, keeps your app data and preferences (theme, language, plan) on your device so the app works and loads fast;</li>
-    <li><strong>Supabase auth token</strong>, keeps you signed in between visits.</li>
+    <li><strong>localStorage</strong>, keeps your app data and preferences (theme, language, plan) on your device so the app works and loads fast — strictly necessary;</li>
+    <li><strong>Supabase auth token</strong>, keeps you signed in between visits — strictly necessary;</li>
+    <li><strong>a random device identifier</strong> (<code>vault_dev</code>) used only for our own anonymous usage statistics (see section 2). It is first-party, used only in aggregate, never shared with third parties and never combined with data from other websites. You can switch it off anytime in <strong>Settings → Anonymous usage stats</strong>.</li>
   </ul>
-  <p>We use <strong>no analytics, advertising, or profiling cookies</strong>. Because this storage is strictly necessary, it does not require consent under the ePrivacy rules, we show a notice for transparency. If you clear your browser storage, local data is removed (cloud-synced data remains in your account).</p>
+  <p>We use <strong>no advertising or profiling cookies and no third-party analytics</strong> (no Google Analytics, no Meta Pixel). The strictly necessary storage does not require consent under the ePrivacy rules; the first-party statistics are limited, aggregated audience measurement that you can turn off, and we show a notice for transparency. If you clear your browser storage, local data is removed (cloud-synced data remains in your account).</p>
   <p>Stripe's checkout pages, which open on stripe.com when you subscribe, set their own cookies as an independent controller, see Stripe's policy linked above.</p>
 
   <h2>6. How long we keep data</h2>
@@ -94,6 +97,7 @@
     <li><strong>Photos and voice notes</strong> attached to items, stored in Supabase Storage for as long as the item exists; deleted together with the item or your account.</li>
     <li><strong>Reports and moderation records</strong> (profile or content reports, the decision taken), for as long as necessary to investigate and resolve the report, and afterwards only where needed for legal claims, repeat-abuse prevention or security — at most 2 years.</li>
     <li><strong>Support and privacy emails</strong>, for as long as needed to handle your request, and afterwards only where needed to document how a legal request was answered — at most 2 years.</li>
+    <li><strong>Anonymous usage statistics</strong>, 13 months, then deleted automatically.</li>
     <li><strong>Security and technical logs</strong> kept by our infrastructure providers, for their short rolling periods (typically days to a few weeks), unless needed to investigate a specific security incident.</li>
     <li><strong>Insights</strong> (taste and spending statistics) are computed on your device when you open them and are not stored separately on our servers.</li>
   </ul>
@@ -131,7 +135,7 @@
   <h2>10. Personalised insights</h2>
   <p>Collector and Vaulter include optional personalised insights based on the items you have saved in Vault. To generate statistics and personal summaries, Vault analyses information such as product categories, prices, saved/bought status and favourites.</p>
   <p>Today these insights are <strong>computed entirely on your own device</strong>: the underlying Vault content is not sent to any external AI provider for this processing, and the result is shown only to you.</p>
-  <p>These features only provide personal insights. They are <strong>not</strong> used for advertising, credit scoring, eligibility decisions, pricing decisions or any other automated decision that produces legal or similarly significant effects concerning you within the meaning of Article 22 GDPR. <strong>No ads. No advertising profiling. No cross-site tracking.</strong> Your vault content is never sold or shared with advertisers.</p>
+  <p>These features only provide personal insights. They are <strong>not</strong> used for advertising, credit scoring, eligibility decisions, pricing decisions or any other automated decision that produces legal or similarly significant effects concerning you within the meaning of Article 22 GDPR. <strong>No behavioural advertising. No advertising profiling. No cross-site tracking.</strong> Your vault content is never sold or shared with advertisers.</p>
   <p>If Vault introduces features that send personal data to a third-party AI provider, this Privacy Policy will identify the provider, the data involved, the purpose of the processing and the applicable safeguards <strong>before</strong> such processing starts.</p>
 
   <h2>11. Children</h2>
