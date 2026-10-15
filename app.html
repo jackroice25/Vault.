@@ -2673,7 +2673,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.10.15-social62';
+const APP_BUILD='2026.10.15-social63';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -3611,7 +3611,7 @@ function renderSidebar(){
       const pct=Math.min(100,Math.round(n/lim*100));
       const warn=n>=lim-4;
       ctr.style.display='';
-      ctr.innerHTML=`<div style="font-size:10px;color:${warn?'#f87171':'var(--t3)'};margin-bottom:4px;display:flex;justify-content:space-between"><span>${n}/${lim} ${_lbl({it:'elementi',en:'items',es:'elementos',fr:'éléments',de:'Einträge',pt:'itens',nl:'items'})}${n>lim?' · '+_lbl({it:'oltre il limite, niente viene cancellato',en:'over limit, nothing is deleted',es:'por encima del límite, no se borra nada',fr:'limite dépassée, rien n’est supprimé',de:'über dem Limit, nichts wird gelöscht',pt:'acima do limite, nada é apagado',nl:'boven limiet, niets wordt verwijderd'}):''}</span>${warn?'<span onclick="showPlusModal(\'limit\')" style="cursor:pointer;color:#c9a227;text-decoration:underline">Upgrade</span>':''}</div><div style="height:3px;border-radius:2px;background:var(--brd);overflow:hidden"><div style="height:100%;width:${pct}%;background:${warn?'#f87171':'#c9a227'};border-radius:2px;transition:width .4s"></div></div>`;
+      ctr.innerHTML=`<div style="font-size:10px;color:${warn?'#f87171':'var(--t3)'};margin-bottom:4px;display:flex;justify-content:space-between"><span>${fmtN(n)}/${fmtN(lim)} ${_lbl({it:'elementi',en:'items',es:'elementos',fr:'éléments',de:'Einträge',pt:'itens',nl:'items'})}${n>lim?' · '+_lbl({it:'oltre il limite, niente viene cancellato',en:'over limit, nothing is deleted',es:'por encima del límite, no se borra nada',fr:'limite dépassée, rien n’est supprimé',de:'über dem Limit, nichts wird gelöscht',pt:'acima do limite, nada é apagado',nl:'boven limiet, niets wordt verwijderd'}):''}</span>${warn?'<span onclick="showPlusModal(\'limit\')" style="cursor:pointer;color:#c9a227;text-decoration:underline">Upgrade</span>':''}</div><div style="height:3px;border-radius:2px;background:var(--brd);overflow:hidden"><div style="height:100%;width:${pct}%;background:${warn?'#f87171':'#c9a227'};border-radius:2px;transition:width .4s"></div></div>`;
     } else {
       ctr.style.display='none';
     }
@@ -5955,7 +5955,18 @@ function brandFromUrl(url){
   }catch(e){return '';}
 }
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
-function fmt(n){const x=parseFloat(n);return isNaN(x)?'0,00':x.toFixed(2).replace('.',',');}
+// Number formatting with thousands separators, following the app language:
+//   it/es/de/pt/nl → 1.000.000,00   en/zh/ja → 1,000,000.00   fr/ru/pl → 1 000 000,00
+// (hand-rolled instead of Intl so 4-digit numbers are always grouped, e.g. es "1.500")
+function _numSeps(){ const l=(typeof S!=='undefined'&&S&&S.lang)||'en';
+  if(l==='en'||l==='zh'||l==='ja') return [',','.'];
+  if(l==='fr'||l==='ru'||l==='pl') return ['\u202F',','];
+  return ['.',','];
+}
+function _group(x,dec){ const [th,dp]=_numSeps(); const neg=x<0; const [i,f]=Math.abs(x).toFixed(dec).split('.');
+  return (neg?'-':'')+i.replace(/\B(?=(\d{3})+(?!\d))/g,th)+(f?dp+f:''); }
+function fmt(n){const x=parseFloat(n);return _group(isNaN(x)?0:x,2);}          // prices: 1.000.000,00
+function fmtN(n){const x=parseFloat(n);return _group(isNaN(x)?0:Math.round(x),0);} // counts: 1.000.000
 function stars(r){const f=Math.floor(r);return'★'.repeat(f)+(r-f>=0.3?'½':'');}
 
 function miniStars(val){
@@ -7070,7 +7081,7 @@ function renderStats(){
 
   document.getElementById('statsIn').innerHTML=`
     <div class="stat-grid">
-      <div class="stat-card"><div class="stat-card-title">${t('statsTotalItems')}</div><div class="stat-num">${total}</div><div class="stat-sub" style="display:inline-flex;align-items:center;gap:3px">${items.filter(i=>i.star).length} ${t('statsPriority')} ${ico('star-filled',10)}</div></div>
+      <div class="stat-card"><div class="stat-card-title">${t('statsTotalItems')}</div><div class="stat-num">${fmtN(total)}</div><div class="stat-sub" style="display:inline-flex;align-items:center;gap:3px">${items.filter(i=>i.star).length} ${t('statsPriority')} ${ico('star-filled',10)}</div></div>
       <div class="stat-card"><div class="stat-card-title">${t('statsTotalSpend')}</div><div class="stat-num">${cur()}${fmt(spent)}</div><div class="stat-sub">${t('statsOnlyBought')}</div></div>
     </div>
     <div class="sh">${t('statsByStatus')}</div>
@@ -7085,7 +7096,7 @@ function _renderStatsPlus(){
   if(hasFeature('advancedStats')){
     const items=S.items.filter(i=>!i.archived&&i.price>0&&!i.isPlace&&i.type!=='luogo');
     const spent=items.reduce((a,i)=>a+(i.price*(i.qty||1)),0);
-    const avgP=items.length?(spent/items.length).toFixed(0):0;
+    const avgP=fmtN(items.length?(spent/items.length):0);
     const bought=S.items.filter(i=>!i.archived&&i.status==='comprato').length;
     const wanted=S.items.filter(i=>!i.archived&&i.status==='voglio').length;
     const convRate=(bought+wanted)?Math.round(bought/(bought+wanted)*100):0;
@@ -7309,8 +7320,8 @@ function renderProfile(){
       <div class="prof-joined">Member since ${joinedStr}</div>
     </div>
     <div class="prof-stats-grid">
-      <div class="prof-stat"><div class="prof-stat-num">${products.length}</div><div class="prof-stat-lbl">${t('prodCat')}</div></div>
-      <div class="prof-stat"><div class="prof-stat-num">${places.length}</div><div class="prof-stat-lbl">${t('luoghiCat')}</div></div>
+      <div class="prof-stat"><div class="prof-stat-num">${fmtN(products.length)}</div><div class="prof-stat-lbl">${t('prodCat')}</div></div>
+      <div class="prof-stat"><div class="prof-stat-num">${fmtN(places.length)}</div><div class="prof-stat-lbl">${t('luoghiCat')}</div></div>
       <div class="prof-stat"><div class="prof-stat-num">${cur()}${fmt(spent)}</div><div class="prof-stat-lbl">${t('spent')}</div></div>
     </div>
     ${_currentUser?`<div class="prof-sec-hd">${ico('lock',11)} Account</div>
@@ -7553,9 +7564,9 @@ function _renderPubProfile(){
   const av=d.avatar_url?`<img src="${esc(d.avatar_url)}" alt="">`:esc((d.nickname||'?').slice(0,1).toUpperCase());
   const topbar=`<div class="pp-topbar"><button class="pp-back" onclick="closePubProf()">${ico('back',14)} Back</button><div class="pp-topbar-handle">@${nk}</div><div style="width:70px"></div></div>`;
   const stats=`<div class="pp-stats">
-      <div class="pub-stat"><b>${d.item_count||0}</b><span>Saved</span></div>
-      <div class="pub-stat${d.locked?'':' pp-clickable'}" ${d.locked?'':`onclick="openFollowList('${nk}','followers')"`}><b id="pubFollowers">${d.follower_count||0}</b><span>Followers</span></div>
-      <div class="pub-stat${d.locked?'':' pp-clickable'}" ${d.locked?'':`onclick="openFollowList('${nk}','following')"`}><b>${d.following_count||0}</b><span>Following</span></div>
+      <div class="pub-stat"><b>${fmtN(d.item_count||0)}</b><span>Saved</span></div>
+      <div class="pub-stat${d.locked?'':' pp-clickable'}" ${d.locked?'':`onclick="openFollowList('${nk}','followers')"`}><b id="pubFollowers">${fmtN(d.follower_count||0)}</b><span>Followers</span></div>
+      <div class="pub-stat${d.locked?'':' pp-clickable'}" ${d.locked?'':`onclick="openFollowList('${nk}','following')"`}><b>${fmtN(d.following_count||0)}</b><span>Following</span></div>
     </div>`;
   const header=`<div class="pp-header">
       <div class="pub-av pp-avatar">${av}</div>
@@ -7597,7 +7608,7 @@ function _renderPubProfile(){
   const featRow=feat?`<div class="pp-featured-hd">${ico('star',12)} Featured</div><div class="pp-featured">${feat}</div>`:'';
   box.innerHTML=`${topbar}<div class="pp-wrap">${header}
     ${featRow}
-    <div class="pp-items-hd">${d.item_count||0} saved${(d.items&&d.item_count>d.items.length)?` · showing ${d.items.length}`:''}</div>
+    <div class="pp-items-hd">${fmtN(d.item_count||0)} saved${(d.items&&d.item_count>d.items.length)?` · showing ${d.items.length}`:''}</div>
     ${items?`<div class="pp-items">${items}</div>`:'<div class="disc-empty" style="padding:44px">Nothing saved publicly yet.</div>'}
   </div>`;
 }
