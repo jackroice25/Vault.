@@ -2304,6 +2304,7 @@ const _SI18N={
 'Everything in Keeper':['Tutto di Keeper','Todo lo de Keeper','Tout Keeper','Alles aus Keeper','Tudo do Keeper','Alles van Keeper'],
 'Everything in Collector':['Tutto di Collector','Todo lo de Collector','Tout Collector','Alles aus Collector','Tudo do Collector','Alles van Collector'],
 'Price history':['Storico prezzi','Historial de precios','Historique des prix','Preisverlauf','Histórico de preços','Prijsgeschiedenis'],
+'Manual price history':['Storico prezzi manuale','Historial de precios manual','Historique des prix manuel','Manueller Preisverlauf','Histórico de preços manual','Handmatige prijsgeschiedenis'],
 'Taste insights':['Analisi dei gusti','Análisis de gustos','Analyse de goûts','Geschmacks-Insights','Análise de gostos','Smaakinzichten'],
 'Taste Insights':['Analisi dei gusti','Análisis de gustos','Analyse de goûts','Geschmacks-Insights','Análise de gostos','Smaakinzichten'],
 'Advanced statistics':['Statistiche avanzate','Estadísticas avanzadas','Statistiques avancées','Erweiterte Statistiken','Estatísticas avançadas','Geavanceerde statistieken'],
@@ -2603,7 +2604,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.10.05-social54';
+const APP_BUILD='2026.10.15-social55';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -8003,7 +8004,7 @@ function showPlusModal(featureName){
 function closePlusModal(){document.getElementById('plusOv').classList.remove('open');_plusTriggeredFeature=null;}
 const TIER_FEATURES={
   keeper:['75 active items','Shared & collaborative lists','Gift mode with reservations','Savings goals','Reminders'],
-  collector:['250 active items','Everything in Keeper','Price history','Taste insights','Advanced statistics'],
+  collector:['250 active items','Everything in Keeper','Manual price history','Taste insights','Advanced statistics'],
   vaulter:['Unlimited items','Everything in Collector','The globe map for places','Advanced moodboards','Premium themes & early access']
 };
 function _tierCardHTML(slug){
