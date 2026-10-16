@@ -2695,7 +2695,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.10.16-social69';
+const APP_BUILD='2026.10.16-social70';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -6570,7 +6570,7 @@ function _renderSettingsPage(){
         <span class="set-lbl">${T({it:'Statistiche anonime',en:'Anonymous usage stats',es:'Estadísticas anónimas',fr:'Statistiques anonymes',de:'Anonyme Statistiken',pt:'Estatísticas anónimas',nl:'Anonieme statistieken'})}<span class="set-sub">${T({it:'Ci aiutano a migliorare Vault. Niente di ciò che salvi viene letto.',en:'Help us improve Vault. Nothing you save is ever read.',es:'Nos ayudan a mejorar Vault. Nunca leemos lo que guardas.',fr:'Elles nous aident à améliorer Vault. Rien de ce que tu enregistres n’est lu.',de:'Helfen uns, Vault zu verbessern. Was du speicherst, wird nie gelesen.',pt:'Ajudam-nos a melhorar o Vault. Nada do que guarda é lido.',nl:'Helpen ons Vault te verbeteren. Wat je opslaat wordt nooit gelezen.'})}</span></span>
         <span class="set-sw ${_statsOn()?'on':''}"></span></div>
       ${signedIn&&SOCIAL_ON?row('user',T({it:'Utenti bloccati',en:'Blocked users',es:'Usuarios bloqueados',fr:'Utilisateurs bloqués',de:'Blockierte Nutzer',pt:'Utilizadores bloqueados',nl:'Geblokkeerde gebruikers'}),chev,"openBlockedList()"):''}
-      ${(signedIn&&ONESIGNAL_APP_ID)?row('bell-ring',T({it:'Notifiche push',en:'Push notifications',es:'Notificaciones push',fr:'Notifications push',de:'Push-Benachrichtigungen',pt:'Notificações push',nl:'Pushmeldingen'}),T({it:'Attiva',en:'Turn on',es:'Activar',fr:'Activer',de:'Aktivieren',pt:'Ativar',nl:'Aanzetten'})+' '+chev,"_pushAsk(true)"):''}
+      ${(signedIn&&ONESIGNAL_APP_ID&&(_isNativeApp()||ONESIGNAL_WEB))?row('bell-ring',T({it:'Notifiche push',en:'Push notifications',es:'Notificaciones push',fr:'Notifications push',de:'Push-Benachrichtigungen',pt:'Notificações push',nl:'Pushmeldingen'}),T({it:'Attiva',en:'Turn on',es:'Activar',fr:'Activer',de:'Aktivieren',pt:'Ativar',nl:'Aanzetten'})+' '+chev,"_pushAsk(true)"):''}
       ${row('book',T({it:'Termini di servizio',en:'Terms of Service',es:'Términos del servicio',fr:'Conditions d’utilisation',de:'Nutzungsbedingungen',pt:'Termos de serviço',nl:'Servicevoorwaarden'}),'↗',"window.open('terms.html','_blank')")}
     </div>
 
@@ -7908,7 +7908,8 @@ async function openNotifs(){
 // iPhone app: native OneSignal plugin. Web: OneSignal web SDK (+ /OneSignalSDKWorker.js).
 // Each device is linked to the account with external_id = Supabase user id, so the server
 // sends "@anna started following you" / price drops / reminders to the right person.
-const ONESIGNAL_APP_ID='';
+const ONESIGNAL_APP_ID='16737b25-92cf-4a31-9602-83417af1db60';
+const ONESIGNAL_WEB=false;   // turn on after configuring the Web platform in OneSignal (Settings → Push & In-App → Web)
 let _pushReady=false;
 function _isNativeApp(){ try{ return !!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()); }catch(e){ return false; } }
 async function _pushInit(){
@@ -7919,7 +7920,7 @@ async function _pushInit(){
       OS.initialize(ONESIGNAL_APP_ID);
       OS.Notifications.addEventListener('click',ev=>{ try{ _pushOpen((ev&&ev.notification&&ev.notification.additionalData)||{}); }catch(e){} });
       _pushReady=true;
-    }else if(location.hostname==='vaultwishlist.com'){
+    }else if(ONESIGNAL_WEB&&location.hostname==='vaultwishlist.com'){
       window.OneSignalDeferred=window.OneSignalDeferred||[];
       await new Promise((res,rej)=>{ const sc=document.createElement('script'); sc.src='https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js'; sc.defer=true; sc.onload=res; sc.onerror=rej; document.head.appendChild(sc); });
       window.OneSignalDeferred.push(async OS=>{
@@ -8008,6 +8009,13 @@ function _renderNotifs(){
     const av=n.avatar?`<img src="${esc(n.avatar)}" alt="">`:_avInitial(n.actor_nick);
     const who=`<button class="notif-nick" onclick="openPublicProfile('${nk}')">@${nk}</button>`;
     let txt='', act='';
+    if(n.type==='reminder'&&n.data){
+      const dd=n.data;
+      return `<div class="notif-row${n.read?'':' unread'}" style="cursor:pointer" onclick="_openPriceDrop('${_jsId(dd.item_id)}','')">
+        <div class="notif-av" style="display:flex;align-items:center;justify-content:center;font-size:19px;background:rgba(201,162,39,.14)">⏰</div>
+        <div class="notif-body"><div class="notif-txt">${T({it:'Promemoria',en:'Reminder',es:'Recordatorio',fr:'Rappel',de:'Erinnerung',pt:'Lembrete',nl:'Herinnering'})}: <b>${esc(dd.title||'')}</b> <span class="notif-ago">· ${_fmtAgo(n.created_at)}</span></div></div>
+        <button class="notif-del" onclick="event.stopPropagation();_deleteNotif('${_jsId(n.id)}',this)" style="flex-shrink:0;background:none;border:none;color:var(--t3);cursor:pointer;font-size:15px;padding:4px 6px;line-height:1;align-self:center">✕</button></div>`;
+    }
     if(n.type==='price_drop'&&n.data){
       const dd=n.data, pct=dd.pct||Math.round((1-dd.new/dd.old)*100);
       const open=`_openPriceDrop('${_jsId(dd.item_id)}','${_jsUrl(dd.url)}')`;
@@ -8135,6 +8143,7 @@ function _subscribeNotifs(){
         const n=payload.new; if(!n) return;
         _loadNotifBadge();
         const _an=esc(_normNick(n.actor_nick));
+        if(n.type==='reminder'&&n.data){ try{ showToast('⏰ '+esc(n.data.title||'')); }catch(e){} return; }
         if(n.type==='price_drop'&&n.data){ try{ showToast('📉 '+esc(n.data.title||'')+' −'+(n.data.pct||'')+'% → '+cur()+fmt(n.data.new)); }catch(e){} _syncPriceDrops(); return; }
         let msg = n.type==='follow' ? `@${_an} ${_lbl({it:'ha iniziato a seguirti',en:'started following you',es:'empezó a seguirte',fr:'a commencé à te suivre',de:'folgt dir jetzt',pt:'começou a segui-lo',nl:'volgt je nu'})}`
                 : n.type==='follow_request' ? `@${_an} ${_lbl({it:'vuole seguirti',en:'requested to follow you',es:'quiere seguirte',fr:'demande à te suivre',de:'möchte dir folgen',pt:'pediu para o seguir',nl:'wil je volgen'})}`
