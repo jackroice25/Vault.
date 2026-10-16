@@ -2369,6 +2369,9 @@ const _SI18N={
 'UNLOCKS THIS':['SBLOCCA QUESTO','DESBLOQUEA ESTO','DÉBLOQUE CECI','SCHALTET DAS FREI','DESBLOQUEIA ISTO','ONTGRENDELT DIT'],
 'Everything in Keeper':['Tutto di Keeper','Todo lo de Keeper','Tout Keeper','Alles aus Keeper','Tudo do Keeper','Alles van Keeper'],
 'Everything in Collector':['Tutto di Collector','Todo lo de Collector','Tout Collector','Alles aus Collector','Tudo do Collector','Alles van Collector'],
+'Vault checks the price of the things you want once a day. When it drops by 5% or more you get a notification, and the new price is added to the item’s history and to “price found”, with your saving as a percentage.':['Vault controlla una volta al giorno il prezzo delle cose che vuoi. Quando scende del 5% o più ricevi una notifica, e il nuovo prezzo viene aggiunto allo storico e al “prezzo trovato”, con il risparmio in percentuale.','Vault revisa una vez al día el precio de lo que quieres. Si baja un 5% o más recibes una notificación, y el nuevo precio se añade al historial y al “precio encontrado”, con tu ahorro en porcentaje.','Vault vérifie une fois par jour le prix des choses que tu veux. S’il baisse de 5 % ou plus, tu reçois une notification et le nouveau prix est ajouté à l’historique et au « prix trouvé », avec ton économie en pourcentage.','Vault prüft einmal täglich den Preis deiner Wunschartikel. Fällt er um 5 % oder mehr, bekommst du eine Benachrichtigung, und der neue Preis landet im Verlauf und im „gefundenen Preis“, mit deiner Ersparnis in Prozent.','O Vault verifica uma vez por dia o preço do que quer. Se descer 5% ou mais recebe uma notificação, e o novo preço é adicionado ao histórico e ao “preço encontrado”, com a poupança em percentagem.','Vault controleert dagelijks de prijs van wat je wilt. Daalt die 5% of meer, dan krijg je een melding en komt de nieuwe prijs in de geschiedenis en bij “gevonden prijs”, met je besparing in procenten.'],
+'Works on most shops that show a price on the page. Items marked as bought, archived items and places are not checked.':['Funziona sulla maggior parte dei negozi che mostrano il prezzo nella pagina. Non vengono controllati gli oggetti comprati, archiviati e i luoghi.','Funciona en la mayoría de tiendas que muestran el precio en la página. No se revisan los elementos comprados, archivados ni los lugares.','Fonctionne sur la plupart des boutiques qui affichent le prix sur la page. Les éléments achetés, archivés et les lieux ne sont pas vérifiés.','Funktioniert bei den meisten Shops, die den Preis auf der Seite zeigen. Gekaufte, archivierte Einträge und Orte werden nicht geprüft.','Funciona na maioria das lojas que mostram o preço na página. Itens comprados, arquivados e lugares não são verificados.','Werkt bij de meeste winkels die de prijs op de pagina tonen. Gekochte, gearchiveerde items en plekken worden niet gecontroleerd.'],
+'Price-drop alerts':['Avvisi di ribasso prezzi','Alertas de bajada de precio','Alertes de baisse de prix','Preissenkungs-Alarme','Alertas de descida de preço','Prijsdaling-meldingen'],
 'Price history':['Storico prezzi','Historial de precios','Historique des prix','Preisverlauf','Histórico de preços','Prijsgeschiedenis'],
 'Manual price history':['Storico prezzi manuale','Historial de precios manual','Historique des prix manuel','Manueller Preisverlauf','Histórico de preços manual','Handmatige prijsgeschiedenis'],
 'Taste insights':['Analisi dei gusti','Análisis de gustos','Analyse de goûts','Geschmacks-Insights','Análise de gostos','Smaakinzichten'],
@@ -2673,7 +2676,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.10.15-social63';
+const APP_BUILD='2026.10.16-social64';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -7453,7 +7456,7 @@ async function _socialInit(){
   // Notifications: only meaningful for logged-in accounts.
   const _logged=!!_sbUser;
   ['notifBtn','notifTabM'].forEach(id=>{const b=document.getElementById(id);if(b)b.style.display=_logged?'':'none';});
-  if(_logged){ _loadNotifBadge(); _subscribeNotifs(); _checkPolicyConsent(); }
+  if(_logged){ _loadNotifBadge(); _subscribeNotifs(); _checkPolicyConsent(); setTimeout(_syncPriceDrops,2500); }
 }
 // ── PRIVACY: versioned re-consent + account deletion ──
 async function _checkPolicyConsent(){
@@ -7753,10 +7756,38 @@ async function openNotifs(){
   try{
     const {data}=await _sb.rpc('get_notifications');
     if(!data||!data.ok){ box.innerHTML='<div class="disc-empty">'+_lbl({it:'Impossibile caricare le notifiche.',en:'Couldn’t load notifications.',es:'No se pudieron cargar las notificaciones.',fr:'Impossible de charger les notifications.',de:'Benachrichtigungen konnten nicht geladen werden.',pt:'Não foi possível carregar as notificações.',nl:'Meldingen konden niet worden geladen.'})+'</div>'; return; }
-    _notifData=data; _renderNotifs();
+    _notifData=data; _applyPriceDrops(data.items); _renderNotifs();
     // mark read
     try{ await _sb.rpc('mark_notifications_read'); _setNotifBadge(0); }catch(e){}
   }catch(e){ box.innerHTML='<div class="disc-empty">Something went wrong.</div>'; }
+}
+// ── AUTOMATIC PRICE WATCH (Collector/Vaulter) ──
+// The server re-reads the price of "want" items once a day; a ≥5% drop arrives as a
+// `price_drop` notification. Here we apply it to the item: price history + "price found".
+function _applyPriceDrops(list){
+  try{
+    const seen=new Set(S.priceDropsSeen||[]); let changed=false;
+    (list||[]).filter(n=>n&&n.type==='price_drop'&&n.data&&!seen.has(String(n.id))).forEach(n=>{
+      seen.add(String(n.id));
+      const it=(S.items||[]).find(i=>String(i.id)===String(n.data.item_id)); if(!it) return;
+      const np=Number(n.data.new); if(!(np>0)) return;
+      it.priceHistory=it.priceHistory||[];
+      it.priceHistory.push({price:np,date:String(n.created_at||new Date().toISOString()).slice(0,10),auto:true});
+      if(!it.priceFound||np<it.priceFound) it.priceFound=np;
+      it.mod=Date.now(); changed=true;
+    });
+    S.priceDropsSeen=[...seen].slice(-300);
+    if(changed){ save(); try{ renderSidebar(); render(); }catch(e){} }
+  }catch(e){}
+}
+async function _syncPriceDrops(){
+  if(!_sb||!_sbUser||!hasFeature('priceHistory')) return;
+  try{ const {data}=await _sb.rpc('get_notifications'); if(data&&data.ok) _applyPriceDrops(data.items); }catch(e){}
+}
+function _openPriceDrop(itemId,url){
+  const it=(S.items||[]).find(i=>String(i.id)===String(itemId));
+  closeNotifs();
+  if(it) openDetMo(it.id); else if(url) _openExt(url);
 }
 function _notifChrome(){
   const T=d=>_lbl(d);
@@ -7791,6 +7822,14 @@ function _renderNotifs(){
     const av=n.avatar?`<img src="${esc(n.avatar)}" alt="">`:_avInitial(n.actor_nick);
     const who=`<button class="notif-nick" onclick="openPublicProfile('${nk}')">@${nk}</button>`;
     let txt='', act='';
+    if(n.type==='price_drop'&&n.data){
+      const dd=n.data, pct=dd.pct||Math.round((1-dd.new/dd.old)*100);
+      const open=`_openPriceDrop('${_jsId(dd.item_id)}','${_jsUrl(dd.url)}')`;
+      return `<div class="notif-row${n.read?'':' unread'}" style="cursor:pointer" onclick="${open}">
+        <div class="notif-av" style="display:flex;align-items:center;justify-content:center;font-size:19px;background:rgba(74,222,128,.12)">📉</div>
+        <div class="notif-body"><div class="notif-txt"><b>${esc(dd.title||'')}</b> ${T({it:'è sceso a',en:'dropped to',es:'bajó a',fr:'est passé à',de:'ist gefallen auf',pt:'desceu para',nl:'is gedaald naar'})} <b style="color:#4ade80">${cur()}${fmt(dd.new)}</b> <span style="color:var(--t3)">(${T({it:'era',en:'was',es:'era',fr:'était',de:'war',pt:'era',nl:'was'})} ${cur()}${fmt(dd.old)}, −${pct}%)</span> <span class="notif-ago">· ${_fmtAgo(n.created_at)}</span></div></div>
+        <button class="notif-del" onclick="event.stopPropagation();_deleteNotif('${_jsId(n.id)}',this)" style="flex-shrink:0;background:none;border:none;color:var(--t3);cursor:pointer;font-size:15px;padding:4px 6px;line-height:1;align-self:center">✕</button></div>`;
+    }
     if(n.type==='follow'){ txt=`${who} ${T({it:'ha iniziato a seguirti',en:'started following you',es:'empezó a seguirte',fr:'a commencé à te suivre',de:'folgt dir jetzt',pt:'começou a segui-lo',nl:'volgt je nu'})}`; }
     else if(n.type==='request_accepted'){ txt=`${who} ${T({it:'ha accettato la tua richiesta',en:'accepted your follow request',es:'aceptó tu solicitud',fr:'a accepté ta demande',de:'hat deine Anfrage angenommen',pt:'aceitou o seu pedido',nl:'heeft je verzoek geaccepteerd'})}`; }
     else if(n.type==='follow_request'){ txt=`${who} ${T({it:'vuole seguirti',en:'requested to follow you',es:'quiere seguirte',fr:'demande à te suivre',de:'möchte dir folgen',pt:'pediu para o seguir',nl:'wil je volgen'})}`;
@@ -7908,6 +7947,7 @@ function _subscribeNotifs(){
         const n=payload.new; if(!n) return;
         _loadNotifBadge();
         const _an=esc(_normNick(n.actor_nick));
+        if(n.type==='price_drop'&&n.data){ try{ showToast('📉 '+esc(n.data.title||'')+' −'+(n.data.pct||'')+'% → '+cur()+fmt(n.data.new)); }catch(e){} _syncPriceDrops(); return; }
         let msg = n.type==='follow' ? `@${_an} ${_lbl({it:'ha iniziato a seguirti',en:'started following you',es:'empezó a seguirte',fr:'a commencé à te suivre',de:'folgt dir jetzt',pt:'começou a segui-lo',nl:'volgt je nu'})}`
                 : n.type==='follow_request' ? `@${_an} ${_lbl({it:'vuole seguirti',en:'requested to follow you',es:'quiere seguirte',fr:'demande à te suivre',de:'möchte dir folgen',pt:'pediu para o seguir',nl:'wil je volgen'})}`
                 : n.type==='request_accepted' ? `@${_an} ${_lbl({it:'ha accettato la tua richiesta',en:'accepted your request',es:'aceptó tu solicitud',fr:'a accepté ta demande',de:'hat deine Anfrage angenommen',pt:'aceitou o seu pedido',nl:'heeft je verzoek geaccepteerd'})}` : _lbl({it:'Nuova notifica',en:'New notification',es:'Nueva notificación',fr:'Nouvelle notification',de:'Neue Benachrichtigung',pt:'Nova notificação',nl:'Nieuwe melding'});
@@ -8412,7 +8452,7 @@ function showPlusModal(featureName){
 function closePlusModal(){document.getElementById('plusOv').classList.remove('open');_plusTriggeredFeature=null;}
 const TIER_FEATURES={
   keeper:['75 active items','Shared & collaborative lists','Unlimited gift lists','Savings goals','Reminders'],
-  collector:['250 active items','Everything in Keeper','Manual price history','Taste insights','Advanced statistics'],
+  collector:['250 active items','Everything in Keeper','Price-drop alerts','Taste insights','Advanced statistics'],
   vaulter:['Unlimited items','Everything in Collector','Advanced globe: status rings & custom colours','Advanced moodboards','Premium themes']
 };
 function _tierCardHTML(slug){
@@ -9924,10 +9964,10 @@ async function _initGlobe(){
         <div class="tutorial-step-num">6</div>
         <div class="tutorial-icon-wrap green"><svg width="20" height="20" viewBox="0 0 16 16"><use href="#ic-clock"/></svg></div>
         <div style="flex:1">
-          <div class="tutorial-sec-title">Price history<span style="display:inline-block;margin-left:8px;font-size:9px;font-weight:800;letter-spacing:.06em;padding:2px 7px;border-radius:20px;vertical-align:middle;background:rgba(201,162,39,.20);color:#c9a227">COLLECTOR</span></div>
+          <div class="tutorial-sec-title">Price-drop alerts<span style="display:inline-block;margin-left:8px;font-size:9px;font-weight:800;letter-spacing:.06em;padding:2px 7px;border-radius:20px;vertical-align:middle;background:rgba(201,162,39,.20);color:#c9a227">COLLECTOR</span></div>
           <div class="tutorial-sec-where"><svg width="10" height="10" viewBox="0 0 16 16"><use href="#ic-tag"/></svg> On each product</div>
-          <div class="tutorial-sec-desc">Note the prices you spot over time and Vault keeps a history for each item, plus a “price found” field to record a deal and see your saving as a percentage, so you buy at the right moment.</div>
-          <div class="tutorial-sec-note">Prices are the ones you record yourself, Vault does not scrape live prices automatically.</div>
+          <div class="tutorial-sec-desc">Vault checks the price of the things you want once a day. When it drops by 5% or more you get a notification, and the new price is added to the item’s history and to “price found”, with your saving as a percentage.</div>
+          <div class="tutorial-sec-note">Works on most shops that show a price on the page. Items marked as bought, archived items and places are not checked.</div>
         </div>
       </div>
 
