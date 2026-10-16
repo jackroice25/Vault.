@@ -1788,15 +1788,11 @@ body.pp-open{overflow:hidden}
   <button class="mtab on" data-tab="home" onclick="goHome()" aria-label="Home">
     <svg class="ico" viewBox="0 0 16 16"><use href="#ic-home"/></svg><span>Home</span>
   </button>
-  <button class="mtab" data-tab="people" id="mtabDiscover" onclick="goSection('people')" aria-label="Search people">
-    <svg class="ico" viewBox="0 0 16 16"><use href="#ic-search"/></svg><span>Search</span>
-  </button>
-  <!-- Save first: the centre tab is the core action -->
-  <button class="mtab mtab-add" data-tab="add" id="mtabAdd" onclick="_haptic('light');openAddMo()" aria-label="Add">
-    <span class="mtab-add-ic"><svg class="ico" viewBox="0 0 16 16"><use href="#ic-plus"/></svg></span><span id="mtabAddLbl">Add</span>
-  </button>
   <button class="mtab" data-tab="map" onclick="goSection('map')" aria-label="Map">
     <svg class="ico" viewBox="0 0 16 16"><use href="#ic-map"/></svg><span>Map</span>
+  </button>
+  <button class="mtab" data-tab="people" id="mtabDiscover" onclick="goSection('people')" aria-label="Search people">
+    <svg class="ico" viewBox="0 0 16 16"><use href="#ic-search"/></svg><span>Search</span>
   </button>
   <button class="mtab" data-tab="alerts" id="notifTabM" onclick="_setTab('alerts');openNotifs()" aria-label="Notifications" style="display:none">
     <span class="mtab-ico-wrap"><svg class="ico" viewBox="0 0 16 16"><use href="#ic-bell-ring"/></svg><span class="notif-badge" id="notifBadgeM" style="display:none">0</span></span><span>Alerts</span>
@@ -2699,7 +2695,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.10.16-social71';
+const APP_BUILD='2026.10.16-social72';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
