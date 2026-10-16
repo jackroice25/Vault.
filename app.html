@@ -2695,7 +2695,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.10.16-social68';
+const APP_BUILD='2026.10.16-social69';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -6570,6 +6570,7 @@ function _renderSettingsPage(){
         <span class="set-lbl">${T({it:'Statistiche anonime',en:'Anonymous usage stats',es:'Estadísticas anónimas',fr:'Statistiques anonymes',de:'Anonyme Statistiken',pt:'Estatísticas anónimas',nl:'Anonieme statistieken'})}<span class="set-sub">${T({it:'Ci aiutano a migliorare Vault. Niente di ciò che salvi viene letto.',en:'Help us improve Vault. Nothing you save is ever read.',es:'Nos ayudan a mejorar Vault. Nunca leemos lo que guardas.',fr:'Elles nous aident à améliorer Vault. Rien de ce que tu enregistres n’est lu.',de:'Helfen uns, Vault zu verbessern. Was du speicherst, wird nie gelesen.',pt:'Ajudam-nos a melhorar o Vault. Nada do que guarda é lido.',nl:'Helpen ons Vault te verbeteren. Wat je opslaat wordt nooit gelezen.'})}</span></span>
         <span class="set-sw ${_statsOn()?'on':''}"></span></div>
       ${signedIn&&SOCIAL_ON?row('user',T({it:'Utenti bloccati',en:'Blocked users',es:'Usuarios bloqueados',fr:'Utilisateurs bloqués',de:'Blockierte Nutzer',pt:'Utilizadores bloqueados',nl:'Geblokkeerde gebruikers'}),chev,"openBlockedList()"):''}
+      ${(signedIn&&ONESIGNAL_APP_ID)?row('bell-ring',T({it:'Notifiche push',en:'Push notifications',es:'Notificaciones push',fr:'Notifications push',de:'Push-Benachrichtigungen',pt:'Notificações push',nl:'Pushmeldingen'}),T({it:'Attiva',en:'Turn on',es:'Activar',fr:'Activer',de:'Aktivieren',pt:'Ativar',nl:'Aanzetten'})+' '+chev,"_pushAsk(true)"):''}
       ${row('book',T({it:'Termini di servizio',en:'Terms of Service',es:'Términos del servicio',fr:'Conditions d’utilisation',de:'Nutzungsbedingungen',pt:'Termos de serviço',nl:'Servicevoorwaarden'}),'↗',"window.open('terms.html','_blank')")}
     </div>
 
@@ -7597,7 +7598,8 @@ async function _socialInit(){
   // Notifications: only meaningful for logged-in accounts.
   const _logged=!!_sbUser;
   ['notifBtn','notifTabM'].forEach(id=>{const b=document.getElementById(id);if(b)b.style.display=_logged?'':'none';});
-  if(_logged){ _loadNotifBadge(); _subscribeNotifs(); _checkPolicyConsent(); setTimeout(_syncPriceDrops,2500); }
+  if(_logged){ _loadNotifBadge(); _subscribeNotifs(); _checkPolicyConsent(); setTimeout(_syncPriceDrops,2500);
+    setTimeout(()=>{ _pushInit().then(()=>{ _pushLogin(); if((S.items||[]).length>=2) _pushAsk(false); }); },3000); }
 }
 // ── PRIVACY: versioned re-consent + account deletion ──
 async function _checkPolicyConsent(){
@@ -7902,6 +7904,49 @@ async function openNotifs(){
     try{ await _sb.rpc('mark_notifications_read'); _setNotifBadge(0); }catch(e){}
   }catch(e){ box.innerHTML='<div class="disc-empty">Something went wrong.</div>'; }
 }
+// ── PUSH NOTIFICATIONS (OneSignal) — OFF until ONESIGNAL_APP_ID is set ──
+// iPhone app: native OneSignal plugin. Web: OneSignal web SDK (+ /OneSignalSDKWorker.js).
+// Each device is linked to the account with external_id = Supabase user id, so the server
+// sends "@anna started following you" / price drops / reminders to the right person.
+const ONESIGNAL_APP_ID='';
+let _pushReady=false;
+function _isNativeApp(){ try{ return !!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()); }catch(e){ return false; } }
+async function _pushInit(){
+  if(!ONESIGNAL_APP_ID||_pushReady) return;
+  try{
+    if(_isNativeApp()){
+      const OS=window.plugins&&window.plugins.OneSignal; if(!OS) return;
+      OS.initialize(ONESIGNAL_APP_ID);
+      OS.Notifications.addEventListener('click',ev=>{ try{ _pushOpen((ev&&ev.notification&&ev.notification.additionalData)||{}); }catch(e){} });
+      _pushReady=true;
+    }else if(location.hostname==='vaultwishlist.com'){
+      window.OneSignalDeferred=window.OneSignalDeferred||[];
+      await new Promise((res,rej)=>{ const sc=document.createElement('script'); sc.src='https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js'; sc.defer=true; sc.onload=res; sc.onerror=rej; document.head.appendChild(sc); });
+      window.OneSignalDeferred.push(async OS=>{
+        await OS.init({appId:ONESIGNAL_APP_ID,serviceWorkerPath:'/OneSignalSDKWorker.js',notifyButton:{enable:false},allowLocalhostAsSecureOrigin:false});
+        OS.Notifications.addEventListener('click',ev=>{ try{ _pushOpen((ev&&ev.notification&&ev.notification.additionalData)||{}); }catch(e){} });
+      });
+      _pushReady=true;
+    }
+  }catch(e){}
+}
+function _pushLogin(){ if(!_pushReady||!_sbUser) return; try{ if(_isNativeApp()) window.plugins.OneSignal.login(_sbUser.id); else window.OneSignalDeferred.push(OS=>OS.login(_sbUser.id)); }catch(e){} }
+function _pushLogout(){ if(!_pushReady) return; try{ if(_isNativeApp()) window.plugins.OneSignal.logout(); else window.OneSignalDeferred.push(OS=>OS.logout()); }catch(e){} }
+async function _pushAsk(force){
+  if(!_pushReady||!_sbUser) return;
+  try{ if(!force&&localStorage.getItem('vault_push_asked')) return; localStorage.setItem('vault_push_asked','1'); }catch(e){}
+  try{ if(_isNativeApp()) await window.plugins.OneSignal.Notifications.requestPermission(true); else window.OneSignalDeferred.push(OS=>OS.Notifications.requestPermission()); }catch(e){}
+}
+function _pushOpen(d){
+  try{
+    if(d&&d.type==='price_drop'&&d.item_id) _openPriceDrop(d.item_id,d.url||'');
+    else if(d&&d.type==='reminder'&&d.item_id){ const it=(S.items||[]).find(i=>String(i.id)===String(d.item_id)); if(it) openDetMo(it.id); }
+    else if(d&&d.nick) openPublicProfile(d.nick);
+    else openNotifs();
+  }catch(e){}
+}
+setTimeout(()=>{ _pushInit().then(()=>{ if(_sbUser) _pushLogin(); }); },1500);
+
 // ── AUTOMATIC PRICE WATCH (Collector/Vaulter) ──
 // The server re-reads the price of "want" items once a day; a ≥5% drop arrives as a
 // `price_drop` notification. Here we apply it to the item: price history + "price found".
@@ -8512,6 +8557,7 @@ function continueAsGuest(){
   setTimeout(()=>{_renderOnbLang();initOnboarding();},400);
 }
 function logout(){
+  try{ _pushLogout(); }catch(e){}
   save();
   _sbFlush(); // push any pending debounced edits to the cloud before we drop the session
   if(_sb&&_sbUser) _sb.auth.signOut();
