@@ -1181,6 +1181,17 @@ body.cmp-mode .card{cursor:default}
 .pubi-status{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.3px}
 /* Public profile — FULL PAGE (horizontal) */
 .profile-page{position:fixed;inset:0;z-index:9400;background:var(--bg);overflow-y:auto;display:none}
+.card,.card img{-webkit-touch-callout:none}
+.card.lp-lift{transform:scale(.96);opacity:.45;transition:transform .15s,opacity .15s}
+#lpGhost{position:fixed;z-index:1000004;width:64px;height:64px;border-radius:14px;overflow:hidden;pointer-events:none;box-shadow:0 10px 30px rgba(0,0,0,.55);border:2px solid var(--accent);background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t2);text-align:center;padding:4px;transform:translate(-50%,-110%)}
+#lpGhost img{width:100%;height:100%;object-fit:cover}
+#lpDrop{position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:1000003;background:rgba(18,18,20,.97);border:1px solid var(--bd2);border-radius:18px;padding:12px 12px 14px;box-shadow:0 -8px 40px rgba(0,0,0,.6);transform:translateY(130%);transition:transform .2s ease}
+#lpDrop.on{transform:none}
+#lpDrop .lp-hd{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--t3);margin:0 4px 10px}
+#lpDrop .lp-grid{display:flex;flex-wrap:wrap;gap:8px}
+#lpDrop .lp-chip{display:flex;align-items:center;gap:6px;padding:10px 13px;border-radius:12px;background:var(--s2);border:1px solid var(--bd);color:var(--t1);font-size:13.5px;font-weight:600;transition:background .1s,border-color .1s,transform .1s}
+#lpDrop .lp-chip.cur{opacity:.45}
+#lpDrop .lp-chip.hot{background:var(--accent);color:#111;border-color:var(--accent);transform:scale(1.06)}
 .set-wrap{max-width:640px;margin:0 auto;padding:8px 18px 40px}
 .set-h1{font-size:26px;font-weight:800;letter-spacing:-.5px;color:var(--t1);margin:14px 2px 4px}
 .set-sec{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.1px;color:var(--t3);margin:24px 4px 8px}
@@ -2676,7 +2687,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.10.16-social65';
+const APP_BUILD='2026.10.16-social66';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -4021,7 +4032,7 @@ function closeDetMo(skipAnim){
     const t=e.touches[0]; if(Math.abs(t.clientX-tsx)>8||Math.abs(t.clientY-tsy)>8) tMoved=true;
   },{passive:true});
   document.addEventListener('touchend',e=>{
-    if(tMoved||Date.now()-tst>500) return;
+    if(tMoved||Date.now()-tst>500||window._lpBusy) return;
     const card=e.target.closest&&e.target.closest('.card'); if(!card) return;
     // let interactive children handle their own taps
     if(e.target.closest('button,a,input,.ca,.c-star,.c-car-btn,.c-car-dots,.cmp-chk,.c-pubbadge,.drag-handle')) return;
@@ -5547,6 +5558,83 @@ async function importAmazonWishlist(url){
     alert('Impossibile importare la lista: '+(err.message||err));
   }
 }
+
+// ── MOBILE: LONG-PRESS A CARD → DRAG IT ONTO A SECTION ──────────────────────
+// Hold a card ~0.45 s: it lifts and a panel with every section slides up; drag onto a
+// section and release to move it there. Hold and release without moving → card menu.
+// The non-passive touchmove exists ONLY while a drag is armed (no scroll jank).
+(function(){
+  if(!('ontouchstart' in window)) return;
+  let timer=null, sx=0, sy=0, card=null, id=null, armed=false, moved=false, hot=null;
+  const drop=()=>document.getElementById('lpDrop');
+  function cleanup(){
+    clearTimeout(timer); timer=null;
+    document.removeEventListener('touchmove',onMove,{passive:false});
+    if(card) card.classList.remove('lp-lift');
+    document.getElementById('lpGhost')?.remove();
+    const d=drop(); if(d) d.classList.remove('on');
+    armed=false; card=null; hot=null; setTimeout(()=>{ window._lpBusy=false; },60);
+  }
+  function arm(){
+    armed=true; window._lpBusy=true;
+    try{ _haptic('medium'); }catch(e){} try{ navigator.vibrate&&navigator.vibrate(12); }catch(e){}
+    card.classList.add('lp-lift');
+    const it=S.items.find(i=>String(i.id)===String(id));
+    const g=document.createElement('div'); g.id='lpGhost';
+    const img=it&&it.images&&it.images[0];
+    g.innerHTML=img?`<img src="${safeUrl(img)}" alt="">`:esc((it&&it.title||'').slice(0,24));
+    g.style.left=sx+'px'; g.style.top=sy+'px'; document.body.appendChild(g);
+    let d=drop();
+    if(!d){ d=document.createElement('div'); d.id='lpDrop'; document.body.appendChild(d); }
+    const chip=(sid,icon,name)=>`<div class="lp-chip${(it&&(it.sid||null)===sid)?' cur':''}" data-sid="${sid===null?'':esc(sid)}">${ico(icon,14)} ${esc(name)}</div>`;
+    d.innerHTML=`<div class="lp-hd">${_lbl({it:'Trascina in una sezione',en:'Drag to a section',es:'Arrastra a una sección',fr:'Glisse vers une section',de:'In einen Abschnitt ziehen',pt:'Arraste para uma secção',nl:'Sleep naar een sectie'})}</div>
+      <div class="lp-grid">${chip(null,'layers',t('allItems'))}${(S.sections||[]).map(x=>chip(x.id,x.icon||'tag',x.name||'')).join('')}</div>`;
+    void d.offsetWidth; d.classList.add('on');          // force layout, then slide in (no rAF dependency)
+    document.addEventListener('touchmove',onMove,{passive:false});
+  }
+  function onMove(e){
+    if(!armed) return;
+    if(e.cancelable) e.preventDefault();               // no page scroll while dragging
+    const t=e.touches[0]; if(Math.abs(t.clientX-sx)>10||Math.abs(t.clientY-sy)>10) moved=true;
+    const g=document.getElementById('lpGhost'); if(g){ g.style.left=t.clientX+'px'; g.style.top=t.clientY+'px'; }
+    const el=document.elementFromPoint(t.clientX,t.clientY);
+    const c=el&&el.closest&&el.closest('#lpDrop .lp-chip');
+    if(c!==hot){ hot&&hot.classList.remove('hot'); hot=c; if(c){ c.classList.add('hot'); try{_haptic('light');}catch(_){} } }
+  }
+  document.addEventListener('touchstart',e=>{
+    if(window.innerWidth>900||e.touches.length!==1) return;
+    if(document.querySelector('.ov.open, .profile-page.open')||document.body.classList.contains('cmp-mode')) return;
+    const c=e.target.closest&&e.target.closest('.card'); if(!c||!c.dataset.id) return;
+    if(e.target.closest('button,a,input,.ca,.c-star,.c-car-btn,.c-car-dots,.cmp-chk,.c-pubbadge')) return;
+    card=c; id=c.dataset.id; moved=false; const t=e.touches[0]; sx=t.clientX; sy=t.clientY;
+    clearTimeout(timer); timer=setTimeout(arm,450);
+  },{passive:true});
+  // finger moved before the long-press fired → it's a scroll, forget it (passive, cheap)
+  document.addEventListener('touchmove',e=>{
+    if(!timer||armed) return; const t=e.touches[0];
+    if(Math.abs(t.clientX-sx)>8||Math.abs(t.clientY-sy)>8){ clearTimeout(timer); timer=null; }
+  },{passive:true});
+  document.addEventListener('touchend',e=>{
+    if(!armed){ clearTimeout(timer); timer=null; return; }
+    e.preventDefault();                                 // no ghost click
+    const it=S.items.find(i=>String(i.id)===String(id));
+    if(hot&&it){
+      const sid=hot.dataset.sid||null;
+      if((it.sid||null)!==sid){
+        it.sid=sid; it.mod=Date.now();
+        try{_haptic('success');}catch(_){} save(); renderSidebar(); render();
+        const sec=sid?S.sections.find(x=>x.id===sid):null;
+        showToast(_lbl({it:'Spostato in {s}',en:'Moved to {s}',es:'Movido a {s}',fr:'Déplacé vers {s}',de:'Verschoben nach {s}',pt:'Movido para {s}',nl:'Verplaatst naar {s}'}).replace('{s}',sec?sec.name:t('allItems')));
+      }
+      cleanup(); return;
+    }
+    const wasStill=!moved, x=sx, y=sy, cid=id;
+    cleanup();
+    if(wasStill&&it){ try{ showCtxCard({preventDefault(){},stopPropagation(){},clientX:x,clientY:y},cid); }catch(_){} }
+  },{passive:false});
+  document.addEventListener('touchcancel',()=>{ if(armed||timer) cleanup(); },{passive:true});
+  document.addEventListener('contextmenu',e=>{ if(window._lpBusy){ e.preventDefault(); e.stopPropagation(); } },true);
+})();
 
 // ── DRAG & DROP ──
 let dragSrcId=null;
@@ -7937,6 +8025,7 @@ async function _pullRefresh(){
   // JS on every scroll frame and made the whole app lag (Sept 2026 regression).
   function onMove(e){
     if(y0===null||!sc) return;
+    if(window._lpBusy){ if(d>0){ d=0; show(0,true); } y0=null; return; }   // a card is being dragged, not a pull
     const dy=e.touches[0].clientY-y0;
     if(dy<=0||sc.scrollTop>0){ if(d>0){ d=0; show(0,true); } return; }
     d=dy*0.5; if(e.cancelable) e.preventDefault(); show(d,false);
@@ -7951,6 +8040,7 @@ async function _pullRefresh(){
   document.addEventListener('touchend',()=>{
     disarm();
     if(y0===null) return; y0=null;
+    if(window._lpBusy){ d=0; show(0,true); return; }
     if(d>=TH&&!busy){
       busy=true; show(TH,true); try{ navigator.vibrate&&navigator.vibrate(8); }catch(e){} try{ _haptic('light'); }catch(e){}
       _pullRefresh().finally(()=>{ busy=false; d=0; show(0,true); });
