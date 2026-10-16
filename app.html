@@ -2695,7 +2695,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.10.16-social67';
+const APP_BUILD='2026.10.16-social68';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -3829,7 +3829,7 @@ function cardHTML(item){
     </div>
     <div class="c-acts">
       <button class="ca" onclick="event.stopPropagation();editItem('${item.id}')" title="${t('editTitle')||'Edit'}">${ico('pencil',12)}</button>
-      <a class="ca" href="${safeUrl(item.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation();_biTrackClick('${item.id}')" title="${t('ttOpen')}">↗</a>
+      <a class="ca" href="${safeUrl(_affUrl(item.url))}" target="_blank" rel="noopener" onclick="event.stopPropagation();_biTrackClick('${item.id}')" title="${t('ttOpen')}">↗</a>
       <button class="ca del" onclick="event.stopPropagation();del('${item.id}')" title="${t('ttDelete')}">✕</button>
     </div>
     <div class="c-body">
@@ -5448,7 +5448,7 @@ function showReadOnlyVault(data){
     const price=item.price>0?`<div class="ro-card-price">${cur()}${fmt(item.price)}</div>`:'';
     const note=item.note?`<div class="ro-card-note" style="display:flex;align-items:center;gap:4px">${ico('note',10)} ${esc(item.note)}</div>`:'';
     const domain=getDomain(item.url||'');
-    const link=item.url?`<a class="ro-card-domain" href="${safeUrl(item.url)}" target="_blank" rel="noopener">${esc(domain)}</a>`:`<div class="ro-card-domain">${esc(domain)}</div>`;
+    const link=item.url?`<a class="ro-card-domain" href="${safeUrl(_affUrl(item.url))}" target="_blank" rel="noopener">${esc(domain)}</a>`:`<div class="ro-card-domain">${esc(domain)}</div>`;
     return `<div class="ro-card">${img}<div class="ro-card-body"><div class="ro-card-title">${esc(item.title||domain)}</div>${price}${note}${link}</div></div>`;
   }).join('');
   ro.innerHTML=`
@@ -6030,7 +6030,7 @@ function openCompare(){
       ${it.deadline?`<div class="cmp-row-lbl">${t('lbl_deadline')}</div><div class="cmp-row-val">${it.deadline}</div>`:''}
       ${(it.tags||[]).length?`<div class="cmp-row-lbl">${t('lbl_tags')}</div><div class="cmp-row-val">${it.tags.map(tg=>`<span class="c-tag-pill">#${esc(tg)}</span>`).join(' ')}</div>`:''}
       ${it.note?`<div class="cmp-row-lbl">${t('noteLabel')}</div><div class="cmp-row-val" style="font-size:12px;color:var(--t2)">${esc(it.note)}</div>`:''}
-      <a class="btn-p" href="${safeUrl(it.url)}" target="_blank" style="margin-top:auto;font-size:12px;text-align:center;text-decoration:none">${t('visitSite')} ↗</a>
+      <a class="btn-p" href="${safeUrl(_affUrl(it.url))}" target="_blank" style="margin-top:auto;font-size:12px;text-align:center;text-decoration:none">${t('visitSite')} ↗</a>
     </div>`;
   }).join('');
   document.getElementById('cmpOv').classList.add('open');
@@ -6205,7 +6205,22 @@ function _jsUrl(u){
   if(!/^https?:\/\//i.test(s)) return '';                                  // only real web links
   return s.replace(/['"\\<>`\s]/g,c=>'%'+c.charCodeAt(0).toString(16).toUpperCase().padStart(2,'0')).slice(0,2048);
 }
-function _openExt(u){if(u==null)return;const scheme=String(u).trim().replace(/[\x00-\x1f\x7f-\x9f\s]/g,'').toLowerCase();if(/^(?:javascript|data|vbscript|file):/i.test(scheme))return;window.open(String(u),'_blank','noopener');}
+// ── AFFILIATE LINKS (OFF until the IDs below are filled in) ──
+// Skimlinks turns ordinary shop links into commission links for ~50k merchants; Amazon
+// Associates covers Amazon. Price and shop are unchanged for the buyer. When you switch
+// this on, also add the affiliate disclosure to Terms/Privacy (see project notes).
+const AFFILIATE={skimlinks:'', amazonTag:''};      // e.g. skimlinks:'123456X1234567', amazonTag:'vaultwishl-21'
+function _affUrl(u){
+  try{
+    const s=String(u||''); if(!/^https?:\/\//i.test(s)) return s;
+    const url=new URL(s); const h=url.hostname.toLowerCase();
+    if(/(^|\.)vaultwishlist\.com$/.test(h)) return s;
+    if(AFFILIATE.amazonTag && /(^|\.)amazon\.[a-z.]+$/.test(h)){ url.searchParams.set('tag',AFFILIATE.amazonTag); return url.toString(); }
+    if(AFFILIATE.skimlinks) return 'https://go.skimresources.com/?id='+encodeURIComponent(AFFILIATE.skimlinks)+'&xs=1&url='+encodeURIComponent(s);
+    return s;
+  }catch(e){ return String(u||''); }
+}
+function _openExt(u){if(u==null)return;const scheme=String(u).trim().replace(/[\x00-\x1f\x7f-\x9f\s]/g,'').toLowerCase();if(/^(?:javascript|data|vbscript|file):/i.test(scheme))return;window.open(_affUrl(String(u)),'_blank','noopener');}
 // ── Sanitise items coming from an untrusted shared link before they touch app state ──
 const IMPORT_MAX_ITEMS=1000, IMPORT_STR_MAX=2000, IMPORT_URL_MAX=2048;
 function _clampStr(v,max){return v==null?'':String(v).slice(0,max||IMPORT_STR_MAX);}
@@ -7723,7 +7738,7 @@ function _renderPubProfile(){
     const price=(it.price&&+it.price>0)?`<span class="pubi-price">${cur()}${fmt(+it.price)}</span>`:'';
     const st=_PUB_STATUS[it.status]?`<span class="pubi-status">${_PUB_STATUS[it.status]}</span>`:'';
     const img=it.img?`<img src="${esc(it.img)}" alt="" loading="lazy">`:`<div class="pubi-noimg">${ico(it.place?'map':'bag',22)}</div>`;
-    const _u=_jsUrl(it.url), open=_u?`onclick="window.open('${_u}','_blank','noopener')"`:'';
+    const _u=_jsUrl(it.url), open=_u?`onclick="_openExt('${_u}')"`:'';
     const fstar=it.featured?`<span class="pubi-fstar" title="Featured">${ico('star',11)}</span>`:'';
     return `<div class="pubi-card" ${open}><div class="pubi-img">${img}${fstar}</div>
       <div class="pubi-body"><div class="pubi-title">${esc(it.title||'Item')}</div><div class="pubi-row">${price}${st}</div></div></div>`;
@@ -7731,7 +7746,7 @@ function _renderPubProfile(){
   // Featured row (up to 5 highlighted items) at the top of the profile.
   const feat=(d.featured||[]).map(it=>{
     const img=it.img?`<img src="${esc(it.img)}" alt="" loading="lazy">`:`<div class="ppf-noimg">${ico(it.place?'map':'bag',18)}</div>`;
-    const _u=_jsUrl(it.url), open=_u?`onclick="window.open('${_u}','_blank','noopener')"`:'';
+    const _u=_jsUrl(it.url), open=_u?`onclick="_openExt('${_u}')"`:'';
     return `<div class="ppf-cell" ${open}><div class="ppf-img">${img}</div><div class="ppf-t">${esc(it.title||'')}</div></div>`;
   }).join('');
   const featRow=feat?`<div class="pp-featured-hd">${ico('star',12)} Featured</div><div class="pp-featured">${feat}</div>`:'';
@@ -9386,7 +9401,7 @@ function _renderGiftPub(){
     const mine=r&&localStorage.getItem(_giftTokKey(g.id,it.id));
     const img=it.image?`<img src="${safeUrl(it.image)}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="gift-card-ph" style="display:none">${ico('bag',26)}</div>`:`<div class="gift-card-ph">${ico('bag',26)}</div>`;
     const price=it.price?`<div class="gift-card-price">${cur()}${fmt(it.price)}</div>`:'';
-    const dom=it.url?`<a href="${safeUrl(it.url)}" target="_blank" rel="noopener noreferrer" style="font-size:10px;color:var(--t3);text-decoration:none">${esc(getDomain(it.url))} ↗</a>`:'';
+    const dom=it.url?`<a href="${safeUrl(_affUrl(it.url))}" target="_blank" rel="noopener noreferrer" style="font-size:10px;color:var(--t3);text-decoration:none">${esc(getDomain(it.url))} ↗</a>`:'';
     let action;
     if(mine) action=`<button class="gift-mine-btn" onclick="giftUnreserve('${_jsId(it.id)}')">${t('gfMineUndo')}</button>`;
     else if(r) action=`<div class="gift-taken-tag">${t('gfTakenBy')} ${esc(r.name||t('gfSomeone'))}</div>`;
