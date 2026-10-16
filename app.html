@@ -2676,7 +2676,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.10.16-social64';
+const APP_BUILD='2026.10.16-social65';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -3280,6 +3280,31 @@ async function fetchSupabaseScraper(url){
   }catch(e){_dbg('SupabaseScraper failed:',e?.message);return null;}
 }
 
+// iPhone app only: read the page from the PHONE (home/mobile IP) when our server is
+// blocked. Big brands (Zara, Adidas, Nike…) block datacenter IPs but serve a phone fine.
+// Uses Capacitor's built-in native HTTP (no CORS). Same as opening the page in Safari.
+async function fetchViaDevice(url){
+  try{
+    const H=window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()&&window.Capacitor.Plugins&&window.Capacitor.Plugins.CapacitorHttp;
+    if(!H||!/^https?:\/\//i.test(url)) return null;
+    const res=await Promise.race([
+      H.request({url,method:'GET',headers:{'User-Agent':'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1','Accept':'text/html,application/xhtml+xml','Accept-Language':(navigator.language||'it-IT')+',en;q=0.8'},responseType:'text',connectTimeout:12000,readTimeout:12000}),
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),15000))
+    ]);
+    if(!res||res.status>=400||typeof res.data!=='string'||res.data.length<200) return null;
+    const p=parseHTML(res.data.slice(0,3000000),res.url||url);
+    if(!p||(!p.title&&!p.img&&!p.price)) return null;
+    _dbg('Device fetch OK:',p.title&&p.title.slice(0,40),'img:',!!p.img,'price:',p.price);
+    return p;
+  }catch(e){ _dbg('Device fetch failed:',e&&e.message); return null; }
+}
+// fill what the server missed (image / price / title) with what the phone could read
+function _mergeScrape(a,b){
+  if(!b) return a; if(!a) return b;
+  const serverBlocked=!a.img&&!(a.price>0);   // the server only got a bot page → its title is usually just the brand
+  return {...a,title:(serverBlocked&&b.title)?b.title:(a.title||b.title||''),img:a.img||b.img||'',images:(a.images&&a.images.length)?a.images:(b.images||[]),
+          price:(a.price!=null&&a.price>0)?a.price:(b.price||null),currency:a.currency||b.currency||null,desc:a.desc||b.desc||''};
+}
 async function fetchMicrolink(url){
   try{
     const ac=new AbortController();
@@ -4556,6 +4581,11 @@ async function doFetch(url){
   if(!result){
     result=await fetchSupabaseScraper(url);
     if(result) _dbg('Source: Supabase scraper');
+  }
+  // 2b. iPhone app: the phone itself reads the page when the server was blocked / incomplete
+  if(!result||!result.img||!(result.price>0)){
+    const dev=await fetchViaDevice(url);
+    if(dev){ result=_mergeScrape(result,dev); _dbg('Source: device (merged)'); }
   }
 
   // 3. Microlink + proxy in parallel, merge best data from both
@@ -8794,6 +8824,7 @@ async function _scrapeUrl(url){
   let r=null;
   if(serverOk) r=await fetchLocal(url);
   if(!r) r=await fetchSupabaseScraper(url);
+  if(!r||!r.img||!(r.price>0)) r=_mergeScrape(r,await fetchViaDevice(url));   // iPhone: phone reads what the server couldn't
   if(!r){
     const [ml,proxyHtml]=await Promise.all([fetchMicrolink(url),fetchViaProxy(url)]);
     const fromHtml=parseHTML(proxyHtml,url);
