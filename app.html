@@ -2699,7 +2699,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.10.21-social74';
+const APP_BUILD='2026.10.21-social75';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -2717,7 +2717,9 @@ const STRIPE_ANNUAL='https://buy.stripe.com/4gM5kD740fzb6bCgHc77O02';
 // Test Store we can build/test the flow WITHOUT App Store Connect. Swap to the real
 // appl_ key in Sept, once the App Store is connected + Paid Apps Agreement is signed.
 const RC_API_KEY='test_KqQrYGiApDrasmqhkfawhGLJkYx';
-const RC_ENTITLEMENT='plus';
+// RevenueCat entitlements = tier slugs (keeper/collector/vaulter; legacy 'plus' = vaulter).
+// App Store product ids: com.vaultwishlist.<tier>.<monthly|yearly> (subscription group 22498555).
+const RC_TIERS=['vaulter','collector','keeper'];
 // Free plan: max active (non-archived) items before Vault Premium is required.
 // Single source of truth — change the number here only.
 const FREE_LIMIT=50;
@@ -3064,7 +3066,7 @@ async function _sbPull(){
       return false;
     }
     if(data){
-      if(data.plan){ _sbPlan=data.plan; try{ if(data.plan==='plus') localStorage.setItem('vaultPlan','plus'); else localStorage.removeItem('vaultPlan'); }catch(e){} }
+      if(data.plan){ _sbPlan=data.plan; try{ if(data.plan!=='free') localStorage.setItem('vaultPlan',data.plan); else localStorage.removeItem('vaultPlan'); }catch(e){} }
       const remote=data.data;
       const remoteSig=remote?_syncSig(remote):'';
       // BUG-1 FIX: the old "cloud empty → just push local back up" shortcut bypassed
@@ -8729,8 +8731,8 @@ function fmtExp(el){let v=el.value.replace(/\D/g,'').slice(0,4);if(v.length>=3)v
 
 function openPlusTutorial(){document.getElementById('tutorialOv').classList.add('open');}
 function closePlusTutorial(){document.getElementById('tutorialOv').classList.remove('open');localStorage.setItem('vaultPlusTutorialSeen','1');}
-function activatePlus(){
-  localStorage.setItem('vaultPlan','plus');
+function activatePlus(tier){
+  try{ localStorage.setItem('vaultPlan',tier||getCurrentPlan()||'plus'); }catch(e){}
   closeCheckout();
   closePlusModal();
   _updatePlusSideBtn();
@@ -8750,9 +8752,9 @@ function deactivatePlus(){
 // as the App/Browser plugins), NOT the npm ESM wrapper. Bridge methods used:
 // configure, logIn, getOfferings, purchasePackage, restorePurchases, getCustomerInfo.
 // Plus stays gated by isPlus() (Supabase data.plan = cross-device source of truth).
-// A successful iOS purchase grants the "plus" entitlement → we mirror it locally
-// (_sbPlan/localStorage); the server-side RevenueCat→Supabase webhook (Sept) will
-// persist data.plan='plus' so Plus follows the account across every device.
+// A successful iOS purchase grants the keeper/collector/vaulter entitlement → we mirror it
+// locally (_sbPlan/localStorage); the revenuecat-webhook edge function persists
+// vault_data.plan=<tier> so the tier follows the account across every device.
 function _isNativePlatform(){ try{ return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()); }catch(e){ return false; } }
 function _rcPlugin(){ try{ return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Purchases; }catch(e){ return null; } }
 let _rcReady=false, _rcCurrentUser=null;
@@ -8775,13 +8777,18 @@ async function _rcEnsureUser(){
     try{ await P.logIn({appUserID:uid}); _rcCurrentUser=uid; }catch(e){}
   }
 }
-function _rcHasPlus(customerInfo){
-  try{ const a=customerInfo&&customerInfo.entitlements&&customerInfo.entitlements.active;
-    return !!(a && a[RC_ENTITLEMENT] && a[RC_ENTITLEMENT].isActive); }catch(e){ return false; }
+// Highest active tier in a RevenueCat customerInfo, or null.
+function _rcTier(customerInfo){
+  try{ const a=customerInfo&&customerInfo.entitlements&&customerInfo.entitlements.active; if(!a) return null;
+    if(a.plus&&a.plus.isActive) return 'vaulter';
+    for(const t of RC_TIERS){ if(a[t]&&a[t].isActive) return t; }
+  }catch(e){}
+  return null;
 }
-function _rcMarkPlus(){
-  _sbPlan='plus';
-  try{ localStorage.setItem('vaultPlan','plus'); }catch(e){}
+function _rcMarkTier(t){
+  if(!t||planRank(t)<=curRank()) return; // only ever upgrade from here
+  _sbPlan=t;
+  try{ localStorage.setItem('vaultPlan',t); }catch(e){}
   try{ _updatePlusSideBtn(); }catch(e){}
   try{ if(typeof renderProfile==='function') renderProfile(); }catch(e){}
 }
@@ -8790,22 +8797,30 @@ async function _rcSyncEntitlement(){
   const P=_rcPlugin(); if(!P||!_rcReady) return false;
   try{
     const res=await P.getCustomerInfo();
-    if(_rcHasPlus(res&&res.customerInfo)){ _rcMarkPlus(); return true; }
+    const t=_rcTier(res&&res.customerInfo); if(t){ _rcMarkTier(t); return true; }
   }catch(e){}
   return false; // never DOWNGRADE here — Supabase (web/Stripe) stays the source of truth
 }
-async function _rcPurchase(billing){
+async function _rcPurchase(billing, tier){
   const P=_rcPlugin();
   if(!_isNativePlatform()||!P){ showToast(_lbl({it:'Vault Premium arriva presto 🚀',en:'Vault Premium is coming soon 🚀',es:'Vault Premium llega pronto 🚀',fr:'Vault Premium arrive bientôt 🚀',de:'Vault Premium kommt bald 🚀',pt:'Vault Premium em breve 🚀',nl:'Vault Premium komt binnenkort 🚀'})); return; }
   await _rcEnsureUser();
   try{
     const offs=await P.getOfferings();
     const cur=offs&&offs.current;
-    if(!cur){ showToast(_lbl({it:"Premium non è disponibile al momento. Riprova più tardi.",en:"Premium is not available right now. Please try again later.",es:"Premium no está disponible ahora. Inténtalo más tarde.",fr:"Premium n'est pas disponible pour le moment. Réessaie plus tard.",de:"Premium ist gerade nicht verfügbar. Bitte später erneut versuchen.",pt:"O Premium não está disponível agora. Tente mais tarde.",nl:"Premium is nu niet beschikbaar. Probeer het later opnieuw."})); return; }
-    const pkg=(billing==='annual')?cur.annual:cur.monthly;
+    // Find the exact store product for tier+cycle in any offering; fall back to the
+    // offering named after the tier, then to the current offering's monthly/annual package.
+    tier=tier||'collector';
+    const prodId=`com.vaultwishlist.${tier}.${billing==='annual'?'yearly':'monthly'}`;
+    let pkg=null;
+    const all=Object.values((offs&&offs.all)||{});
+    for(const o of all){ for(const p of (o.availablePackages||[])){ const id=(p.product&&(p.product.identifier||p.product.productIdentifier))||''; if(id===prodId||id.indexOf(prodId+':')===0){ pkg=p; break; } } if(pkg) break; }
+    if(!pkg){ const o=(offs&&offs.all&&offs.all[tier])||null; if(o) pkg=(billing==='annual')?o.annual:o.monthly; }
+    if(!pkg&&!cur){ showToast(_lbl({it:"Premium non è disponibile al momento. Riprova più tardi.",en:"Premium is not available right now. Please try again later.",es:"Premium no está disponible ahora. Inténtalo más tarde.",fr:"Premium n'est pas disponible pour le moment. Réessaie plus tard.",de:"Premium ist gerade nicht verfügbar. Bitte später erneut versuchen.",pt:"O Premium não está disponível agora. Tente mais tarde.",nl:"Premium is nu niet beschikbaar. Probeer het later opnieuw."})); return; }
+    if(!pkg) pkg=(billing==='annual')?cur.annual:cur.monthly;
     if(!pkg){ showToast(_lbl({it:"Questo piano non è disponibile al momento.",en:"This plan is not available right now.",es:"Este plan no está disponible ahora.",fr:"Ce plan n'est pas disponible pour le moment.",de:"Dieser Plan ist gerade nicht verfügbar.",pt:"Este plano não está disponível agora.",nl:"Dit plan is nu niet beschikbaar."})); return; }
     const res=await P.purchasePackage({aPackage:pkg});
-    if(_rcHasPlus(res&&res.customerInfo)){ activatePlus(); }
+    const t=_rcTier(res&&res.customerInfo); if(t){ _rcMarkTier(t); activatePlus(t); }
   }catch(e){
     if(e && (e.userCancelled===true || (e.code+'')==='1' || /cancel/i.test((e&&e.message)||''))) return;
     console.warn('[RC] purchase failed', e);
@@ -8818,7 +8833,7 @@ async function _rcRestore(){
   await _rcEnsureUser();
   try{
     const res=await P.restorePurchases();
-    if(_rcHasPlus(res&&res.customerInfo)){ activatePlus(); showToast(_lbl({it:"Vault Premium ripristinato ✓",en:"Vault Premium restored ✓",es:"Vault Premium restaurado ✓",fr:"Vault Premium restauré ✓",de:"Vault Premium wiederhergestellt ✓",pt:"Vault Premium restaurado ✓",nl:"Vault Premium hersteld ✓"})); }
+    const rt=_rcTier(res&&res.customerInfo); if(rt){ _rcMarkTier(rt); activatePlus(rt); showToast(_lbl({it:"Vault Premium ripristinato ✓",en:"Vault Premium restored ✓",es:"Vault Premium restaurado ✓",fr:"Vault Premium restauré ✓",de:"Vault Premium wiederhergestellt ✓",pt:"Vault Premium restaurado ✓",nl:"Vault Premium hersteld ✓"})); }
     else showToast(_lbl({it:"Nessun acquisto precedente trovato.",en:"No previous purchases found.",es:"No se encontraron compras anteriores.",fr:"Aucun achat précédent trouvé.",de:"Keine früheren Käufe gefunden.",pt:"Nenhuma compra anterior encontrada.",nl:"Geen eerdere aankopen gevonden."}));
   }catch(e){ showToast(_lbl({it:"Impossibile ripristinare gli acquisti.",en:"Could not restore purchases.",es:"No se pudieron restaurar las compras.",fr:"Impossible de restaurer les achats.",de:"Käufe konnten nicht wiederhergestellt werden.",pt:"Não foi possível restaurar as compras.",nl:"Kon aankopen niet herstellen."})); }
 }
@@ -9655,9 +9670,9 @@ setTimeout(_hideBootLoader, (_sb && _hasSession && !_wasGuest) ? 5000 : 2000);
             const n=payload.new; if(!n) return;
             if(n.plan&&n.plan!==_sbPlan){
               _sbPlan=n.plan;
-              try{ if(n.plan==='plus') localStorage.setItem('vaultPlan','plus'); else localStorage.removeItem('vaultPlan'); }catch(e){}
+              try{ if(n.plan!=='free') localStorage.setItem('vaultPlan',n.plan); else localStorage.removeItem('vaultPlan'); }catch(e){}
               _updatePlusSideBtn();renderSidebar();render();
-              if(_sbPlan==='plus'&&!localStorage.getItem('vaultPlusTutorialSeen')) setTimeout(openPlusTutorial,400);
+              if(_sbPlan!=='free'&&!localStorage.getItem('vaultPlusTutorialSeen')) setTimeout(openPlusTutorial,400);
             }
             if(n.data){
               const incoming=JSON.stringify(n.data);
