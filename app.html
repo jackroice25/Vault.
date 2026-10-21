@@ -2699,7 +2699,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.10.16-social73';
+const APP_BUILD='2026.10.21-social74';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -3956,12 +3956,12 @@ function openDetMo(id){
   // public-profile controls (feature / hide) — social only, owner's own items
   if(SOCIAL_ON && !item.archived){
     h+=`<div class="det-pub">
-      <div class="det-pub-hd">${ico('user',12)} Public profile</div>
+      <div class="det-pub-hd">${ico('user',12)} ${_lbl({it:'Profilo pubblico',en:'Public profile',es:'Perfil público',fr:'Profil public',de:'Öffentliches Profil',pt:'Perfil público',nl:'Openbaar profiel'})}</div>
       <div class="det-pub-btns">
-        <button class="det-pub-btn${item.featured?' on':''}" onclick="toggleFeatured('${item.id}');openDetMo('${item.id}')">${ico(item.featured?'star':'star-filled',14)} ${item.featured?'Featured ✓':'Feature'}</button>
-        <button class="det-pub-btn${item.pubHidden?' hid':''}" onclick="togglePubHidden('${item.id}');openDetMo('${item.id}')">${ico(item.pubHidden?'eye-off':'eye',14)} ${item.pubHidden?'Hidden':'Visible'}</button>
+        <button class="det-pub-btn${item.featured?' on':''}" onclick="toggleFeatured('${item.id}');openDetMo('${item.id}')">${ico(item.featured?'star':'star-filled',14)} ${item.featured?_lbl({it:'In evidenza ✓',en:'Featured ✓',es:'Destacado ✓',fr:'En vedette ✓',de:'Hervorgehoben ✓',pt:'Em destaque ✓',nl:'Uitgelicht ✓'}):_lbl({it:'Metti in evidenza',en:'Feature',es:'Destacar',fr:'Mettre en avant',de:'Hervorheben',pt:'Destacar',nl:'Uitlichten'})}</button>
+        <button class="det-pub-btn${item.pubHidden?' hid':''}" onclick="togglePubHidden('${item.id}');openDetMo('${item.id}')">${ico(item.pubHidden?'eye-off':'eye',14)} ${item.pubHidden?_lbl({it:'Nascosto',en:'Hidden',es:'Oculto',fr:'Masqué',de:'Verborgen',pt:'Oculto',nl:'Verborgen'}):_lbl({it:'Visibile',en:'Visible',es:'Visible',fr:'Visible',de:'Sichtbar',pt:'Visível',nl:'Zichtbaar'})}</button>
       </div>
-      <div class="det-pub-hint">${item.pubHidden?'Only you can see this — hidden from your public profile.':(item.featured?'Pinned to the top of your profile (up to 5).':'Shown on your public profile. Tap ★ to feature it.')}</div>
+      <div class="det-pub-hint">${item.pubHidden?_lbl({it:'Lo vedi solo tu: nascosto dal tuo profilo pubblico.',en:'Only you can see this — hidden from your public profile.',es:'Solo tú lo ves: oculto en tu perfil público.',fr:'Toi seul le vois : masqué de ton profil public.',de:'Nur du siehst das — auf deinem öffentlichen Profil verborgen.',pt:'Só você vê: oculto do seu perfil público.',nl:'Alleen jij ziet dit — verborgen op je openbare profiel.'}):(item.featured?_lbl({it:'Fissato in cima al tuo profilo (fino a 5).',en:'Pinned to the top of your profile (up to 5).',es:'Fijado arriba en tu perfil (hasta 5).',fr:'Épinglé en haut de ton profil (jusqu’à 5).',de:'Oben in deinem Profil angeheftet (bis zu 5).',pt:'Fixado no topo do seu perfil (até 5).',nl:'Bovenaan je profiel vastgezet (max. 5).'}):_lbl({it:'Visibile sul tuo profilo pubblico. Tocca ★ per metterlo in evidenza.',en:'Shown on your public profile. Tap ★ to feature it.',es:'Visible en tu perfil público. Toca ★ para destacarlo.',fr:'Visible sur ton profil public. Touche ★ pour le mettre en avant.',de:'Auf deinem öffentlichen Profil sichtbar. Tippe auf ★, um es hervorzuheben.',pt:'Visível no seu perfil público. Toque em ★ para destacar.',nl:'Zichtbaar op je openbare profiel. Tik op ★ om het uit te lichten.'}))}</div>
     </div>`;
   }
   // edit + delete (primary actions — moved off the card into the sheet)
@@ -9448,7 +9448,7 @@ function _renderGiftPub(){
   }).join('');
   const taken=Object.keys(res).length;
   el.innerHTML=`<div class="gift-pub-wrap">
-    <div style="display:flex;justify-content:flex-end"><button class="btn-s" onclick="closeGiftPub()">✕ Close</button></div>
+    <div style="display:flex;justify-content:flex-end"><button class="btn-s" onclick="closeGiftPub()">✕ ${_lbl({it:'Chiudi',en:'Close',es:'Cerrar',fr:'Fermer',de:'Schließen',pt:'Fechar',nl:'Sluiten'})}</button></div>
     <div class="gift-pub-hd">
       <div class="gift-pub-emoji">${esc(g.emoji||'🎁')}</div>
       <div class="gift-pub-title">${esc(g.name||t('gfDefault'))}</div>
