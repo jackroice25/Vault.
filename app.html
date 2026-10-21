@@ -2700,7 +2700,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.10.21-social77';
+const APP_BUILD='2026.10.21-social78';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -8384,7 +8384,7 @@ async function submitPasswordReset(){
   const p1=(document.getElementById('pwResetNew').value||'');
   const p2=(document.getElementById('pwResetNew2').value||'');
   const err=document.getElementById('pwResetErr');
-  if(p1.length<6){err.textContent='Password must be at least 6 characters.';return;}
+  if(p1.length<8){err.textContent=_lbl({it:'La password deve avere almeno 8 caratteri.',en:'Password must be at least 8 characters.',es:'La contraseña debe tener al menos 8 caracteres.',fr:'Le mot de passe doit contenir au moins 8 caractères.',de:'Das Passwort muss mindestens 8 Zeichen haben.',pt:'A palavra-passe deve ter pelo menos 8 caracteres.',nl:'Het wachtwoord moet minstens 8 tekens hebben.'});return;}
   if(p1!==p2){err.textContent='The two passwords do not match.';return;}
   if(!_sb){err.textContent='Auth not available.';return;}
   err.textContent='';
@@ -8413,7 +8413,7 @@ async function doAuth(){
   if(!email||!pass){_authErr('Please fill in all fields.');return;}
   if(!email.includes('@')||!email.includes('.')){_authErr('Enter a valid email address.');return;}
   if(_authMode==='register'){
-    if(pass.length<6){_authErr('Password must be at least 6 characters.');return;}
+    if(pass.length<8){_authErr(_lbl({it:'La password deve avere almeno 8 caratteri.',en:'Password must be at least 8 characters.',es:'La contraseña debe tener al menos 8 caracteres.',fr:'Le mot de passe doit contenir au moins 8 caractères.',de:'Das Passwort muss mindestens 8 Zeichen haben.',pt:'A palavra-passe deve ter pelo menos 8 caracteres.',nl:'Het wachtwoord moet minstens 8 tekens hebben.'}));return;}
     if(pass!==pass2){_authErr('Passwords do not match.');return;}
     const _consent=document.getElementById('authConsent');
     if(!_consent||!_consent.checked){_authErr(_as('consentReq')||'Conferma l\'età e accetta Termini e Privacy per continuare.');return;}
