@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="robots" content="noindex">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vault — the wishlist for everything you want</title>
@@ -1309,7 +1310,7 @@ body.pp-open{overflow:hidden}
 .rep-chip:hover{border-color:var(--bd2)}
 .rep-chip.on{background:rgba(220,38,38,.12);border-color:rgba(220,38,38,.5);color:var(--red,#dc2626);font-weight:700}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js" integrity="sha384-UagCvVPT5XXA0Hx+nJYUAGBFseHT9zBgpJMSebsAxl9lciTwbT+39j5VfRjdP5Tp" crossorigin="anonymous"></script><!-- pinned + SRI: a compromised/changed CDN file is refused -->
 </head>
 <body>
 <div id="bootLoader" style="position:fixed;inset:0;z-index:99999;background:var(--bg,#0a0a0a);display:flex;align-items:center;justify-content:center;transition:opacity .25s">
@@ -2612,7 +2613,7 @@ de:{ttCompare:'Vergleichen',ttDelete:'Löschen',ttOpen:'Öffnen',prioBadge:'Prio
 };
 Object.keys(TRANS_EXT).forEach(l=>{if(TRANS[l])Object.assign(TRANS[l],TRANS_EXT[l]);});
 function t(k){const l=TRANS[S.lang||'en']||TRANS.en;return l[k]??TRANS.en[k]??k;}
-function ico(name,sz=14){return `<svg class="ico" width="${sz}" height="${sz}" viewBox="0 0 16 16"><use href="#ic-${name}"/></svg>`;}
+function ico(name,sz=14){name=String(name||'').replace(/[^a-z0-9-]/gi,''); sz=parseInt(sz)||14; return `<svg class="ico" width="${sz}" height="${sz}" viewBox="0 0 16 16"><use href="#ic-${name}"/></svg>`;} // name/sz may come from shared data → whitelist chars (no attribute break-out)
 const _SECT_ICONS={'ds-moda':'shirt','ds-tech':'laptop','ds-casa':'home','ds-sport':'dumbbell','ds-varie':'tag','ds-rist':'utensils','ds-negozi':'cart','ds-posti':'compass','ds-viaggi':'plane'};
 function secIcon(sec,sz=15){if(sec?.icon)return ico(sec.icon,sz);const n=_SECT_ICONS[sec?.id];return n?ico(n,sz):ico('tag',sz);}
 const PICK_ICONS=['book','music-note','headphones','gamepad','coffee','film','camera','palette','plant','paw','briefcase','graduation','wallet','heart','wrench','car','bike','watch','gift','mountain','phone','diamond','baby','crown','flame','globe','bolt','wine','swim','shirt','laptop','home','dumbbell','tag','utensils','cart','compass','plane'];
@@ -2629,7 +2630,7 @@ const STATUS={
 };
 function getStatus(key){
   const map={voglio:'statusWant',ordinato:'statusOrdered',comprato:'statusBought',visitare:'statusVisit',visitato:'statusVisited'};
-  return {...(STATUS[key]||STATUS.voglio),label:t(map[key])||key};
+  return {...(STATUS[key]||STATUS.voglio),label:t(map[key])||esc(String(key||''))}; // unknown status from shared/imported data → escaped
 }
 
 // ── CURRENCIES ──
@@ -2699,7 +2700,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.10.21-social76';
+const APP_BUILD='2026.10.21-social77';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -5241,12 +5242,24 @@ function exportCSV(){
       sec?sec.name:'',
       (it.tags||[]).join(';'),it.note||'',it.deadline||'',
       it.at?new Date(it.at).toLocaleDateString():'',
-    ].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',');
+    ].map(v=>{ let x=String(v); if(/^[=+\-@\t\r]/.test(x)) x="'"+x; return `"${x.replace(/"/g,'""')}"`; }).join(','); // ' prefix: scraped titles can't run as spreadsheet formulas
   });
   const csv=[hdr.join(','),...rows].join('\n');
+  _saveFile('vault-export.csv',new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
+}
+// Save a generated file. In the iOS/Android app a download link does nothing (WebView),
+// so hand the file to the system share sheet (Save to Files, Mail, Drive…); browsers download it.
+async function _saveFile(name,blob){
+  try{
+    if(_isNativePlatform() && navigator.canShare){
+      const f=new File([blob],name,{type:blob.type});
+      if(navigator.canShare({files:[f]})){ await navigator.share({files:[f],title:name}); return; }
+    }
+  }catch(e){ if(e&&e.name==='AbortError') return; }
   const a=document.createElement('a');
-  a.href='data:text/csv;charset=utf-8,﻿'+encodeURIComponent(csv);
-  a.download='vault-export.csv';a.click();
+  a.href=URL.createObjectURL(blob); a.download=name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
 }
 
 // ── EXPORT PDF ──
@@ -7485,11 +7498,7 @@ function saveProfile(){
 }
 function exportVault(){
   const data=JSON.stringify(S,null,2);
-  const blob=new Blob([data],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='vault-backup-'+new Date().toISOString().slice(0,10)+'.json';
-  a.click();URL.revokeObjectURL(a.href);
+  _saveFile('vault-backup-'+new Date().toISOString().slice(0,10)+'.json',new Blob([data],{type:'application/json'}));
 }
 function importVault(input){
   const file=input.files[0];if(!file)return;
