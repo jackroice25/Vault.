@@ -57,12 +57,13 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"></noscript>
 <style>
   :root{
     --bg:#050505; --s1:#0d0d0d; --s2:#131313; --s3:#1a1a1a;
     --bd:#212121; --bd2:#2c2c2c;
-    --t1:#f0f0f0; --t2:#8a8a8a; --t3:#4a4a4a;
+    --t1:#f0f0f0; --t2:#a3a3a3; --t3:#7d7d7d;
     --silver:#b8b8b8; --gold:#c9a227; --gold2:#e2c150;
   }
   *{box-sizing:border-box;margin:0;padding:0}
@@ -341,7 +342,7 @@
       <a href="#pricing">Pricing</a>
       <a href="#download">Download</a>
     </div>
-    <a class="btn btn-line nav-open" href="/app">Open Vault <svg class="ico"><use href="#ic-external"/></svg></a>
+    <a class="btn btn-line nav-open" href="/app?src=home">Open Vault <svg class="ico"><use href="#ic-external"/></svg></a>
   </div>
 </nav>
 
@@ -354,7 +355,7 @@
     <h1 class="reveal">The home for<br>everything <em>you want</em>.</h1>
     <p class="lead reveal">Vault is a quiet, considered place to keep the things you're after, a coat, a camera, a restaurant across the world, the hotel for next summer. Paste a link from anywhere, and Vault takes care of the rest. <strong>Private by default</strong> — and, if you like, a profile others can follow and get inspired by.</p>
     <div class="hero-cta reveal">
-      <a class="btn btn-solid" href="/app">Create your Vault — free</a>
+      <a class="btn btn-solid" href="/app?src=home">Create your Vault — free</a>
       <a class="btn btn-line" href="#save">See how it works</a>
     </div>
     <div class="hero-meta reveal">Free forever · No card required · Private by default</div>
@@ -458,7 +459,7 @@
 
     <div class="duo">
       <div class="duo-card reveal">
-        <div class="ph"><img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=700&q=80&auto=format&fit=crop" alt="A wristwatch"></div>
+        <div class="ph"><img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=700&q=80&auto=format&fit=crop" alt="A wristwatch" loading="lazy" decoding="async"></div>
         <div class="bd">
           <div class="duo-tag"><svg class="ico"><use href="#ic-bag"/></svg> Products</div>
           <h3>Things to buy</h3>
@@ -466,7 +467,7 @@
         </div>
       </div>
       <div class="duo-card reveal">
-        <div class="ph"><img src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=700&q=80&auto=format&fit=crop" alt="A place to visit"></div>
+        <div class="ph"><img src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=700&q=80&auto=format&fit=crop" alt="A place to visit" loading="lazy" decoding="async"></div>
         <div class="bd">
           <div class="duo-tag"><svg class="ico"><use href="#ic-pin"/></svg> Places</div>
           <h3>Places to go</h3>
@@ -514,11 +515,11 @@
           <div><svg class="ico"><use href="#ic-sparkle"/></svg> Add a note, extra photos or a quick voice memo to anything</div>
         </div>
       </div>
-      <div class="fr-media"><img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=900&q=80&auto=format&fit=crop" alt="Product"></div>
+      <div class="fr-media"><img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=900&q=80&auto=format&fit=crop" alt="Product" loading="lazy" decoding="async"></div>
     </div>
 
     <div class="frow flip reveal">
-      <div class="fr-media"><img src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=900&q=80&auto=format&fit=crop" alt="Organised wardrobe"></div>
+      <div class="fr-media"><img src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=900&q=80&auto=format&fit=crop" alt="Organised wardrobe" loading="lazy" decoding="async"></div>
       <div>
         <div class="fr-ico"><svg class="ico"><use href="#ic-layers"/></svg></div>
         <h3>Organise the way you think</h3>
@@ -540,11 +541,11 @@
           <div><svg class="ico"><use href="#ic-check-circle"/></svg> Every saved thing becomes a considered card, not a row in a sheet</div>
         </div>
       </div>
-      <div class="fr-media"><img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=900&q=80&auto=format&fit=crop" alt="Moodboard"></div>
+      <div class="fr-media"><img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=900&q=80&auto=format&fit=crop" alt="Moodboard" loading="lazy" decoding="async"></div>
     </div>
 
     <div class="frow flip reveal">
-      <div class="fr-media"><img src="https://images.unsplash.com/photo-1536632087471-3cf3f2986328?w=900&q=80&auto=format&fit=crop" alt="Cloud sync"></div>
+      <div class="fr-media"><img src="https://images.unsplash.com/photo-1536632087471-3cf3f2986328?w=900&q=80&auto=format&fit=crop" alt="Cloud sync" loading="lazy" decoding="async"></div>
       <div>
         <div class="fr-ico"><svg class="ico"><use href="#ic-cloud-check"/></svg></div>
         <h3>Yours, on every device</h3>
@@ -721,7 +722,7 @@
           <li><svg class="ico"><use href="#ic-check-circle"/></svg> 1 gift list with reservations</li>
           <li><svg class="ico"><use href="#ic-check-circle"/></svg> Globe map of your places</li>
         </ul>
-        <a class="btn btn-line" href="/app">Start free</a>
+        <a class="btn btn-line" href="/app?src=home">Start free</a>
       </div>
 
       <div class="pcard reveal">
@@ -736,7 +737,7 @@
           <li><svg class="ico"><use href="#ic-check-circle"/></svg> Savings goals</li>
           <li><svg class="ico"><use href="#ic-check-circle"/></svg> Reminders</li>
         </ul>
-        <a class="btn btn-line" href="/app">Choose Keeper</a>
+        <a class="btn btn-line" href="/app?src=home">Choose Keeper</a>
       </div>
 
       <div class="pcard gold reveal">
@@ -751,7 +752,7 @@
           <li><svg class="ico"><use href="#ic-check-circle"/></svg> Taste insights</li>
           <li><svg class="ico"><use href="#ic-check-circle"/></svg> Advanced statistics</li>
         </ul>
-        <a class="btn btn-gold" href="/app">Choose Collector</a>
+        <a class="btn btn-gold" href="/app?src=home">Choose Collector</a>
       </div>
 
       <div class="pcard reveal">
@@ -765,7 +766,7 @@
           <li><svg class="ico"><use href="#ic-check-circle"/></svg> Advanced moodboards &amp; premium themes</li>
           <li><svg class="ico"><use href="#ic-check-circle"/></svg> Early access to new features</li>
         </ul>
-        <a class="btn btn-line" href="/app">Choose Vaulter</a>
+        <a class="btn btn-line" href="/app?src=home">Choose Vaulter</a>
       </div>
     </div>
 
@@ -868,7 +869,7 @@
     <h2 class="reveal">Everything you want,<br><em>finally in one place.</em></h2>
     <p class="lead reveal">Start your Vault in seconds. It's free, and it's quietly waiting for the next thing you fall for.</p>
     <div class="hero-cta reveal" style="margin-top:32px">
-      <a class="btn btn-solid" href="/app">Start free</a>
+      <a class="btn btn-solid" href="/app?src=home">Start free</a>
     </div>
   </div>
 </section>
@@ -876,7 +877,7 @@
 <footer>
   <div class="wrap">
     <div class="foot-in">
-      <a href="#top" aria-label="Vault"><img class="foot-logo" src="assets/vault-logo-nav.png" alt="Vault wishlist" width="152" height="80" style="display:block;height:80px;width:auto"></a>
+      <a href="#top" aria-label="Vault"><img class="foot-logo" src="assets/vault-logo-nav.png" alt="Vault wishlist" width="152" height="80" style="display:block;height:80px;width:auto" loading="lazy" decoding="async"></a>
       <div class="foot-links">
         <a href="#save">Save</a>
         <a href="#places">Places</a>
@@ -884,7 +885,7 @@
         <a href="pricing">Pricing</a>
         <a href="price-drop-alerts">Price alerts</a>
         <a href="christmas-wishlist">Christmas list</a>
-        <a href="/app">Open app</a>
+        <a href="/app?src=home">Open app</a>
         <a href="#download">Download</a>
         <a href="about.html">About</a>
         <a href="help.html">Help</a>
@@ -992,16 +993,19 @@
         gsap.fromTo(img,{yPercent:-5},{yPercent:5,ease:'none',scrollTrigger:{trigger:img,start:'top bottom',end:'bottom top',scrub:true}});
       });
     }
-    initGlobe();
+    // the 3D globe (~600 KB) loads only when its section is about to scroll into view
+    const gm=document.getElementById('globeMount');
+    if(gm&&'IntersectionObserver' in window){ const io=new IntersectionObserver(es=>{ if(es.some(e=>e.isIntersecting)){ io.disconnect(); initGlobe(); } },{rootMargin:'400px'}); io.observe(gm); }
+    else initGlobe();
   });
 
   // ── the Vault globe (globe.gl) ──
-  function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+  function loadScript(src,integrity){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;if(integrity){s.integrity=integrity;s.crossOrigin='anonymous';}s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
   async function initGlobe(){
     const mount=document.getElementById('globeMount');
     if(!mount) return;
     try{
-      if(typeof Globe==='undefined') await loadScript('https://unpkg.com/globe.gl/dist/globe.gl.min.js');
+      if(typeof Globe==='undefined') await loadScript('https://unpkg.com/globe.gl@2.46.2/dist/globe.gl.min.js','sha384-1uolMBZ25k3zJcNwCLEv49+L+m2dZudqAzsoSAJfQTzDCSBxJzrMuZ2dkp/5JKiT'); // pinned + SRI
       const pts=[
         {lat:35.01,lng:135.76,name:'Kyoto',v:1},{lat:36.39,lng:25.46,name:'Santorini',v:0},
         {lat:48.85,lng:2.35,name:'Paris',v:1},{lat:40.71,lng:-74.0,name:'New York',v:0},
@@ -1013,8 +1017,7 @@
       const g=Globe()(mount)
         .width(mount.offsetWidth).height(mount.offsetHeight)
         .backgroundColor('rgba(0,0,0,0)')
-        .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-dark.jpg')
-        .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+        .globeImageUrl('https://unpkg.com/three-globe@2.45.6/example/img/earth-dark.jpg')
         .atmosphereColor('#9a9a9a').atmosphereAltitude(0.24)
         .pointsData(pts).pointLat('lat').pointLng('lng')
         .pointColor(d=>d.v?'#eaeaea':gold).pointAltitude(0.06).pointRadius(0.52)
