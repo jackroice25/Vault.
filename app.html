@@ -2701,7 +2701,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.10.21-social80';
+const APP_BUILD='2026.10.21-social81';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -3588,7 +3588,13 @@ function parseHTML(html,url){
   // ── 10. Currency fallback from page text ──
   // Shopify & co. expose prices in CENTS ("price":5000) next to the real one ("50.00")
   if(price&&Number.isInteger(price)&&price>=100&&html.includes('"'+(price/100).toFixed(2)+'"')) price=price/100;
-  if(price&&!currency){currency=extractCurrency(html.slice(0,60000))||null;}
+  if(price&&!currency){
+    // a page-wide scan can hit currency pickers ("TRY", "USD"…) → the shop's country domain is more reliable
+    const tld=(()=>{try{return new URL(url).hostname.toLowerCase();}catch(e){return '';}})();
+    const byTld=/\.(it|de|fr|es|nl|be|at|ie|pt|fi|gr|sk|si|ee|lv|lt|lu|mt|cy|hr)$/.test(tld)?'EUR':/\.(co\.uk|uk)$/.test(tld)?'GBP':/\.ch$/.test(tld)?'CHF':/\.se$/.test(tld)?'SEK':/\.dk$/.test(tld)?'DKK':/\.no$/.test(tld)?'NOK':/\.pl$/.test(tld)?'PLN':/\.(co\.jp|jp)$/.test(tld)?'JPY':/\.ca$/.test(tld)?'CAD':/\.com\.au$/.test(tld)?'AUD':null;
+    const sym=(html.match(/"currencySymbol"\s*:\s*"([^"]{1,3})"/)||[])[1];
+    currency=(sym&&({'€':'EUR','£':'GBP','$':byTld==='CAD'||byTld==='AUD'?byTld:'USD'})[sym])||byTld||extractCurrency(html.slice(0,60000))||null;
+  }
 
   // ── Title cleanup ──
   if(title) title=title.replace(/\s*[\|–—]\s*(amazon|zalando|asos|farfetch|zara|hm|h&m|nike|adidas|ikea|etsy|ebay|booking|tripadvisor|google maps|google shopping).*$/i,'').trim();
