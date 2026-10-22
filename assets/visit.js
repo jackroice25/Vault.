@@ -13,7 +13,7 @@
   if(tags.utm_source) props.usrc=tags.utm_source; if(tags.utm_medium) props.med=tags.utm_medium;
   if(tags.utm_campaign) props.camp=tags.utm_campaign; if(tags.utm_content) props.cre=tags.utm_content;
   try{ if(document.referrer){ var h=new URL(document.referrer).hostname; if(h&&h!==location.hostname) props.ref=h.slice(0,60); } }catch(e){}
-  fetch('https://ottgafbrcogkmflnisbh.supabase.co/rest/v1/rpc/log_event',{method:'POST',keepalive:true,
+  fetch('https://ottgafbrcogkmflnisbh.supabase.co/rest/v1/rpc/log_event',{method:'POST',
     headers:{'Content-Type':'application/json',apikey:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90dGdhZmJyY29na21mbG5pc2JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3Nzc4NDEsImV4cCI6MjA5ODM1Mzg0MX0.002lqUQ2LpAqQYHdje-3L9aD19MwzyMUjCvOKG1xifU',Authorization:'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90dGdhZmJyY29na21mbG5pc2JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3Nzc4NDEsImV4cCI6MjA5ODM1Mzg0MX0.002lqUQ2LpAqQYHdje-3L9aD19MwzyMUjCvOKG1xifU'},
     body:JSON.stringify({p_name:'page_view',p_device:'',p_props:props})}).catch(function(){});
 }catch(e){}})();
