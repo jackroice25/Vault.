@@ -2128,7 +2128,7 @@ body.pp-open{overflow:hidden}
     <div class="row2" id="priceRow">
       <div class="fl" id="priceFieldWrap">
         <label class="lb" id="priceLb">Prezzo</label>
-        <div class="price-wrap"><span class="price-sym">€</span><input class="price-inp" type="number" id="priceI" placeholder="0,00" step="0.01" min="0"></div>
+        <div class="price-wrap"><span class="price-sym">€</span><input class="price-inp" type="text" inputmode="decimal" autocomplete="off" id="priceI" placeholder="0,00"></div>
       </div>
       <div class="fl">
         <label class="lb" id="lbl-status">Status</label>
@@ -2193,7 +2193,7 @@ body.pp-open{overflow:hidden}
 
     <div class="fl" id="priceFoundWrap" style="display:none">
       <label class="lb" id="lbl-pricefound">Prezzo trovato</label>
-      <div class="price-wrap"><span class="price-sym">€</span><input class="price-inp" type="number" id="priceFoundI" placeholder="0,00" step="0.01" min="0"></div>
+      <div class="price-wrap"><span class="price-sym">€</span><input class="price-inp" type="text" inputmode="decimal" autocomplete="off" id="priceFoundI" placeholder="0,00"></div>
     </div>
     <input type="date" id="deadlineI" style="display:none">
     <div id="tagWrap" style="display:none"><div id="tagPills"></div><input class="tag-input-el" id="tagI" onkeydown="handleTagKey(event)"></div>
@@ -2701,7 +2701,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.10.23-social83';
+const APP_BUILD='2026.10.23-social84';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -3296,6 +3296,18 @@ async function fetchViaDevice(url){
     ]);
     if(!res||res.status>=400||typeof res.data!=='string'||res.data.length<200) return null;
     const p=parseHTML(res.data.slice(0,3000000),res.url||url);
+    // Shopify stores: the public /products/<handle>.js endpoint is the authoritative price (variant-aware)
+    try{
+      const fu=new URL(res.url||url), mm=fu.pathname.match(/\/products\/([^\/?#]+)/);
+      if(p&&mm&&/cdn\.shopify\.com|Shopify\.shop|shopify-section/i.test(res.data)){
+        const jr=await H.request({url:fu.origin+fu.pathname.slice(0,fu.pathname.indexOf('/products/'))+'/products/'+mm[1]+'.js',method:'GET',headers:{'Accept':'application/json'}});
+        const pj=typeof jr.data==='string'?JSON.parse(jr.data):jr.data;
+        const vid=fu.searchParams.get('variant'), v=vid&&pj&&Array.isArray(pj.variants)?pj.variants.find(x=>String(x.id)===vid):null;
+        const cents=(v&&typeof v.price==='number')?v.price:(pj&&pj.price);
+        if(typeof cents==='number'&&cents>0) p.price=Math.round(cents)/100;
+        if(pj&&pj.title&&(!p.title||p.title.length<12)) p.title=String(pj.title);
+      }
+    }catch(e){}
     if(!p||(!p.title&&!p.img&&!p.price)) return null;
     _dbg('Device fetch OK:',p.title&&p.title.slice(0,40),'img:',!!p.img,'price:',p.price);
     return p;
@@ -4739,10 +4751,10 @@ function saveItem(){
   if(!url&&!title&&!extraImages.length)return;
   const note=document.getElementById('noteI').value.trim();
   const sid=document.getElementById('secI').value||null;
-  const priceRaw=parseFloat(document.getElementById('priceI').value);
+  const priceRaw=parseNum(document.getElementById('priceI').value)??NaN;   // accepts 1.250,50 / 1,250.50 / 12,5
   const status=document.getElementById('statusI').value||'voglio';
   const price=isNaN(priceRaw)?0:Math.max(0,priceRaw);
-  const priceFoundRaw=parseFloat(document.getElementById('priceFoundI')?.value);
+  const priceFoundRaw=parseNum(document.getElementById('priceFoundI')?.value)??NaN;
   const priceFound=isNaN(priceFoundRaw)?0:Math.max(0,priceFoundRaw);
   const deadline=document.getElementById('deadlineI')?.value||null;
   const variant=document.getElementById('variantI')?.value.trim()||'';
