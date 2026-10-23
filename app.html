@@ -1,11 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>/* Liquid Glass feature flag — decided BEFORE first paint (no flash).
-   ON/OFF: add ?lg=1 (safe) / ?lg=2 (strong: real blur on the mobile bars, test on device first) / ?lg=0 to the URL
-   (remembered on this device), or set LIQUID_GLASS_DEFAULT below. */
-(function(){var LIQUID_GLASS_DEFAULT=false;try{var q=new URLSearchParams(location.search).get('lg');if(q==='1'||q==='0'||q==='2')localStorage.setItem('vault_lg',q);var v=localStorage.getItem('vault_lg');if(v==='1'||v==='2'||(v===null&&LIQUID_GLASS_DEFAULT))document.documentElement.classList.add('lg');if(v==='2')document.documentElement.classList.add('lg-strong');}catch(e){}})();</script>
-
 <meta name="robots" content="noindex">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -1314,169 +1309,6 @@ body.pp-open{overflow:hidden}
 .rep-chip{background:var(--s2);border:1px solid var(--bd);border-radius:20px;padding:7px 13px;font-size:12.5px;color:var(--t2);cursor:pointer;font-family:inherit;transition:all .12s}
 .rep-chip:hover{border-color:var(--bd2)}
 .rep-chip.on{background:rgba(220,38,38,.12);border-color:rgba(220,38,38,.5);color:var(--red,#dc2626);font-weight:700}
-
-/* ════════════════ LIQUID GLASS (scoped to html.lg — remove the class to switch everything off) ════════════════
-   Three intensities: glass-subtle (cards, rows: NO backdrop blur, cheap on long lists),
-   glass-medium (bars, chips, controls), glass-hero (menus, popovers, modals, toast: real blur, few at a time).
-   Mobile/touch: fixed bars stay blur-free (backdrop-filter over scrolling content = jank on iOS, see Sept 2026). */
-html.lg{
-  --lg-tint:rgba(30,32,38,.58); --lg-tint-hi:rgba(38,40,48,.66); --lg-tint-solid:rgba(26,27,32,.96);
-  --lg-blur:22px; --lg-sat:165%;
-  --lg-rim:rgba(255,255,255,.13); --lg-rim-hi:rgba(255,255,255,.30); --lg-rim-gold:rgba(214,178,74,.55);
-  --lg-spec:rgba(255,255,255,.12); --lg-spec-soft:rgba(255,255,255,.05);
-  --lg-shadow:0 18px 50px rgba(0,0,0,.55),0 3px 10px rgba(0,0,0,.35);
-  --lg-shadow-s:0 6px 18px rgba(0,0,0,.35);
-  --lg-ease:cubic-bezier(.2,.8,.2,1); --lg-press:.97;
-}
-html.lg body.light{
-  --lg-tint:rgba(255,255,255,.62); --lg-tint-hi:rgba(255,255,255,.72); --lg-tint-solid:rgba(250,250,252,.97);
-  --lg-rim:rgba(0,0,0,.08); --lg-rim-hi:rgba(255,255,255,.95); --lg-spec:rgba(255,255,255,.55); --lg-spec-soft:rgba(255,255,255,.25);
-  --lg-shadow:0 18px 50px rgba(20,20,40,.18),0 3px 10px rgba(20,20,40,.10); --lg-shadow-s:0 6px 18px rgba(20,20,40,.10);
-}
-/* — material recipes (shared) — */
-html.lg .mtabs, html.lg .ctx-menu, html.lg .lang-popup, html.lg #toast, html.lg .ov:not(#detOv) :is(.mo,.plus-mo), html.lg .plus-billing-toggle{
-  background:
-    radial-gradient(130% 120% at var(--lg-x,22%) var(--lg-y,-10%), var(--lg-spec) 0%, transparent 46%),
-    linear-gradient(180deg, var(--lg-spec-soft), transparent 38%),
-    var(--lg-tint);
-  border:1px solid var(--lg-rim);
-  box-shadow: inset 0 1px 0 var(--lg-rim-hi), inset 0 0 0 .5px rgba(255,255,255,.04), var(--lg-shadow);
-}
-/* glass-hero: real refraction where it is cheap (static surfaces over a still background) */
-@supports ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
-  html.lg .ctx-menu, html.lg .lang-popup, html.lg #toast, html.lg .ov:not(#detOv) :is(.mo,.plus-mo){
-    -webkit-backdrop-filter:blur(var(--lg-blur)) saturate(var(--lg-sat)); backdrop-filter:blur(var(--lg-blur)) saturate(var(--lg-sat));
-  }
-  /* desktop only: the floating tab bar is hidden there; sidebar/topbar get light blur on pointer devices */
-  @media (hover:hover) and (pointer:fine){
-    html.lg .tb{-webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%)}
-  }
-}
-@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
-  html.lg .ctx-menu, html.lg .lang-popup, html.lg #toast, html.lg .ov:not(#detOv) :is(.mo,.plus-mo){ background-color:var(--lg-tint-solid) }
-}
-/* overlays: slightly lighter dim so the glass reads, plus a soft vignette */
-html.lg .ov.open{background:radial-gradient(120% 90% at 50% 0%, rgba(0,0,0,.42), rgba(0,0,0,.70))}
-html.lg .ov:not(#detOv) :is(.mo,.plus-mo){border-radius:22px}
-/* mobile floating tab bar: glass look WITHOUT backdrop blur (scroll performance); stays dark in every theme like the original */
-html.lg .mtabs{ background:
-    radial-gradient(120% 160% at var(--lg-x,30%) -20%, rgba(255,255,255,.16), transparent 50%),
-    linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,0) 45%),
-    rgba(22,23,28,.86);
-  border-color:rgba(255,255,255,.14); border-radius:32px; }
-html.lg .mtab{color:rgba(255,255,255,.72)} /* readable on the dark glass bar in every theme */
-html.lg .mtab.on, html.lg .mtab.drag-on{color:#fff;
-  background:linear-gradient(180deg, rgba(255,255,255,.26), rgba(255,255,255,.10));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.35), inset 0 -1px 0 rgba(255,255,255,.06), 0 4px 14px rgba(0,0,0,.35);
-}
-/* top bar & sidebar: glass-medium (no blur on touch) with a fine luminous edge */
-html.lg .tb{
-  background:linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,0)), color-mix(in srgb, var(--bg) 82%, transparent);
-  border-bottom-color:transparent;
-  box-shadow: inset 0 -1px 0 var(--lg-rim), 0 1px 0 rgba(255,255,255,.03);
-}
-html.lg .sb{ background:linear-gradient(180deg, rgba(255,255,255,.035), transparent 30%), var(--s1);
-  box-shadow: inset -1px 0 0 var(--lg-rim), inset -2px 0 0 rgba(255,255,255,.02); }
-/* context menu & popovers: refined rows */
-html.lg .ctx-menu{border-radius:16px;padding:6px}
-html.lg .ctx-item{border-radius:10px}
-html.lg .ctx-item:hover{background:rgba(255,255,255,.08);color:var(--t1)}
-/* legibility over bright photos: denser tint on floating menus + near-white text (≥4.5:1 on a white photo) */
-html.lg .ctx-menu, html.lg .lang-popup, html.lg #toast{--lg-tint:rgba(28,30,36,.74)}
-html.lg body.light .ctx-menu, html.lg body.light .lang-popup, html.lg body.light #toast{--lg-tint:rgba(255,255,255,.80)}
-html.lg body:not(.light) .ctx-item, html.lg body:not(.light) .lang-popup{color:rgba(255,255,255,.90)}
-html.lg .lang-popup{border-radius:18px}
-html.lg #toast{border-radius:16px}
-/* glass-medium controls: chips, segmented billing toggle, toolbar buttons */
-html.lg .chip{
-  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.015));
-  border-color:var(--lg-rim);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.10);
-  transition: transform .12s var(--lg-ease), background .18s, border-color .18s, box-shadow .18s;
-}
-html.lg .chip:hover{border-color:rgba(255,255,255,.24);box-shadow:inset 0 1px 0 rgba(255,255,255,.18), 0 2px 10px rgba(0,0,0,.25)}
-html.lg .chip.on{
-  background:linear-gradient(180deg, rgba(214,178,74,.30), rgba(214,178,74,.12));
-  border-color:var(--lg-rim-gold); color:#f1d27a;
-  box-shadow: inset 0 1px 0 rgba(255,236,170,.35), 0 3px 12px rgba(201,162,39,.18);
-}
-html.lg body.light .chip.on{color:#7a5a08}
-html.lg .plus-billing-toggle{border-radius:999px}
-/* glass-subtle: cards & settings groups — no blur (cheap on 2,000 cards), just rim + specular edge */
-html.lg .card{ box-shadow: inset 0 1px 0 rgba(255,255,255,.09), var(--lg-shadow-s); }
-html.lg .card:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 10px 30px rgba(0,0,0,.45)}
-html.lg .set-card{
-  background:linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.01)), var(--s2);
-  border-color:var(--lg-rim); border-radius:18px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), var(--lg-shadow-s);
-}
-/* primary CTAs: a moving specular sheen on gold (hover devices) */
-html.lg .btn-p, html.lg .auth-btn, html.lg .sb-plus-btn{
-  position:relative; overflow:hidden;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 6px 18px rgba(201,162,39,.18);
-}
-/* — ambient light: glass needs something behind it. Static gradients on body (no animation, ~zero cost) — */
-html.lg body{
-  background:
-    radial-gradient(75% 60% at 5% -8%, rgba(214,178,74,.30), transparent 62%),
-    radial-gradient(65% 55% at 108% 22%, rgba(160,180,220,.22), transparent 64%),
-    radial-gradient(90% 65% at 45% 118%, rgba(130,115,175,.20), transparent 62%),
-    var(--bg);
-  background-attachment:fixed;
-}
-html.lg body.light{
-  background:
-    radial-gradient(70% 55% at 8% -5%, rgba(214,178,74,.20), transparent 60%),
-    radial-gradient(60% 50% at 105% 18%, rgba(150,175,225,.22), transparent 62%),
-    var(--bg);
-  background-attachment:fixed;
-}
-/* sidebar (desktop): real glass panel over the ambient light */
-@media (hover:hover) and (pointer:fine){
-  html.lg .sb{background:linear-gradient(180deg, rgba(255,255,255,.05), transparent 35%), rgba(14,15,19,.55);
-    -webkit-backdrop-filter:blur(24px) saturate(150%); backdrop-filter:blur(24px) saturate(150%);}
-  html.lg body.light .sb{background:rgba(255,255,255,.55)}
-}
-/* top bar: translucent so the light reads through it */
-html.lg .tb{background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.01)), rgba(10,10,13,.35)}
-html.lg body.light .tb{background:rgba(255,255,255,.45)}
-/* search field & small toolbar buttons: glass pills */
-html.lg .srch, html.lg .tb .vb{
-  background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02)) !important;
-  border-color:var(--lg-rim) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
-}
-html.lg body.light :is(.srch,.tb .vb){background:rgba(255,255,255,.7)!important}
-
-/* — STRONG mode (?lg=2): real refraction on the floating mobile bars. Higher GPU cost while scrolling:
-     only for on-device testing until verified smooth on iPhone (Sept 2026 lag lesson). — */
-@supports ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
-  html.lg-strong .mtabs{background:radial-gradient(120% 160% at var(--lg-x,30%) -20%, rgba(255,255,255,.18), transparent 50%),rgba(24,25,31,.42);
-    -webkit-backdrop-filter:blur(18px) saturate(180%); backdrop-filter:blur(18px) saturate(180%); border-color:rgba(255,255,255,.18)}
-  html.lg-strong .tb{background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.01)), rgba(10,10,13,.30);
-    -webkit-backdrop-filter:blur(16px) saturate(160%); backdrop-filter:blur(16px) saturate(160%)}
-}
-/* — interaction: press, focus (keyboard) — */
-html.lg .chip:active, html.lg .btn-p:active, html.lg .auth-btn:active, html.lg .ctx-item:active, html.lg .set-row:active, html.lg .plus-billing-btn:active{
-  transform:scale(var(--lg-press)); transition-duration:.08s;
-}
-html.lg :is(button,a,.chip,.set-row,.ctx-item,.mtab,input,select,textarea):focus-visible{
-  outline:2px solid #f0cf6a; outline-offset:2px; box-shadow:0 0 0 4px rgba(240,207,106,.25);
-}
-/* — opening motion: short fade + scale (no bounce, no delay) — */
-html.lg .ov.open:not(#detOv) :is(.mo,.plus-mo){animation:lgIn .2s var(--lg-ease) both}
-html.lg .ctx-menu.open, html.lg .lang-popup.open{animation:lgIn .16s var(--lg-ease) both}
-@keyframes lgIn{from{opacity:0;transform:translateY(6px) scale(.985)}to{opacity:1;transform:none}}
-/* — accessibility & low-power fallbacks — */
-@media (prefers-reduced-motion:reduce){
-  html.lg *{animation-duration:.01ms!important;transition-duration:.01ms!important}
-  html.lg :is(.chip,.btn-p,.auth-btn,.ctx-item,.set-row):active{transform:none}
-}
-@media (prefers-reduced-transparency:reduce),(prefers-contrast:more){
-  html.lg .mtabs, html.lg .ctx-menu, html.lg .lang-popup, html.lg #toast, html.lg .ov:not(#detOv) :is(.mo,.plus-mo), html.lg .tb{
-    -webkit-backdrop-filter:none!important; backdrop-filter:none!important; background:var(--lg-tint-solid)!important; border-color:var(--t3)!important;
-  }
-}
-@media (forced-colors:active){ html.lg *{box-shadow:none!important;background-image:none!important} }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js" integrity="sha384-UagCvVPT5XXA0Hx+nJYUAGBFseHT9zBgpJMSebsAxl9lciTwbT+39j5VfRjdP5Tp" crossorigin="anonymous"></script><!-- pinned + SRI: a compromised/changed CDN file is refused -->
 </head>
@@ -2869,7 +2701,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.10.23-social86';
+const APP_BUILD='2026.10.23-social85';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -5499,22 +5331,6 @@ function importCSV(e){
 // ── SHARE ──
 // Public base for every link we hand out: inside the iOS/Android app location is capacitor://localhost or
 // https://localhost (unreachable for the receiver), and on the web the URL may carry campaign tags.
-// ── Liquid Glass: pointer-reactive specular highlight (desktop pointers only; one delegated listener,
-//    at most one style write per animation frame; inert unless html.lg is on). ──
-(function(){
-  try{
-    if(!matchMedia('(hover:hover) and (pointer:fine)').matches||matchMedia('(prefers-reduced-motion:reduce)').matches) return;
-    let el=null,x=0,y=0,raf=0;
-    const SEL='.ctx-menu,.lang-popup,.ov .mo,.ov .plus-mo,.chip,.plus-billing-toggle,#toast';
-    document.addEventListener('pointermove',e=>{
-      if(!document.documentElement.classList.contains('lg')) return;
-      const t=e.target&&e.target.closest?e.target.closest(SEL):null; if(!t) return;
-      el=t; x=e.clientX; y=e.clientY;
-      if(!raf) raf=requestAnimationFrame(()=>{ raf=0; if(!el) return; const r=el.getBoundingClientRect(); if(!r.width) return;
-        el.style.setProperty('--lg-x',Math.round((x-r.left)/r.width*100)+'%'); el.style.setProperty('--lg-y',Math.round((y-r.top)/r.height*100)+'%'); });
-    },{passive:true});
-  }catch(e){}
-})();
 function _showJoinBanner(){
   if(document.getElementById('joinBanner')) return;
   const d=document.createElement('div'); d.id='joinBanner';
