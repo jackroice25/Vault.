@@ -2701,7 +2701,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.10.23-social84';
+const APP_BUILD='2026.10.23-social85';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -3926,7 +3926,7 @@ function openDetMo(id){
     const diff=Math.ceil((new Date(item.deadline)-new Date())/(1000*60*60*24));
     const cls=diff<0?'dl-over':diff<=7?'dl-soon':'dl-ok';
     const txt=diff<0?t('deadlineOver'):`${diff}g`;
-    h+=`<div style="margin:6px 0"><span class="deadline-badge ${cls}" style="display:inline-flex;align-items:center;gap:5px">${ico('clock',11)} ${new Date(item.deadline).toLocaleDateString()}, ${txt}</span></div>`;
+    h+=`<div style="margin:6px 0"><span class="deadline-badge ${cls}" style="display:inline-flex;align-items:center;gap:5px">${ico('clock',11)} ${new Date(item.deadline).toLocaleDateString(S.lang||'en',{day:'numeric',month:'short',year:'numeric'})}, ${txt}</span></div>`;
   }
   // tags
   if((item.tags||[]).length) h+=`<div style="display:flex;gap:4px;flex-wrap:wrap;margin:6px 0">${item.tags.map(tg=>`<span class="c-tag-pill" style="font-size:11px;padding:3px 9px">#${esc(tg)}</span>`).join('')}</div>`;
