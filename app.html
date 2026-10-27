@@ -2705,7 +2705,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.10.27-social88';
+const APP_BUILD='2026.10.27-social89';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -4459,9 +4459,13 @@ async function addQuickPhoto(files){
 // Avatars: stricter. If the checker can't load (offline…), the upload is allowed —
 // reports + moderation stay the second line of defence.
 let _nsfwModelP=null;
+// Third-party scripts are loaded at an exact version and checked against a fingerprint (SRI):
+// a tampered or swapped CDN file is refused by the browser instead of running inside Vault.
+const _SRI={"https://unpkg.com/globe.gl@2.46.2/dist/globe.gl.min.js":"sha384-1uolMBZ25k3zJcNwCLEv49+L+m2dZudqAzsoSAJfQTzDCSBxJzrMuZ2dkp/5JKiT","https://unpkg.com/topojson-client@3.1.0/dist/topojson-client.min.js":"sha384-Ukv1p/xTma6P4/2bY5KzWBw+ydSpXmhCMtyciIQVDJ1RmOxtCYNMF1uXT9T63H67","https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js":"sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H","https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js":"sha384-vE8hbVJ4lezako5rlvE7bY0BVzWlFhZncPlckrqNwcUQpVtgbENTgZ8TBbnPjZre","https://cdn.jsdelivr.net/npm/nsfwjs@4.2.1/dist/browser/nsfwjs.min.js":"sha384-X0bAq0XJRwVKAYLtjgRmKfk0w1/l9A1KDqj5PkR5UUk60UzcUv05usH2uyL5oaJq","https://cdn.jsdelivr.net/npm/nsfwjs@4.2.1/dist/models/mobilenet_v2/model.min.js":"sha384-SDNCNeYT2W5Zmp1ErBnoIg1ZPnnU10prWvyrBBQ2UurkZNvKLHLPJfszwz9SHgr2","https://cdn.jsdelivr.net/npm/nsfwjs@4.2.1/dist/models/mobilenet_v2/group1-shard1of1.min.js":"sha384-wD1nPXVWFMmz83BpZ7oJs+RbcZu7B7IdM4sltSMKGXZWqopN+y62ohchPC2Logj8"};
+function _sri(el){ const h=_SRI[el.src]; if(h){ el.integrity=h; el.crossOrigin='anonymous'; } return el; }
 function _nsfwLoad(){
   if(_nsfwModelP) return _nsfwModelP;
-  const ld=src=>new Promise((res,rej)=>{ if(document.querySelector('script[src="'+src+'"]')) return res(); const sc=document.createElement('script'); sc.src=src; sc.onload=res; sc.onerror=()=>rej(new Error('load '+src)); document.head.appendChild(sc); });
+  const ld=src=>new Promise((res,rej)=>{ if(document.querySelector('script[src="'+src+'"]')) return res(); const sc=document.createElement('script'); sc.src=src; _sri(sc); sc.onload=res; sc.onerror=()=>rej(new Error('load '+src)); document.head.appendChild(sc); });
   const B='https://cdn.jsdelivr.net/npm/nsfwjs@4.2.1/dist/';
   _nsfwModelP=(async()=>{
     if(typeof tf==='undefined') await ld('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js');
@@ -5870,7 +5874,7 @@ async function exportMoodboard(fromFs){
     if(!window.html2canvas){
       await new Promise((res,rej)=>{
         const s=document.createElement('script');
-        s.src='https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+        s.src='https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js'; _sri(s);
         s.onload=res;s.onerror=rej;
         document.head.appendChild(s);
       });
@@ -10133,7 +10137,7 @@ async function _initGlobe(){
   if(typeof Globe==='undefined'){
     await new Promise((res,rej)=>{
       const s=document.createElement('script');
-      s.src='https://unpkg.com/globe.gl/dist/globe.gl.min.js';
+      s.src='https://unpkg.com/globe.gl@2.46.2/dist/globe.gl.min.js'; _sri(s);
       s.onload=res;s.onerror=rej;
       document.head.appendChild(s);
     });
@@ -10168,11 +10172,11 @@ async function _initGlobe(){
   // Load globe.gl + topojson in parallel
   const _loadScript=src=>new Promise((res,rej)=>{
     if(document.querySelector(`script[src="${src}"]`)){res();return;}
-    const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);
+    const s=document.createElement('script');s.src=src; _sri(s);s.onload=res;s.onerror=rej;document.head.appendChild(s);
   });
   await Promise.all([
-    typeof Globe==='undefined'?_loadScript('https://unpkg.com/globe.gl/dist/globe.gl.min.js'):Promise.resolve(),
-    typeof topojson==='undefined'?_loadScript('https://unpkg.com/topojson-client@3/dist/topojson-client.min.js'):Promise.resolve(),
+    typeof Globe==='undefined'?_loadScript('https://unpkg.com/globe.gl@2.46.2/dist/globe.gl.min.js'):Promise.resolve(),
+    typeof topojson==='undefined'?_loadScript('https://unpkg.com/topojson-client@3.1.0/dist/topojson-client.min.js'):Promise.resolve(),
   ]);
 
   // Fetch world atlas for country outlines
