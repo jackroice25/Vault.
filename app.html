@@ -4,6 +4,10 @@
 <meta name="robots" content="noindex">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<!-- Security (GitHub Pages can't send HTTP headers, so the safe subset lives here) -->
+<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<script>/* anti-clickjacking: Vault must never run inside someone else's frame */if(window.top!==window.self){try{window.top.location.replace(window.location.href)}catch(e){document.documentElement.style.display='none'}}</script>
 <title>Vault — the wishlist for everything you want</title>
 <meta name="description" content="Vault is a beautiful wishlist for products, places and gifts. Save from any link, organise, and share a public profile. Private by default. Free to start.">
 <link rel="canonical" href="https://vaultwishlist.com/app">
@@ -2701,7 +2705,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.10.23-social87';
+const APP_BUILD='2026.10.27-social88';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
