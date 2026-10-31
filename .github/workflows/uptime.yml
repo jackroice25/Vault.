@@ -1,0 +1,32 @@
+# External uptime check (runs outside Supabase, so it also catches a full Supabase/site outage).
+# Every 15 min: site, app, database API and an edge function. A failure is re-checked after 60 s;
+# if still down the run fails and GitHub e-mails the repository owner. No secrets: the key below is the
+# PUBLIC anon key already shipped in the web app. No third-party actions (nothing to pin).
+name: uptime
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Site, app, database, functions
+        env:
+          ANON: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90dGdhZmJyY29na21mbG5pc2JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3Nzc4NDEsImV4cCI6MjA5ODM1Mzg0MX0.002lqUQ2LpAqQYHdje-3L9aD19MwzyMUjCvOKG1xifU
+          SB: https://ottgafbrcogkmflnisbh.supabase.co
+        run: |
+          probe() {
+            ok=1
+            c=$(curl -s -o /dev/null -m 20 -w '%{http_code}' https://vaultwishlist.com/);            echo "site $c";     [ "$c" = 200 ] || ok=0
+            c=$(curl -s -o /dev/null -m 20 -w '%{http_code}' https://vaultwishlist.com/app);         echo "app  $c";     [ "$c" = 200 ] || ok=0
+            c=$(curl -s -o /dev/null -m 20 -w '%{http_code}' -X POST "$SB/rest/v1/rpc/get_public_profile" -H "apikey: $ANON" -H "Authorization: Bearer $ANON" -H 'Content-Type: application/json' -d '{"p_nick":"jackroice25"}'); echo "db   $c"; [ "$c" = 200 ] || ok=0
+            c=$(curl -s -o /dev/null -m 20 -w '%{http_code}' -X OPTIONS "$SB/functions/v1/delete-account"); echo "fn   $c"; [ "$c" = 200 ] || ok=0
+            return $((1-ok))
+          }
+          probe && exit 0
+          echo "first check failed — retrying in 60 s"; sleep 60
+          probe || { echo "::error::Vault is DOWN (site, app, database or functions not responding)"; exit 1; }
