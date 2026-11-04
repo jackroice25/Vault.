@@ -1,0 +1,46 @@
+<!doctype html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+<meta name="referrer" content="no-referrer">
+<title>Vault — check</title>
+<style>html,body{margin:0;padding:0;background:transparent;overflow:hidden}#w{display:flex;justify-content:center;min-height:65px}</style>
+</head><body><div id="w"></div>
+<script>
+// Cloudflare Turnstile for the Vault iOS/Android apps. Their web view runs on capacitor://localhost /
+// https://localhost, which Turnstile can't verify, so the app embeds this page (served from
+// vaultwishlist.com, an allowed hostname) and receives the one-time token by postMessage.
+// It only works inside the Vault app: any other embedding page gets nothing.
+(function () {
+  var ALLOWED = ['capacitor://localhost', 'https://localhost', 'ionic://localhost'];
+  var anc = (location.ancestorOrigins && location.ancestorOrigins.length) ? location.ancestorOrigins[0] : '';
+  if (window.parent === window || ALLOWED.indexOf(anc) < 0) return;
+  var q = new URLSearchParams(location.search);
+  var lang = (q.get('lang') || 'auto').toLowerCase().replace(/[^a-z-]/g, '').slice(0, 5) || 'auto';
+  if (lang === 'zh') lang = 'zh-cn';
+  var theme = q.get('theme') === 'light' ? 'light' : 'dark';
+  function send(m) { m.vaultCaptcha = m.vaultCaptcha || 'error'; try { parent.postMessage(m, anc); } catch (e) {} }
+  var s = document.createElement('script');
+  s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+  s.async = true;
+  s.onerror = function () { send({ vaultCaptcha: 'error' }); };
+  s.onload = function () {
+    try {
+      window.turnstile.render('#w', {
+        sitekey: '0x4AAAAAAFzq6ONA_NhgqJ_J', theme: theme, language: lang,
+        callback: function (t) { send({ vaultCaptcha: 'token', token: t }); },
+        'expired-callback': function () { send({ vaultCaptcha: 'expired' }); },
+        'error-callback': function () { send({ vaultCaptcha: 'error' }); }
+      });
+      send({ vaultCaptcha: 'ready' });
+    } catch (e) { send({ vaultCaptcha: 'error' }); }
+  };
+  document.head.appendChild(s);
+  window.addEventListener('message', function (e) {
+    if (e.origin === anc && e.data && e.data.vaultCaptcha === 'reset' && window.turnstile) { try { window.turnstile.reset('#w'); } catch (x) {} }
+  });
+})();
+</script>
+</body></html>

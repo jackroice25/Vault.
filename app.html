@@ -2705,7 +2705,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.11.04-social92';
+const APP_BUILD='2026.11.04-social93';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -8099,13 +8099,35 @@ const TURNSTILE_SITEKEY='0x4AAAAAAFzq6ONA_NhgqJ_J';
 // _captchaFailed: the widget could not load/run here (blocker, offline, unsupported webview) →
 // don't block in the app; the server (Supabase Attack Protection) is the one that decides.
 let _captchaToken=null,_captchaWid=null,_captchaLoading=null,_captchaFailed=false;
+// Native apps (capacitor://localhost, https://localhost): Turnstile can't verify that origin, so the
+// widget runs in https://vaultwishlist.com/captcha.html inside an iframe and posts the token back.
+const _CAPTCHA_FRAME='https://vaultwishlist.com/captcha.html';
+function _captchaNative(){ try{ const p=_statsPlatform(); return p==='ios'||p==='android'; }catch(e){ return false; } }
+function _captchaLang(){ const l=(S&&S.lang)||'auto'; return l==='zh'?'zh-cn':l; }
+window.addEventListener('message',e=>{
+  if(e.origin!=='https://vaultwishlist.com'||!e.data||typeof e.data.vaultCaptcha!=='string') return;
+  const k=e.data.vaultCaptcha; _captchaLoading=null;
+  if(k==='token'&&typeof e.data.token==='string'&&e.data.token.length<4096){ _captchaToken=e.data.token; _captchaFailed=false; }
+  else if(k==='expired'){ _captchaToken=null; }
+  else if(k==='error'){ _captchaToken=null; _captchaFailed=true; }
+});
 function _captchaInit(){
   if(!TURNSTILE_SITEKEY) return;
   const box=document.getElementById('authCaptcha'); if(!box) return;
   box.style.display='block';
   if(_captchaWid!==null||_captchaLoading) return;
+  if(_captchaNative()){
+    const f=document.createElement('iframe');
+    f.src=_CAPTCHA_FRAME+'?theme=dark&lang='+encodeURIComponent(_captchaLang());
+    f.title='Cloudflare Turnstile'; f.setAttribute('scrolling','no');
+    f.style.cssText='display:block;border:0;width:100%;height:72px;background:transparent;color-scheme:dark';
+    box.appendChild(f); _captchaWid='frame'; _captchaLoading=true;
+    // no answer at all from the page (offline, blocked) → don't block in the app, the server decides
+    setTimeout(()=>{ if(_captchaLoading===true&&!_captchaToken){ _captchaLoading=null; _captchaFailed=true; } },15000);
+    return;
+  }
   _captchaLoading=new Promise((res,rej)=>{ const sc=document.createElement('script'); sc.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'; sc.async=true; sc.onload=res; sc.onerror=rej; document.head.appendChild(sc); })
-    .then(()=>{ _captchaWid=window.turnstile.render(box,{sitekey:TURNSTILE_SITEKEY,theme:'dark',language:(S&&S.lang)||'auto',
+    .then(()=>{ _captchaWid=window.turnstile.render(box,{sitekey:TURNSTILE_SITEKEY,theme:'dark',language:_captchaLang(),
        callback:tk=>{_captchaToken=tk;_captchaFailed=false;}, 'expired-callback':()=>{_captchaToken=null;},
        'error-callback':()=>{_captchaToken=null;_captchaFailed=true;}}); })
     .catch(()=>{ _captchaLoading=null; _captchaFailed=true; box.style.display='none'; });
@@ -8117,7 +8139,11 @@ function _captchaMissing(){
   _captchaInit(); _authErr(_lbl({it:'Completa il controllo anti-bot qui sopra.',en:'Please complete the check above.',es:'Completa la verificación de arriba.',fr:'Complète la vérification ci-dessus.',de:'Bitte schließe die Prüfung oben ab.',pt:'Conclua a verificação acima.',nl:'Voltooi de controle hierboven.'}));
   return true;
 }
-function _captchaReset(){ if(_captchaWid!==null&&window.turnstile){ try{window.turnstile.reset(_captchaWid);}catch(e){} } _captchaToken=null; }
+function _captchaReset(){
+  if(_captchaWid==='frame'){ try{ const f=document.querySelector('#authCaptcha iframe'); if(f&&f.contentWindow) f.contentWindow.postMessage({vaultCaptcha:'reset'},'https://vaultwishlist.com'); }catch(e){} }
+  else if(_captchaWid!==null&&window.turnstile){ try{window.turnstile.reset(_captchaWid);}catch(e){} }
+  _captchaToken=null;
+}
 try{ new MutationObserver(()=>{ const o=document.getElementById('authOv'); if(o&&o.style.display==='flex') _captchaInit(); })
        .observe(document.getElementById('authOv'),{attributes:true,attributeFilter:['style']}); }catch(e){}
 const ONESIGNAL_WEB=false;   // turn on after configuring the Web platform in OneSignal (Settings → Push & In-App → Web)
