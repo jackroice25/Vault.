@@ -2704,7 +2704,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.11.05-social95';
+const APP_BUILD='2026.11.06-social96';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -5405,6 +5405,12 @@ function checkShareParam(){
   if(hash.startsWith('#gift=')){
     const id=hash.slice(6);
     if(/^[0-9a-f-]{10,}$/i.test(id)) _openGiftView(id);
+    return;
+  }
+  if(hash.startsWith('#save=')){ // Vault Business Wish Button on a shop's site: FREE save, same path as the iOS share sheet
+    let url=''; try{ url=decodeURIComponent(hash.slice(6)); }catch(e){}
+    history.replaceState(null,'',location.pathname);
+    if(/^https?:\/\//i.test(url)) _addSharedTarget(url.slice(0,2048));
     return;
   }
   if(hash.startsWith('#add=')){
@@ -9887,10 +9893,10 @@ if(!_hasSession && !_wasGuest){
     const _un=decodeURIComponent(location.hash.slice(3));
     setTimeout(()=>openPublicProfile(_un),100);
   }
-  // Extension add-link arrived while logged out, save it for after login
-  if(location.hash.startsWith('#add=')){
+  // Extension / Wish Button add-link arrived while logged out, save it for after login (then added for free)
+  if(location.hash.startsWith('#add=')||location.hash.startsWith('#save=')){
     try{
-      const _au=decodeURIComponent(location.hash.slice(5));
+      const _au=decodeURIComponent(location.hash.slice(location.hash.indexOf('=')+1));
       if(/^https?:\/\//i.test(_au)) localStorage.setItem('vault_pendingAdd',_au.slice(0,2048));
     }catch(e){}
     history.replaceState(null,'',location.pathname);
