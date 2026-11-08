@@ -1,0 +1,46 @@
+/* Vault design system — secondary pages (pricing, help, legal, use-case pages).
+   Loaded after each page's own <style>, so it only restyles; the content is untouched. */
+:root{--bg:#070707;--s2:#141413;--bd:rgba(255,246,230,.1);--t1:#f4f1ea;--t2:#b5afa5;--t3:#8a847b;--accent:#c9a24e;
+  --gold-hi:#e3c574;--gold-x:rgba(201,162,78,.11);--gold-line:rgba(201,162,78,.34);--gold-edge:linear-gradient(150deg,#c2a458 0%,#4e3d1b 46%,#8a6d31 100%);
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;--serif:'Instrument Serif','Iowan Old Style','Times New Roman',serif;--ease-out:cubic-bezier(.16,1,.3,1)}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--sans);font-size:15.5px;line-height:1.72;-webkit-font-smoothing:antialiased;letter-spacing:-.004em;
+  background:radial-gradient(900px 500px at 85% -10%,rgba(201,162,78,.07),transparent 60%),var(--bg) no-repeat}
+::selection{background:rgba(201,162,78,.28);color:#fff}
+.wrap{padding-top:56px;animation:vxPage 700ms var(--ease-out) both}
+@keyframes vxPage{from{opacity:0;transform:translate3d(0,14px,0)}}
+.back{color:var(--t2);font-weight:600;transition:color .2s,gap .3s var(--ease-out)}
+.back:hover{color:var(--gold-hi);gap:10px}
+.eyebrow{color:var(--accent);font-weight:600;letter-spacing:.2em;font-size:11.5px}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(42px,6vw,64px);line-height:1;letter-spacing:-.02em;margin-bottom:20px}
+h2{font-family:var(--serif);font-weight:400;font-size:clamp(28px,3.4vw,36px);line-height:1.08;letter-spacing:-.015em;margin:56px 0 16px}
+h3{letter-spacing:-.01em}
+.lede{font-size:clamp(17px,1.6vw,19px);color:var(--t2)}
+a{color:var(--gold-hi);text-underline-offset:3px}
+strong,b{color:var(--t1)}
+.cta{display:inline-flex;align-items:center;height:48px;padding:0 24px;border-radius:999px;background:linear-gradient(135deg,#7d6230 0%,#c9a24e 55%,#d9b867 100%);box-shadow:inset 0 1px 0 rgba(255,240,200,.35),0 18px 50px -22px rgba(201,162,78,.45);transition:transform .3s var(--ease-out)}
+.cta:hover{transform:translateY(-1px)}
+.cta.alt{box-shadow:none;border-color:rgba(255,246,230,.16)}
+.cta.alt:hover{border-color:var(--gold-line)}
+.card,.tier,.box{background:#0e0e0d;border:1px solid var(--bd);border-radius:18px;transition:border-color .3s,transform .5s var(--ease-out)}
+.card:hover,.tier:hover{border-color:rgba(255,246,230,.18);transform:translateY(-2px)}
+.card h3{font-size:16px}
+.tier{padding:20px}
+.tier.gold{border:1px solid transparent;background:linear-gradient(180deg,#16130c,#0e0e0d 60%) padding-box,var(--gold-edge) border-box}
+.tier b{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--t2)}
+.tier.gold b{color:var(--gold-hi)}
+.tier .pr{font-family:var(--serif);font-weight:400;font-size:40px;line-height:1.05;letter-spacing:-.02em;margin:8px 0 4px}
+.steps li::before{border-color:var(--gold-line);background:var(--gold-x);color:var(--gold-hi);font-family:var(--serif);font-size:15px;font-weight:400}
+table.pt,table{border:1px solid var(--bd);border-radius:14px;border-collapse:separate;border-spacing:0;overflow:hidden}
+table.pt th,table.pt td{border-bottom:1px solid var(--bd)}
+table.pt tr:last-child th,table.pt tr:last-child td{border-bottom:0}
+table.pt td.ok{color:var(--accent)} table.pt td.no{color:#4b4843}
+table.pt tr:first-child th{background:#0b0b0a;padding-top:13px;padding-bottom:13px}
+th,td{border-color:var(--bd)}
+th{background:#0e0e0d}
+.related,.foot{border-top-color:var(--bd)}
+.related a{color:var(--t2);transition:color .2s} .related a:hover{color:var(--gold-hi)}
+.foot a:hover{color:var(--t1)}
+details summary{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){.wrap{animation:none}.cta,.card,.tier,.back{transition:none}}
