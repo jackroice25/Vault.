@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /demo-shop/
 
 Sitemap: https://vaultwishlist.com/sitemap.xml

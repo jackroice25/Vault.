@@ -1,0 +1,2 @@
+# GitHub Pages: publish the .well-known folder (domain verification for Vault Business)
+include: [".well-known"]
