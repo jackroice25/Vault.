@@ -78,6 +78,10 @@
   function stories(){
     document.querySelectorAll('[data-story]').forEach(function(root){
       var steps=[].slice.call(root.querySelectorAll('[data-step]')),cur=-1;
+      // inline copy of each panel inside its step (shown on phones instead of the sticky stage)
+      root.querySelectorAll('.stage [data-panel]').forEach(function(pn){var st=steps[+pn.dataset.panel];if(!st)return;
+        var box=document.createElement('div');box.className='st-vis';box.setAttribute('aria-hidden','true');
+        var c=pn.cloneNode(true);c.classList.remove('on');box.appendChild(c);st.appendChild(box);});
       function set(i){if(i===cur)return;cur=i;root.dataset.active=i;
         steps.forEach(function(s,k){s.classList.toggle('on',k===i);});
         root.querySelectorAll('[data-panel]').forEach(function(p){p.classList.toggle('on',+p.dataset.panel===i);});

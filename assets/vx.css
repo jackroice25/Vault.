@@ -36,6 +36,9 @@
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 /* clip, not hidden: hidden would turn body into a scroll container and break position:sticky */
 body{background:var(--bg);color:var(--t2);font:16px/1.65 var(--sans);letter-spacing:-.006em;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:clip}
+/* iOS ignores overflow on body/html for panning: clip the content wrappers too (clip keeps position:sticky working) */
+main,footer{overflow-x:clip;max-width:100%}
+@supports not (overflow:clip){main,footer{overflow-x:hidden}}
 a{color:inherit;text-decoration:none}
 img{max-width:100%;display:block}
 button{font:inherit;color:inherit}
@@ -104,6 +107,8 @@ button{font:inherit;color:inherit}
 [data-r="clip"]{opacity:1;clip-path:inset(12% 8% 12% 8% round 22px)}
 [data-r="clip-up"]{opacity:1;clip-path:inset(100% 0 0 0 round 22px)}
 [data-r].in{opacity:1;transform:none}
+/* phones: sideways entrances would sit outside the screen before revealing and let iOS pan the page */
+@media (max-width:900px){[data-r="left"],[data-r="right"]{transform:translate3d(0,28px,0)}}
 [data-r="clip"].in,[data-r="clip-up"].in{clip-path:inset(0 0 0 0 round var(--r-lg))}
 
 /* line-by-line headline reveal; padding gives descenders and italic overhang room inside the mask */

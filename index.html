@@ -107,6 +107,9 @@
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 /* clip, not hidden: hidden would turn body into a scroll container and break position:sticky */
 body{background:var(--bg);color:var(--t2);font:16px/1.65 var(--sans);letter-spacing:-.006em;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:clip}
+/* iOS ignores overflow on body/html for panning: clip the content wrappers too (clip keeps position:sticky working) */
+main,footer{overflow-x:clip;max-width:100%}
+@supports not (overflow:clip){main,footer{overflow-x:hidden}}
 a{color:inherit;text-decoration:none}
 img{max-width:100%;display:block}
 button{font:inherit;color:inherit}
@@ -175,6 +178,8 @@ button{font:inherit;color:inherit}
 [data-r="clip"]{opacity:1;clip-path:inset(12% 8% 12% 8% round 22px)}
 [data-r="clip-up"]{opacity:1;clip-path:inset(100% 0 0 0 round 22px)}
 [data-r].in{opacity:1;transform:none}
+/* phones: sideways entrances would sit outside the screen before revealing and let iOS pan the page */
+@media (max-width:900px){[data-r="left"],[data-r="right"]{transform:translate3d(0,28px,0)}}
 [data-r="clip"].in,[data-r="clip-up"].in{clip-path:inset(0 0 0 0 round var(--r-lg))}
 
 /* line-by-line headline reveal; padding gives descenders and italic overhang room inside the mask */
@@ -355,17 +360,17 @@ button{font:inherit;color:inherit}
 .v-row img{width:46px;height:46px;border-radius:9px;object-fit:cover}
 .v-row b{display:block;font-size:13px;color:var(--t1)} .v-row span{font-size:12px;color:var(--gold)}
 .mark{background:rgba(201,162,78,.28);color:var(--t1);border-radius:3px;padding:0 1px}
+.st-vis{display:none}
 @media (max-width:900px){
   .story{grid-template-columns:1fr;gap:0}
-  .stage{order:-1;top:72px;height:330px;z-index:2;margin-bottom:10px}
-  .stage-box{border-radius:20px}
-  .panel{padding:16px;transform:none}
-  .dots{display:none}
-  .st{min-height:56vh;padding-left:18px}
+  .stage{display:none}
+  .st{min-height:0;padding:30px 0 34px 18px}
+  .st-vis{display:block;position:relative;height:330px;margin-top:22px;border-radius:20px;overflow:hidden;background:radial-gradient(120% 90% at 70% 0%,#1a1813 0%,var(--s1) 55%);border:1px solid var(--line)}
+  .st-vis .panel{opacity:1;transform:none;padding:16px}
   .bw-pg{gap:12px;padding:12px}.bw-pg .nm{font-size:20px}.bw-pg .sz{display:none}
   .v-org{grid-template-columns:110px 1fr;gap:10px}.vgrid{gap:8px}
 }
-@media (max-width:560px){.stage{height:290px}.vgrid .vc:nth-child(n+4){display:none}.vgrid{grid-template-columns:repeat(3,1fr)}.skel{grid-template-columns:80px 1fr}.skel .ph{height:80px}}
+@media (max-width:560px){.st-vis{height:300px}.vgrid .vc:nth-child(n+4){display:none}.vgrid{grid-template-columns:repeat(3,1fr)}.skel{grid-template-columns:80px 1fr}.skel .ph{height:80px}}
 
 /* ── app window ── */
 .appwin{border-radius:var(--r-xl);overflow:hidden;background:var(--s1);border:1px solid var(--line2);box-shadow:var(--sh-2),0 0 0 1px rgba(0,0,0,.6)}
@@ -1242,7 +1247,7 @@ footer{border-top:1px solid var(--line);padding:60px 0 46px}
   </div>
 </footer>
 
-<script src="/assets/vx.js?v=1"></script>
+<script src="/assets/vx.js?v=2"></script>
 <script>
   // ── real photo marquee ──
   const U=id=>`https://images.unsplash.com/${id}?w=440&q=80&auto=format&fit=crop`;
@@ -1352,6 +1357,8 @@ footer{border-top:1px solid var(--line);padding:60px 0 46px}
       try{ g.renderer().setPixelRatio(Math.min(devicePixelRatio||1, innerWidth<700?1.5:2)); }catch(e){}
       const controls=g.controls();
       controls.autoRotate=!RM; controls.autoRotateSpeed=0.42; controls.enableZoom=false; controls.enableDamping=true; controls.dampingFactor=.08; controls.rotateSpeed=.5;
+      // touch screens: a finger on the globe must scroll the page, not grab the globe (it keeps turning on its own)
+      if(!(window.VX&&VX.fine)){ controls.enabled=false; try{ const cv=mount.querySelector('canvas'); if(cv){cv.style.touchAction='pan-y';cv.style.pointerEvents='none';} }catch(e){} }
       // intro: drift in from further away
       g.pointOfView({lat:30,lng:-10,altitude:3.4},0);
       requestAnimationFrame(()=>{ mount.classList.add('ready'); g.pointOfView({lat:24,lng:28,altitude:2.25},RM?0:2600); });
