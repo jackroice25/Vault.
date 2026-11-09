@@ -116,5 +116,7 @@
   }
 
   function init(){reveal();words();pointer();parallax();stories();marquees();billing();nav();}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+  // wait for the page translation (vx-i18n.js) so text effects run on the final words
+  function start(){(window.__vxI18n||Promise.resolve()).then(init,init);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();

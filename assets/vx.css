@@ -134,3 +134,16 @@ button{font:inherit;color:inherit}
   .lines>span>span{transform:none}
   .words .w{opacity:1;color:var(--t1)}
 }
+
+/* language switcher (built by vx-i18n.js) */
+.lang{position:relative}
+.lang-btn{display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 13px;border-radius:999px;border:1px solid var(--line2);background:transparent;color:var(--t2);font-size:13px;font-weight:600;letter-spacing:.04em;cursor:pointer;transition:border-color var(--d),color var(--d)}
+.lang-btn:hover,.lang.open .lang-btn{border-color:var(--gold-line);color:var(--t1)}
+.lang-menu{position:absolute;right:0;top:calc(100% + 8px);z-index:300;list-style:none;min-width:190px;padding:6px;border-radius:16px;background:#141413;border:1px solid var(--line2);box-shadow:var(--sh-2);opacity:0;transform:translate3d(0,-6px,0);pointer-events:none;transition:opacity var(--d),transform var(--d) var(--ease-out)}
+.lang.open .lang-menu{opacity:1;transform:none;pointer-events:auto}
+.lang-menu button{display:flex;align-items:center;justify-content:space-between;width:100%;padding:9px 12px;border:0;border-radius:10px;background:none;color:var(--t2);font-size:14px;cursor:pointer;text-align:left}
+.lang-menu button em{font-style:normal;font-size:11px;color:var(--t3);letter-spacing:.06em}
+.lang-menu button:hover{background:rgba(255,255,255,.05);color:var(--t1)}
+.lang-menu button.on{color:var(--gold-hi);background:var(--gold-x)}
+html.i18n-wait main,html.i18n-wait footer{visibility:hidden}
+@media (max-width:560px){.lang-btn{height:36px;padding:0 10px}.lang-btn span{display:none}}
