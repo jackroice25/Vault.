@@ -60,8 +60,147 @@
 <link rel="preload" href="/assets/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link href="/assets/fonts/inter.css" rel="stylesheet">
 <link rel="preload" href="/assets/fonts/instrument-serif-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link href="/assets/fonts/instrument-serif.css" rel="stylesheet">
-<link href="/assets/vx.css?v=1" rel="stylesheet">
+<link rel="preload" href="/assets/fonts/instrument-serif-latin-400-italic.woff2" as="font" type="font/woff2" crossorigin>
+<style>/* inlined copy of /assets/fonts/instrument-serif.css */
+/* Instrument Serif — self-hosted, SIL Open Font License 1.1. Display serif shared with Vault Business. */
+@font-face{font-family:'Instrument Serif';font-style:normal;font-display:swap;font-weight:400;src:url(/assets/fonts/instrument-serif-latin-ext-400-normal.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Instrument Serif';font-style:normal;font-display:swap;font-weight:400;src:url(/assets/fonts/instrument-serif-latin-400-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Instrument Serif';font-style:italic;font-display:swap;font-weight:400;src:url(/assets/fonts/instrument-serif-latin-ext-400-italic.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Instrument Serif';font-style:italic;font-display:swap;font-weight:400;src:url(/assets/fonts/instrument-serif-latin-400-italic.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+</style>
+<style id="vx">/* inlined copy of /assets/vx.css (source of truth: that file — re-inline with sync-home-css.py) */
+/* ─────────────────────────────────────────────────────────────────────────────
+   Vault design system — public site (vaultwishlist.com)
+   Same family as Vault Business (black, editorial serif headlines, restrained motion),
+   but Vault keeps its own identity: matte gold instead of silver, warmer whites.
+   Breakpoints (documented, used literally in media queries): 1100 · 900 · 560
+   ───────────────────────────────────────────────────────────────────────────── */
+:root{
+  /* surfaces */
+  --bg:#070707; --s1:#0e0e0d; --s2:#141413; --s3:#1b1a18; --s4:#24221f;
+  --line:rgba(255,246,230,.075); --line2:rgba(255,246,230,.14);
+  /* text — warm whites, they sit better next to gold than pure grey */
+  --t1:#f4f1ea; --t2:#b5afa5; --t3:#8a847b;
+  /* matte gold — the Vault accent (same hues the app already uses) */
+  --gold:#c9a24e; --gold-hi:#e3c574; --gold-lo:#8a6d31; --gold-deep:#4e3d1b;
+  --gold-x:rgba(201,162,78,.11); --gold-line:rgba(201,162,78,.34);
+  --gold-grad:linear-gradient(135deg,#7d6230 0%,#c9a24e 55%,#d9b867 100%);
+  --gold-edge:linear-gradient(150deg,#c2a458 0%,#4e3d1b 46%,#8a6d31 100%);
+  --ivory:#ece6d9; --ok:#8fbf98;
+  /* type */
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --serif:'Instrument Serif','Iowan Old Style','Times New Roman',serif;
+  /* spacing scale */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-7:48px; --sp-8:64px; --sp-9:96px; --sp-10:144px;
+  /* radius */
+  --r-xs:6px; --r-sm:10px; --r:14px; --r-lg:20px; --r-xl:28px; --r-pill:999px;
+  /* elevation */
+  --sh-1:inset 0 1px 0 rgba(255,255,255,.045),0 18px 40px -24px rgba(0,0,0,.85);
+  --sh-2:inset 0 1px 0 rgba(255,255,255,.05),0 40px 90px -40px rgba(0,0,0,.95);
+  --sh-gold:0 18px 50px -22px rgba(201,162,78,.45);
+  /* motion */
+  --ease-out:cubic-bezier(.16,1,.3,1); --ease-io:cubic-bezier(.65,0,.35,1); --ease-spring:cubic-bezier(.34,1.32,.64,1);
+  --d-fast:160ms; --d:280ms; --d-slow:640ms; --d-reveal:900ms;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+/* clip, not hidden: hidden would turn body into a scroll container and break position:sticky */
+body{background:var(--bg);color:var(--t2);font:16px/1.65 var(--sans);letter-spacing:-.006em;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:clip}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+button{font:inherit;color:inherit}
+::selection{background:rgba(201,162,78,.28);color:#fff}
+::-webkit-scrollbar{width:9px;height:9px} ::-webkit-scrollbar-thumb{background:#2a2825;border-radius:9px;border:2px solid var(--bg)} ::-webkit-scrollbar-track{background:var(--bg)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:6px}
+.skip{position:absolute;left:12px;top:-60px;z-index:999;background:var(--t1);color:#000;padding:10px 14px;border-radius:10px;font-weight:600;font-size:14px}
+.skip:focus{top:12px}
+.ico{display:inline-block;vertical-align:middle;flex-shrink:0;width:16px;height:16px}
+
+/* layout */
+.wrap{max-width:1220px;margin:0 auto;padding:0 40px}
+.narrow{max-width:760px}
+@media (max-width:560px){.wrap{padding:0 20px}}
+
+/* type */
+.eyebrow{display:inline-flex;align-items:center;gap:12px;font-size:11.5px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--t3)}
+.eyebrow .n{color:var(--gold);font-variant-numeric:tabular-nums;letter-spacing:.12em}
+.eyebrow .rule{width:44px;height:1px;background:var(--line2);transform-origin:left;transform:scaleX(0);transition:transform 900ms var(--ease-out) 200ms}
+.in .eyebrow .rule,.eyebrow.in .rule{transform:none}
+.display{font-family:var(--serif);font-weight:400;color:var(--t1);letter-spacing:-.022em;line-height:.98}
+.display em{font-style:italic;color:var(--gold)}
+.h2{font-family:var(--serif);font-weight:400;font-size:clamp(40px,5.4vw,76px);line-height:1;letter-spacing:-.02em;color:var(--t1)}
+.h2 em{font-style:italic;color:var(--gold)}
+.h3{font-size:20px;font-weight:620;letter-spacing:-.02em;color:var(--t1);line-height:1.25}
+.lead{font-size:clamp(17px,1.35vw,19px);line-height:1.62;color:var(--t2)}
+.lead b,.lead strong{color:var(--t1);font-weight:600}
+.small{font-size:13px;color:var(--t3)}
+.gold{color:var(--gold)}
+
+/* buttons */
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:10px;height:50px;padding:0 24px;border-radius:var(--r-pill);font-size:15px;font-weight:600;letter-spacing:-.01em;border:1px solid transparent;cursor:pointer;white-space:nowrap;
+  transition:transform var(--d) var(--ease-out),background-color var(--d),border-color var(--d),color var(--d),box-shadow var(--d)}
+.btn .ico{width:15px;height:15px;transition:transform var(--d) var(--ease-out)}
+.btn:hover .ico.go{transform:translateX(3px)}
+.btn:active{transform:scale(.975)}
+.btn-gold{background:var(--gold-grad);color:#1a1206;box-shadow:inset 0 1px 0 rgba(255,240,200,.35),var(--sh-gold)}
+.btn-gold::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(110deg,transparent 30%,rgba(255,244,214,.38) 50%,transparent 70%);background-size:250% 100%;background-position:120% 0;transition:background-position 900ms var(--ease-out);pointer-events:none}
+.btn-gold:hover::after{background-position:-20% 0}
+.btn-gold:hover{transform:translateY(-1px)}
+.btn-ivory{background:var(--t1);color:#0b0a08}
+.btn-ivory:hover{background:#fff;transform:translateY(-1px)}
+.btn-line{background:transparent;color:var(--t1);border-color:var(--line2)}
+.btn-line:hover{border-color:var(--gold-line);background:rgba(201,162,78,.05)}
+.btn-text{height:auto;padding:6px 2px;border-radius:0;color:var(--t1);background:linear-gradient(var(--gold),var(--gold)) 0 100%/0 1px no-repeat;transition:background-size var(--d-slow) var(--ease-out),color var(--d)}
+.btn-text:hover{background-size:100% 1px;color:#fff}
+.btn-sm{height:40px;padding:0 18px;font-size:14px}
+
+/* surfaces */
+.surface{background:var(--s1);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-1)}
+.gold-edge{border:1px solid transparent;background:linear-gradient(var(--s1),var(--s1)) padding-box,var(--gold-edge) border-box}
+.tag{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:var(--r-pill);font-size:11px;font-weight:600;letter-spacing:.02em;color:var(--t1);background:rgba(10,10,9,.82);border:1px solid rgba(255,255,255,.08)}
+.tag i{width:6px;height:6px;border-radius:50%;background:var(--gold)}
+.tag.ok i{background:var(--ok)}
+.chip{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 12px;border-radius:var(--r-pill);font-size:12.5px;font-weight:500;color:var(--t2);border:1px solid var(--line2)}
+.chip.on{color:var(--gold-hi);border-color:var(--gold-line);background:var(--gold-x)}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--line2) 20%,var(--line2) 80%,transparent);transform-origin:center;transform:scaleX(.2);opacity:0;transition:transform 1200ms var(--ease-out),opacity 800ms}
+.divider.in{transform:none;opacity:1}
+
+/* ── motion: reveals (IntersectionObserver adds .in) ── */
+[data-r]{opacity:0;transition:opacity var(--d-reveal) var(--ease-out),transform var(--d-reveal) var(--ease-out),clip-path 1100ms var(--ease-out);transition-delay:calc(var(--i,0) * 80ms)}
+[data-r=""],[data-r="up"]{transform:translate3d(0,28px,0)}
+[data-r="left"]{transform:translate3d(-36px,0,0)}
+[data-r="right"]{transform:translate3d(36px,0,0)}
+[data-r="scale"]{transform:scale(.96)}
+[data-r="clip"]{opacity:1;clip-path:inset(12% 8% 12% 8% round 22px)}
+[data-r="clip-up"]{opacity:1;clip-path:inset(100% 0 0 0 round 22px)}
+[data-r].in{opacity:1;transform:none}
+[data-r="clip"].in,[data-r="clip-up"].in{clip-path:inset(0 0 0 0 round var(--r-lg))}
+
+/* line-by-line headline reveal; padding gives descenders and italic overhang room inside the mask */
+.lines>span{display:block;overflow:hidden;padding:.04em .16em .2em 0;margin:-.04em -.16em -.2em 0}
+.lines>span>span{display:block;transform:translate3d(0,108%,0);transition:transform 1000ms var(--ease-out);transition-delay:calc(var(--i,0) * 110ms + var(--d0,0ms))}
+.lines.in>span>span{transform:none}
+
+/* scroll-scrubbed words (manifesto) */
+.words .w{color:var(--t3);transition:color 420ms ease}
+.words .w.on{opacity:1;color:var(--t1)}
+.words em .w.on{color:var(--gold)}
+
+/* cursor light — a soft matte-gold glow that follows the pointer inside [data-light] */
+[data-light]{position:relative;isolation:isolate}
+[data-light]::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity 600ms;
+  background:radial-gradient(520px circle at var(--mx,50%) var(--my,30%),rgba(201,162,78,.10),transparent 62%)}
+[data-light].lit::before{opacity:1}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:1ms!important;animation-iteration-count:1!important;transition-duration:1ms!important;transition-delay:0ms!important}
+  [data-r]{opacity:1;transform:none;clip-path:none}
+  .lines>span>span{transform:none}
+  .words .w{opacity:1;color:var(--t1)}
+}
+</style>
 <style>
 /* ── NAV ── */
 #nav{position:fixed;inset:0 0 auto;z-index:200;border-bottom:1px solid transparent;transition:background-color var(--d),border-color var(--d)}
@@ -170,7 +309,7 @@
 .bw-pg{display:grid;grid-template-columns:1.1fr 1fr;gap:22px;padding:22px}
 .bw-pg .im{aspect-ratio:1/1.12;border-radius:10px;overflow:hidden;background:#ddd}
 .bw-pg .im img{width:100%;height:100%;object-fit:cover}
-.bw-pg .br{font-size:10px;letter-spacing:.2em;font-weight:700;color:#8b867b}
+.bw-pg .br{font-size:10px;letter-spacing:.2em;font-weight:700;color:#66625a}
 .bw-pg .nm{font-family:var(--serif);font-size:30px;line-height:1.05;margin:8px 0 10px}
 .bw-pg .pz{font-size:17px;font-weight:700}
 .bw-pg .sz{display:flex;gap:6px;margin:16px 0}.bw-pg .sz i{font-style:normal;width:34px;height:30px;border:1px solid #cfcac0;border-radius:6px;display:grid;place-items:center;font-size:11px;color:#55524b}
@@ -509,7 +648,7 @@ footer{border-top:1px solid var(--line);padding:60px 0 46px}
         <div class="hs-glow"></div>
         <div class="hs-paste" data-depth="14"><svg class="ico" style="color:var(--gold)"><use href="#ic-link"/></svg><span class="u">store.example.com/<b>products/leather-jacket</b></span><span class="go">Vault it</span></div>
         <div class="hs-card" data-depth="6">
-          <div class="im"><img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?w=640&q=80&auto=format&fit=crop" alt="" width="300" height="255" fetchpriority="high"><span class="tag"><i></i>Want it</span></div>
+          <div class="im"><img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?w=480&q=78&auto=format&fit=crop" srcset="https://images.unsplash.com/photo-1551028719-00167b16eac5?w=320&q=78&auto=format&fit=crop 320w, https://images.unsplash.com/photo-1551028719-00167b16eac5?w=480&q=78&auto=format&fit=crop 480w, https://images.unsplash.com/photo-1551028719-00167b16eac5?w=640&q=78&auto=format&fit=crop 640w" sizes="(max-width:560px) 62vw, 300px" alt="" width="300" height="255" fetchpriority="high"><span class="tag"><i></i>Want it</span></div>
           <div class="bd">
             <span class="sec-tag"><svg class="ico" style="width:11px;height:11px"><use href="#ic-bag"/></svg> Fashion</span>
             <div class="t">Leather jacket</div>

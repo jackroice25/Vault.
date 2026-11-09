@@ -112,7 +112,7 @@ button{font:inherit;color:inherit}
 .lines.in>span>span{transform:none}
 
 /* scroll-scrubbed words (manifesto) */
-.words .w{color:var(--t3);opacity:.35;transition:opacity 420ms ease,color 420ms ease}
+.words .w{color:var(--t3);transition:color 420ms ease}
 .words .w.on{opacity:1;color:var(--t1)}
 .words em .w.on{color:var(--gold)}
 

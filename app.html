@@ -1314,6 +1314,171 @@ body.pp-open{overflow:hidden}
 .rep-chip.on{background:rgba(220,38,38,.12);border-color:rgba(220,38,38,.5);color:var(--red,#dc2626);font-weight:700}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js" integrity="sha384-UagCvVPT5XXA0Hx+nJYUAGBFseHT9zBgpJMSebsAxl9lciTwbT+39j5VfRjdP5Tp" crossorigin="anonymous"></script><!-- pinned + SRI: a compromised/changed CDN file is refused -->
+<!-- VX:START -->
+<style id="vx-app">
+@font-face{font-family:'Instrument Serif';font-style:normal;font-weight:400;font-display:swap;src:url(/assets/fonts/instrument-serif-latin-400-normal.woff2) format('woff2'),url(https://vaultwishlist.com/assets/fonts/instrument-serif-latin-400-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Instrument Serif';font-style:italic;font-weight:400;font-display:swap;src:url(/assets/fonts/instrument-serif-latin-400-italic.woff2) format('woff2'),url(https://vaultwishlist.com/assets/fonts/instrument-serif-latin-400-italic.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Instrument Serif';font-style:normal;font-weight:400;font-display:swap;src:url(/assets/fonts/instrument-serif-latin-ext-400-normal.woff2) format('woff2'),url(https://vaultwishlist.com/assets/fonts/instrument-serif-latin-ext-400-normal.woff2) format('woff2')}
+/* ─────────────────────────────────────────────────────────────────────────────
+   Vault app — visual layer (redesign 2026-11). Presentation only: no logic lives here.
+   Uses the app's own variables (--bg, --s1…, --accent, --t1…) so light mode, premium
+   presets and custom themes keep working. The warmer palette + matte-gold accent apply
+   only to the default dark theme (no preset → no inline --bg on <html>, body not .light).
+   Remove this block to roll back.
+   ───────────────────────────────────────────────────────────────────────────── */
+:root{--vx-gold:#c9a24e;--vx-gold-hi:#e3c574;--vx-gold-lo:#8a6d31;--vx-gold-x:rgba(201,162,78,.12);--vx-gold-line:rgba(201,162,78,.34);
+  --vx-gold-grad:linear-gradient(135deg,#7d6230 0%,#c9a24e 55%,#d9b867 100%);--vx-gold-edge:linear-gradient(150deg,#c2a458 0%,#4e3d1b 46%,#8a6d31 100%);
+  --vx-serif:'Instrument Serif','Iowan Old Style','Times New Roman',serif;
+  --vx-ease:cubic-bezier(.16,1,.3,1);--vx-spring:cubic-bezier(.34,1.32,.64,1);--vx-d:260ms;--vx-r:14px}
+html:not([style*="--bg"]) body:not(.light){
+  --bg:#070707;--s1:#0d0d0c;--s2:#151413;--s3:#1c1b19;--bd:#2a2826;--bd2:#3a3733;
+  --accent:#c9a24e;--ax:rgba(201,162,78,.12);--ax2:rgba(201,162,78,.22);
+  --t1:#f4f1ea;--t2:#c4beb3;--t3:#8f897f}
+::selection{background:rgba(201,162,78,.28)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* type: a serif voice for titles, Inter stays for the interface */
+.tb-title{font-family:var(--vx-serif);font-weight:400;font-size:26px;letter-spacing:-.015em;line-height:1}
+.mo-hd{font-family:var(--vx-serif);font-weight:400;font-size:25px;letter-spacing:-.012em}
+.mo-hd-bar{font-family:var(--sans,'Inter',sans-serif)} .mo-hd-bar #qaMoHdTitle{font-family:var(--vx-serif);font-weight:400;font-size:24px}
+.set-h1{font-family:var(--vx-serif);font-weight:400;font-size:40px;letter-spacing:-.02em}
+.det-title{font-family:var(--vx-serif);font-weight:400;font-size:30px;line-height:1.08;letter-spacing:-.015em}
+.auth-title{font-family:var(--vx-serif);font-weight:400;font-size:34px;letter-spacing:-.015em;margin-bottom:6px}
+.empty h3{font-family:var(--vx-serif);font-weight:400;font-size:26px;color:var(--t1);letter-spacing:-.01em}
+
+/* ── sidebar ── */
+.sb{background:linear-gradient(180deg,var(--s1),var(--bg))}
+.si{border-radius:10px;position:relative;transition:background var(--vx-d),color var(--vx-d)}
+.si.on{background:var(--ax);color:var(--accent)}
+.si.on::before{content:"";position:absolute;left:-10px;top:8px;bottom:8px;width:2px;border-radius:2px;background:var(--accent);animation:vxBar .4s var(--vx-ease)}
+@keyframes vxBar{from{transform:scaleY(0)}}
+.si-count{font-variant-numeric:tabular-nums;transition:background var(--vx-d),color var(--vx-d)}
+.si.on .si-count{background:var(--ax2);color:var(--accent)}
+.budget{border-radius:16px;background:linear-gradient(160deg,var(--s2),var(--s1))}
+.newsec{border-radius:10px;transition:border-color var(--vx-d),color var(--vx-d),background var(--vx-d)}
+.newsec:hover{border-color:var(--accent);color:var(--t1);background:var(--ax)}
+.sb-util{border-radius:11px;transition:background var(--vx-d),border-color var(--vx-d),color var(--vx-d),transform .2s var(--vx-ease)}
+.sb-util:hover{border-color:var(--bd2);color:var(--t1);transform:translateY(-1px)}
+.sb-plus-btn{border-radius:11px;transition:border-color var(--vx-d),background var(--vx-d)}
+.sb-plus-btn:hover{border-color:var(--vx-gold-line);background:linear-gradient(135deg,rgba(201,162,78,.14),rgba(201,162,78,.04))}
+
+/* ── top bar ── */
+.srch{border-radius:12px;transition:border-color var(--vx-d),box-shadow var(--vx-d),background var(--vx-d),width .4s var(--vx-ease)}
+.srch:focus{box-shadow:0 0 0 4px var(--ax)}
+.vb{border-radius:11px}
+.vb:hover{transform:translateY(-1px)}
+.vb.on{border-color:var(--accent);color:var(--accent);background:var(--ax)}
+.add-btn{position:relative;overflow:hidden;border-radius:12px;background:var(--vx-gold-grad);box-shadow:inset 0 1px 0 rgba(255,240,200,.35),0 10px 26px -14px rgba(201,162,78,.7);transition:transform .25s var(--vx-ease),box-shadow var(--vx-d),filter .13s}
+.add-btn::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,244,214,.4) 50%,transparent 70%);background-size:250% 100%;background-position:120% 0;transition:background-position .9s var(--vx-ease);pointer-events:none}
+.add-btn:hover{opacity:1;transform:translateY(-1px)} .add-btn:hover::after{background-position:-20% 0}
+.sort-sel{border-radius:11px}
+
+/* chips */
+.chip{border-radius:999px;transition:background var(--vx-d),border-color var(--vx-d),color var(--vx-d),transform .12s ease}
+.chip:hover{border-color:var(--bd2);color:var(--t1)}
+.chip.on{box-shadow:inset 0 0 0 1px var(--ax2)}
+
+/* ── product cards: quiet at rest, a gold edge + controlled depth on hover ── */
+.grid{gap:16px}
+.card{border-radius:16px;transition:transform .5s var(--vx-ease),box-shadow .5s var(--vx-ease),background .3s}
+.c-img img{transition:transform .9s var(--vx-ease)!important}
+.c-st{backdrop-filter:none;-webkit-backdrop-filter:none;letter-spacing:.01em;font-weight:700;border:1px solid rgba(255,255,255,.08)}
+.c-star{border-radius:9px;transition:transform .3s var(--vx-spring),background var(--vx-d),border-color var(--vx-d)}
+.c-star:hover{transform:scale(1.08)}
+.c-star.on{background:rgba(201,162,78,.28);border-color:var(--vx-gold)}
+.c-body{padding:12px 13px 13px}
+.c-title{font-size:13.5px;letter-spacing:-.01em}
+.c-price{font-size:15px}
+.c-tag{border-radius:999px}
+@media (hover:hover) and (pointer:fine){
+  .card:hover{transform:translateY(-4px);box-shadow:0 22px 44px -22px rgba(0,0,0,.9),0 0 0 1px rgba(201,162,78,.35)}
+  .card:hover .c-img img{transform:scale(1.045)}
+}
+/* new cards rise in (only cards that were not on screen before — re-renders never flash) */
+.card.vx-in{animation:vxCardIn .7s var(--vx-ease) both;animation-delay:calc(var(--vx-i,0) * 45ms)}
+@keyframes vxCardIn{from{opacity:0;transform:translate3d(0,16px,0) scale(.985)}}
+/* a just-saved item gets a short matte-gold halo */
+.card.vx-saved{animation:vxCardIn .7s var(--vx-ease) both,vxSaved 1.8s var(--vx-ease) .2s}
+@keyframes vxSaved{0%{box-shadow:0 0 0 0 rgba(201,162,78,0)}25%{box-shadow:0 0 0 3px rgba(201,162,78,.55),0 18px 40px -18px rgba(201,162,78,.6)}100%{box-shadow:0 0 0 0 rgba(201,162,78,0)}}
+
+/* list view: the title used to be squeezed to 0px when the row was short of space */
+.lv .card{border-radius:14px}
+.lv .c-title{flex-shrink:0}
+.lv .c-tag{align-self:flex-start}
+.lv .c-st{font-size:8.5px;padding:2px 6px 2px 5px;gap:3px;top:4px;left:4px;white-space:nowrap;max-width:calc(100% - 8px)}
+.lv .c-st::before{width:5px;height:5px}
+@media (hover:hover) and (pointer:fine){.lv .card:hover{transform:translateX(3px)}}
+
+/* ── overlays & modals ── */
+.ov{background:rgba(4,4,3,.78)}
+.ov.open{animation:vxFade .3s ease both}
+@keyframes vxFade{from{opacity:0}}
+.mo{border-radius:22px;border-color:var(--bd2);box-shadow:0 40px 100px -30px rgba(0,0,0,.95),inset 0 1px 0 rgba(255,255,255,.04);animation:vxMo .46s var(--vx-ease) both}
+@keyframes vxMo{from{opacity:0;transform:translate3d(0,22px,0) scale(.98)}}
+.plus-mo{border-radius:24px;animation:vxMo .46s var(--vx-ease) both}
+.mo-hd-bar{background:var(--s1)}
+.btn-p{border-radius:11px;background:var(--vx-gold-grad);box-shadow:inset 0 1px 0 rgba(255,240,200,.3);transition:transform .25s var(--vx-ease),filter .13s,opacity .13s}
+.btn-p:hover:not(:disabled){opacity:1;transform:translateY(-1px)}
+.btn-s{border-radius:11px}
+.inp,.price-wrap,.auth-inp{border-radius:12px;transition:border-color var(--vx-d),box-shadow var(--vx-d),background var(--vx-d)}
+.inp:focus,.price-wrap:focus-within,.auth-inp:focus{box-shadow:0 0 0 4px var(--ax)}
+.tt{border-radius:11px}
+.tt.on{border-color:var(--accent);background:var(--ax);color:var(--accent)}
+.st-btn{transition:background var(--vx-d),border-color var(--vx-d),color var(--vx-d),transform .3s var(--vx-spring),box-shadow var(--vx-d)}
+.det-price{font-size:30px}
+.det-badge{border-radius:999px}
+
+/* settings & full pages */
+.profile-page.open{animation:vxPage .42s var(--vx-ease) both}
+@keyframes vxPage{from{opacity:0;transform:translate3d(0,14px,0)}}
+.set-card{border-radius:18px;background:linear-gradient(180deg,var(--s2),var(--s1))}
+.set-row{transition:background var(--vx-d)}
+.set-row:hover{background:var(--ax)}
+.set-ico{color:var(--accent)}
+.set-sec{letter-spacing:.16em}
+
+/* pricing modal */
+.plus-billing-toggle{border-radius:999px}
+.plus-billing-btn{transition:background .35s var(--vx-ease),color var(--vx-d),box-shadow var(--vx-d)}
+.plus-billing-btn.active{background:var(--vx-gold-grad);color:#1a1206;box-shadow:inset 0 1px 0 rgba(255,240,200,.3)}
+
+/* toast */
+#toast{border-radius:999px;padding:11px 20px;border-color:var(--vx-gold-line);background:rgba(20,19,17,.97);box-shadow:0 18px 50px -18px rgba(0,0,0,.9);transition:opacity .35s var(--vx-ease),transform .45s var(--vx-ease)!important}
+
+/* auth */
+.auth-box{border-radius:28px;background:radial-gradient(120% 80% at 50% 0%,rgba(201,162,78,.08),transparent 60%),var(--s2);animation:vxMo .6s var(--vx-ease) both}
+.auth-btn{border-radius:12px;transition:transform .25s var(--vx-ease),opacity .15s,box-shadow var(--vx-d)}
+html:not([style*="--bg"]) body:not(.light) .auth-btn{background:var(--vx-gold-grad);color:#1a1206;box-shadow:inset 0 1px 0 rgba(255,240,200,.3),0 14px 34px -18px rgba(201,162,78,.7)}
+.auth-btn:hover{opacity:1;transform:translateY(-1px)}
+.auth-guest{transition:border-color var(--vx-d),background var(--vx-d)}
+.auth-guest:hover{border-color:var(--accent);background:var(--ax)}
+
+/* empty states */
+.empty{animation:vxPage .6s var(--vx-ease) both}
+
+/* moodboard toolbar */
+.mood-tb-btn{border-radius:9px;transition:background var(--vx-d),color var(--vx-d)}
+.mood-tb-btn.on{background:var(--ax);color:var(--accent)}
+
+/* map overlay: let the globe fade in once it is ready */
+#globeMount canvas{animation:vxFade 1.2s ease both}
+
+/* mobile tab bar — same order and icons, warmer finish */
+@media (max-width:768px){
+  .mtabs{background:rgba(20,19,17,.95);border-color:rgba(201,162,78,.16)!important}
+  .mtab.on,.mtab.drag-on{color:var(--vx-gold-hi);background:rgba(201,162,78,.16);box-shadow:inset 0 1px 0 rgba(255,236,190,.12)}
+  .grid{gap:10px}
+  .card{border-radius:14px}
+  .tb-title{font-size:22px}
+}
+html:not([style*="--bg"]) body.light .mtab.on{color:#6b5320}
+
+@media (prefers-reduced-motion:reduce){
+  .card.vx-in,.card.vx-saved,.mo,.plus-mo,.auth-box,.profile-page.open,.empty,.ov.open,#globeMount canvas{animation:none!important}
+  .card,.c-img img,.add-btn::after{transition:none!important}
+}
+</style>
+<!-- VX:END -->
 </head>
 <body>
 <div id="bootLoader" style="position:fixed;inset:0;z-index:99999;background:var(--bg,#0a0a0a);display:flex;align-items:center;justify-content:center;transition:opacity .25s">
@@ -10601,5 +10766,61 @@ async function _initGlobe(){
   </div>
 </div>
 
+<!-- VXJS:START -->
+<script id="vx-app-js">
+/* Vault app — motion layer (redesign 2026-11). Presentation only: it watches the DOM and adds
+   classes; it never changes data, state or app logic. Every hook is wrapped in try/catch, and
+   the original function always runs first with the same arguments and its result is returned. */
+(function(){
+  'use strict';
+  var RM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── grid: animate only cards that were not on screen before (so re-renders never flash) ── */
+  function watchGrid(){
+    var grid=document.getElementById('grid'); if(!grid||RM||!('MutationObserver' in window)) return;
+    var seen=new Set([].map.call(grid.querySelectorAll('.card[data-id]'),function(c){return c.dataset.id;}));
+    new MutationObserver(function(){
+      try{
+        var cards=grid.querySelectorAll('.card[data-id]'),now=new Set(),fresh=[];
+        cards.forEach(function(c){now.add(c.dataset.id);if(!seen.has(c.dataset.id))fresh.push(c);});
+        // a small number of new ids while most stayed = something was just saved
+        var saved=seen.size>0&&fresh.length>0&&fresh.length<=3&&now.size>seen.size;
+        fresh.slice(0,24).forEach(function(c,i){c.style.setProperty('--vx-i',saved?0:i);c.classList.add(saved?'vx-saved':'vx-in');
+          setTimeout(function(){c.classList.remove('vx-in','vx-saved');},2400);});
+        seen=now;
+      }catch(e){}
+    }).observe(grid,{childList:true});
+  }
+
+  /* ── map globe: warmer light and atmosphere, a gentle intro. Data, markers, clustering,
+        clicks and controls are left exactly as the app set them. ── */
+  function enhanceGlobe(){
+    if(typeof window._initGlobe!=='function'||window._initGlobe.__vx) return;
+    var orig=window._initGlobe;
+    var wrapped=function(){
+      var r=orig.apply(this,arguments);
+      Promise.resolve(r).then(function(){
+        try{
+          // _globeInst is a top-level `let` in the app script: reachable by name, not via window
+          var g=(typeof _globeInst!=='undefined')?_globeInst:null; if(!g) return;
+          g.atmosphereColor('#c9a24e').atmosphereAltitude(0.16);
+          try{var m=g.globeMaterial();if(m.color)m.color.set('#bdb6a8');if(m.emissive){m.emissive.set('#1a140a');m.emissiveIntensity=.3;}if(m.specular)m.specular.set('#3a3020');m.shininess=9;}catch(e){}
+          try{g.scene().traverse(function(o){if(o.isDirectionalLight){o.position.set(-1.2,.9,1.1);o.intensity=1.1;}if(o.isAmbientLight){o.intensity=.6;}});}catch(e){}
+          var c=g.controls(); if(c){c.enableDamping=true;c.dampingFactor=.08;if(RM)c.autoRotate=false;}
+          if(!RM){var pov=g.pointOfView()||{};g.pointOfView({lat:pov.lat||20,lng:(pov.lng||0)-25,altitude:3.2},0);
+            setTimeout(function(){try{g.pointOfView({lat:pov.lat||20,lng:pov.lng||0,altitude:pov.altitude||2.5},2200);}catch(e){}},60);}
+        }catch(e){}
+      }).catch(function(){});
+      return r;
+    };
+    wrapped.__vx=true;
+    window._initGlobe=wrapped;
+  }
+
+  function init(){try{watchGrid();}catch(e){} try{enhanceGlobe();}catch(e){}}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<!-- VXJS:END -->
 </body>
 </html>
