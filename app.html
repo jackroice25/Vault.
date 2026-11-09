@@ -1312,6 +1312,16 @@ body.pp-open{overflow:hidden}
 .rep-chip{background:var(--s2);border:1px solid var(--bd);border-radius:20px;padding:7px 13px;font-size:12.5px;color:var(--t2);cursor:pointer;font-family:inherit;transition:all .12s}
 .rep-chip:hover{border-color:var(--bd2)}
 .rep-chip.on{background:rgba(220,38,38,.12);border-color:rgba(220,38,38,.5);color:var(--red,#dc2626);font-weight:700}
+
+/* Steam-style profile background: the picture fills the page behind everything, darkened progressively;
+   the profile sits on a translucent panel in the theme's own colour so every saved item stays readable */
+.profile-page.pp-has-bg{background:linear-gradient(180deg,color-mix(in srgb,var(--bg) 10%,transparent) 0,color-mix(in srgb,var(--bg) 45%,transparent) 300px,color-mix(in srgb,var(--bg) 80%,transparent) 100%),var(--pp-bg) center top/cover no-repeat,var(--bg)}
+.pp-has-bg .pp-topbar{background:color-mix(in srgb,var(--bg) 72%,transparent);border-bottom-color:rgba(255,255,255,.08)}
+.pp-has-bg .pp-wrap{margin:160px auto 48px;background:color-mix(in srgb,var(--bg) 88%,transparent);border:1px solid rgba(255,255,255,.09);border-radius:22px;box-shadow:0 40px 90px -30px rgba(0,0,0,.85)}
+@media (max-width:768px){
+  .profile-page.pp-has-bg{background-image:linear-gradient(180deg,color-mix(in srgb,var(--bg) 10%,transparent) 0,color-mix(in srgb,var(--bg) 45%,transparent) 220px,color-mix(in srgb,var(--bg) 82%,transparent) 100%),var(--pp-bg-m)}
+  .pp-has-bg .pp-wrap{margin:120px 10px 0;border-radius:18px}
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js" integrity="sha384-UagCvVPT5XXA0Hx+nJYUAGBFseHT9zBgpJMSebsAxl9lciTwbT+39j5VfRjdP5Tp" crossorigin="anonymous"></script><!-- pinned + SRI: a compromised/changed CDN file is refused -->
 <!-- VX:START -->
@@ -2869,7 +2879,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.11.09-social98';
+const APP_BUILD='2026.11.09-social99';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -8054,8 +8064,21 @@ function _followBtnHTML(d){
   if(d.is_public===false) return `<button class="pub-act pub-act-follow" id="pubFollowBtn" onclick="_toggleFollow()">${ico('user-plus',13)} ${_lbl({it:'Richiedi di seguire',en:'Request to follow',es:'Solicitar seguir',fr:'Demander à suivre',de:'Folgen anfragen',pt:'Pedir para seguir',nl:'Volgverzoek sturen'})}</button>`;
   return `<button class="pub-act pub-act-follow" id="pubFollowBtn" onclick="_toggleFollow()">${ico('user-plus',13)} ${_lbl({it:'Segui',en:'Follow',es:'Seguir',fr:'Suivre',de:'Folgen',pt:'Seguir',nl:'Volgen'})}</button>`;
 }
+// Steam-style profile backgrounds, tied to admin-assigned badges (set_user_badges). Images live on the site.
+const PROFILE_BG={founder:'founder-bg'};
+function _profileBg(d){
+  const ov=document.getElementById('pubProfOv'); if(!ov) return;
+  const key=(!d||d.blocked)?null:(d.badges||[]).find(b=>PROFILE_BG[b]);
+  ov.classList.toggle('pp-has-bg',!!key);
+  if(!key) return;
+  // web: same origin; native wrappers (capacitor://, file://) load it from the site
+  const base=/^https?:$/.test(location.protocol)&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname)?'':'https://vaultwishlist.com';
+  ov.style.setProperty('--pp-bg',`url(${base}/assets/profile/${PROFILE_BG[key]}.webp)`);
+  ov.style.setProperty('--pp-bg-m',`url(${base}/assets/profile/${PROFILE_BG[key]}-m.webp)`);
+}
 function _renderPubProfile(){
   const box=document.getElementById('pubProfIn'); const d=_pubData; if(!box||!d) return;
+  _profileBg(d);
   const nk=_normNick(d.nickname);
   const av=d.avatar_url?`<img src="${esc(d.avatar_url)}" alt="">`:esc((d.nickname||'?').slice(0,1).toUpperCase());
   const topbar=`<div class="pp-topbar"><button class="pp-back" onclick="closePubProf()">${ico('back',14)} Back</button><div class="pp-topbar-handle">@${nk}</div><div style="width:70px"></div></div>`;
