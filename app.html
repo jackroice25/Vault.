@@ -2879,7 +2879,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.11.10-social100';
+const APP_BUILD='2026.11.10-social101';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -7851,7 +7851,8 @@ async function openOps(){
     document.body.appendChild(ov); }
   ov.style.display='block';
   ov.innerHTML='<div style="color:var(--t3);padding:40px;text-align:center">…</div>';
-  let d=null, sv=null; try{ const [r,r2]=await Promise.all([_sb.rpc('ops_report'),_sb.rpc('ops_saves_report').catch(()=>({}))]); d=r.data; sv=r2&&r2.data; }catch(e){}
+  let d=null, sv=null; try{ const r=await _sb.rpc('ops_report'); d=r.data; }catch(e){}
+  try{ const r2=await _sb.rpc('ops_saves_report'); sv=r2&&r2.data; }catch(e){}
   if(!d||!d.ok){ ov.innerHTML='<div style="padding:40px;text-align:center;color:var(--t2)">Not available</div><div style="text-align:center"><button class="auth-btn" style="max-width:200px" onclick="document.getElementById(\'opsOv\').style.display=\'none\'">Close</button></div>'; return; }
   const N=v=>(v===null||v===undefined)?'—':(typeof v==='number'||/^-?\d+$/.test(String(v)))?esc(fmtN(v)):esc(String(v)), card=(t,b)=>`<div style="background:var(--s1,#111);border:1px solid var(--bd,#222);border-radius:14px;padding:14px;margin-bottom:12px"><div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:8px">${esc(t)}</div>${b}</div>`;
   const kv=o=>Object.entries(o||{}).map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:13px"><span style="color:var(--t2)">${esc(k.replace(/_/g,' '))}</span><b>${typeof v==='object'?esc(JSON.stringify(v)):N(v)}</b></div>`).join('');
