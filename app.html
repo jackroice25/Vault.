@@ -2879,7 +2879,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.11.09-social99';
+const APP_BUILD='2026.11.10-social100';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -7851,7 +7851,7 @@ async function openOps(){
     document.body.appendChild(ov); }
   ov.style.display='block';
   ov.innerHTML='<div style="color:var(--t3);padding:40px;text-align:center">…</div>';
-  let d=null; try{ const r=await _sb.rpc('ops_report'); d=r.data; }catch(e){}
+  let d=null, sv=null; try{ const [r,r2]=await Promise.all([_sb.rpc('ops_report'),_sb.rpc('ops_saves_report').catch(()=>({}))]); d=r.data; sv=r2&&r2.data; }catch(e){}
   if(!d||!d.ok){ ov.innerHTML='<div style="padding:40px;text-align:center;color:var(--t2)">Not available</div><div style="text-align:center"><button class="auth-btn" style="max-width:200px" onclick="document.getElementById(\'opsOv\').style.display=\'none\'">Close</button></div>'; return; }
   const N=v=>(v===null||v===undefined)?'—':(typeof v==='number'||/^-?\d+$/.test(String(v)))?esc(fmtN(v)):esc(String(v)), card=(t,b)=>`<div style="background:var(--s1,#111);border:1px solid var(--bd,#222);border-radius:14px;padding:14px;margin-bottom:12px"><div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:8px">${esc(t)}</div>${b}</div>`;
   const kv=o=>Object.entries(o||{}).map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:13px"><span style="color:var(--t2)">${esc(k.replace(/_/g,' '))}</span><b>${typeof v==='object'?esc(JSON.stringify(v)):N(v)}</b></div>`).join('');
@@ -7862,6 +7862,7 @@ async function openOps(){
       <div><button class="auth-btn" style="width:auto;padding:8px 14px;margin-right:6px" onclick="openOps()">↻</button><button class="auth-btn" style="width:auto;padding:8px 14px" onclick="document.getElementById('opsOv').style.display='none'">✕</button></div></div>
     <div style="font-size:11px;color:var(--t3);margin-bottom:12px">${esc(new Date(d.at).toLocaleString())} · ${esc(APP_BUILD)}</div>
     ${card('Users (testers excluded)',kv({total:u.total,new_7d:u.new_7d,active_7d:u.active_7d,paying:u.paying,referrals:u.referrals,testers:u.testers}))}
+    ${(sv&&sv.ok)?_opsSavesCards(sv,card,kv,list,N):''}
     ${card('Campaigns · 30 days (visits → devices → signup → 1st save → 3 saves → came back → upgrade)',list(d.campaigns,c=>`<div style="font-size:12px;padding:4px 0;border-bottom:1px solid var(--bd,#222)"><b>${esc(c.campaign)}</b><br>${N(c.visits)} → ${N(c.devices)} → ${N(c.signups)} → ${N(c.first_save)} → ${N(c.saved_3)} → ${N(c.returned)} → ${N(c.upgrade_clicks)}${c.median_s_to_first_save!=null?' · first save in '+N(c.median_s_to_first_save)+' s':''}</div>`))}
     ${card('Feedback',list(d.feedback,f=>`<div style="font-size:12px;padding:4px 0;border-bottom:1px solid var(--bd,#222)"><b>${esc(f.kind||'')}</b> · ${esc(new Date(f.at).toLocaleString())}<br>${esc(f.msg||'')}</div>`))}
     ${card('Imports (7 days)',kv(Object.assign({items_saved:d.items_saved_7d},d.imports_7d))+'<div style="font-size:11px;color:var(--t3);margin-top:8px">Failing hosts (30 d)</div>'+list(d.import_fail_hosts_30d,x=>`<div style="font-size:12px;display:flex;justify-content:space-between"><span>${esc(x.host||'?')}</span><span>${N(x.fails)}</span></div>`))}
@@ -7872,6 +7873,22 @@ async function openOps(){
     ${card('Moderation & abuse',kv(Object.assign({},d.moderation,{rate_limited_now:d.rate_limited_now})))}
     ${card('Space (free plan)',kv({database:sp.db_mb+' / '+sp.db_quota_mb+' MB ('+pct(sp.db_mb,sp.db_quota_mb)+')',photos:sp.storage_mb+' / '+sp.storage_quota_mb+' MB ('+pct(sp.storage_mb,sp.storage_quota_mb)+')',monthly_cost:'€0 (Supabase Free · OneSignal Free · GitHub Pages)'}))}
     ${card('Retention by signup week',list(d.retention,r=>`<div style="font-size:12px;padding:3px 0;border-bottom:1px solid var(--bd,#222)"><b>${esc(r.week)}</b> · ${N(r.signups)} signups · act ${r.activated_pct??'—'}% · D1 ${r.d1_pct??'—'}% · D7 ${r.d7_pct??'—'}% · D30 ${r.d30_pct??'—'}% · paying ${N(r.paying)}</div>`))}`;
+}
+// Ops · anonymous save statistics (ops_saves_report): counts only, shops shown only when saved by ≥ min_people different people
+function _opsSavesCards(s,card,kv,list,N){
+  const t=s.totals||{}, bar=(lab,v,max,sub)=>`<div style="display:grid;grid-template-columns:96px 1fr minmax(44px,auto);gap:8px;align-items:center;font-size:12px;padding:2px 0"><span style="color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(lab)}</span><span style="height:8px;border-radius:4px;background:var(--bd,#222);overflow:hidden"><i style="display:block;height:100%;width:${max?Math.max(2,Math.round(100*v/max)):0}%;background:var(--accent,#c9a24e)"></i></span><b style="text-align:right;white-space:nowrap">${N(v)}${sub?'<span style="color:var(--t3);font-weight:400"> '+esc(sub)+'</span>':''}</b></div>`;
+  const mx=a=>Math.max(1,...(a||[]).map(x=>x.v));
+  const wk=(s.weekly||[]).map(x=>({l:new Date(x.week).toLocaleDateString(undefined,{day:'numeric',month:'short'}),v:x.saves}));
+  const pp=(s.per_person||[]).map(x=>({l:x.bucket+' items',v:x.people}));
+  const pb=(s.price_bands||[]).map(x=>({l:x.band,v:x.items}));
+  const sh=(s.top_shops||[]).map(x=>({l:x.shop,v:x.saves,p:x.people})); const o=s.other_shops||{};
+  const note=`<div style="font-size:11px;color:var(--t3);margin-top:8px">Anonymous: no names, e-mails or titles. Testers excluded. Shops appear only if saved by ≥ ${N(s.min_people)} different people.</div>`;
+  return card('Saves · anonymous',kv({items_saved:t.items,saved_last_7_days:t.saved_7d,saved_last_30_days:t.saved_30d,people_who_saved:t.people_with_items,people_with_nothing_saved:t.people_without_items,average_per_person:t.avg_per_saver==null?null:String(t.avg_per_saver),median_per_person:t.median_per_saver==null?null:String(t.median_per_saver),with_a_link:t.with_link,with_a_price:t.with_price})+note)
+    +card('Saves per week (8 weeks)',list(wk,x=>bar(x.l,x.v,mx(wk))))
+    +card('How much people save',list(pp,x=>bar(x.l,x.v,mx(pp),'people')))
+    +card('Top shops (≥ '+s.min_people+' people)',list(sh,x=>bar(x.l,x.v,mx(sh),x.p+' ppl'))+`<div style="font-size:12px;color:var(--t3);margin-top:6px">Other shops: ${N(o.shops)} (${N(o.saves)} saves), each saved by fewer than ${N(s.min_people)} people</div>`)
+    +card('Price of saved items',list(pb,x=>bar(x.l,x.v,mx(pb))))
+    +card('Type & status',kv(Object.assign({},s.by_type,s.by_status)));
 }
 function openFeedback(){
   const T=d=>_lbl(d);
