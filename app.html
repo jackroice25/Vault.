@@ -2879,7 +2879,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.11.10-social101';
+const APP_BUILD='2026.11.10-social102';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -3100,6 +3100,21 @@ function _handleDeepLink(u){
     _addSharedTarget(target);
   }catch(e){}
 }
+// ── Vault Business Wish Button attribution (anonymous) ──
+// wish.js opens  app.html#save=<encoded product url>&k=<partner's PUBLIC button key>.
+// We remember the key for one hour so we can count, without any personal data, that the save was
+// completed ('wish_save') and whether a new account was created right after the press ('wish_signup').
+// Both go through track(): never sent if the person turned usage statistics off.
+function _wishParse(raw){
+  let k='', enc=String(raw||''); const m=enc.match(/&k=([0-9a-f]{32})$/i);
+  if(m){ k=m[1].toLowerCase(); enc=enc.slice(0,m.index); }
+  let url=''; try{ url=decodeURIComponent(enc); }catch(e){}
+  return {url,k};
+}
+function _wishRemember(w){ try{ if(w&&w.k) localStorage.setItem('vault_wish',JSON.stringify({k:w.k,u:String(w.url||'').slice(0,2048),at:Date.now()})); }catch(e){} }
+function _wishGet(){ try{ const w=JSON.parse(localStorage.getItem('vault_wish')||'null'); if(w&&Date.now()-w.at<3600e3) return w; localStorage.removeItem('vault_wish'); }catch(e){} return null; }
+function _wishSignup(){ const w=_wishGet(); if(w&&!w.su){ track('wish_signup',{k:w.k}); try{ w.su=1; localStorage.setItem('vault_wish',JSON.stringify(w)); }catch(e){} } }
+function _wishSaved(url){ const w=_wishGet(); if(w&&String(url||'').slice(0,2048)===w.u){ track('wish_save',{k:w.k}); try{ localStorage.removeItem('vault_wish'); }catch(e){} } }
 // Shared entry point: add the URL now if the app is usable, else stash it for after login.
 function _addSharedTarget(target){
   if(!/^https?:\/\//i.test(target)) return false;
@@ -4459,7 +4474,7 @@ async function _quickAddFromUrl(url){
     at:Date.now(),mod:Date.now()
   });
   save(); try{renderSidebar();render();}catch(e){}
-  track('item_saved',{n:_statsActive(),src:'quick'}); _firstSave();
+  track('item_saved',{n:_statsActive(),src:'quick'}); _firstSave(); _wishSaved(url);
   showToast(_lbl({it:'✓ Salvato in Vault',en:'✓ Saved to Vault',es:'✓ Guardado',fr:'✓ Enregistré',de:'✓ Gespeichert',pt:'✓ Salvo',nl:'✓ Opgeslagen'}));
 }
 
@@ -5583,9 +5598,9 @@ function checkShareParam(){
     return;
   }
   if(hash.startsWith('#save=')){ // Vault Business Wish Button on a shop's site: FREE save, same path as the iOS share sheet
-    let url=''; try{ url=decodeURIComponent(hash.slice(6)); }catch(e){}
+    const _wp=_wishParse(hash.slice(6)); const url=_wp.url;
     history.replaceState(null,'',location.pathname);
-    if(/^https?:\/\//i.test(url)) _addSharedTarget(url.slice(0,2048));
+    if(/^https?:\/\//i.test(url)){ _wishRemember(_wp); _addSharedTarget(url.slice(0,2048)); }
     return;
   }
   if(hash.startsWith('#add=')){
@@ -8952,7 +8967,7 @@ async function _doRegister(email,pass,nick){
     const {data,error}=await _sb.auth.signUp({email,password:pass,options:_captchaOpts()}); _captchaReset();
     if(error){_authErr(error.message);return;}
     _sbUser=data.user;
-    track('signup',_utmProps());
+    track('signup',_utmProps()); _wishSignup();
     // Social: claim the username now that we have a session (RPC upserts the row).
     try{ const rf=localStorage.getItem('vault_ref'); if(rf){ _sb.rpc('claim_referral',{p_nick:rf}).then(()=>{ try{localStorage.removeItem('vault_ref');}catch(e){} }); } }catch(e){}
     if(SOCIAL_ON&&nick){ try{ const {data:nr}=await _sb.rpc('set_nickname',{p_nick:nick}); if(nr&&nr.ok){ _myProfile={nickname:nick,avatar_url:null,bio:null,is_public:false,badges:[]}; } }catch(e){} }
@@ -10106,8 +10121,9 @@ if(!_hasSession && !_wasGuest){
   // Extension / Wish Button add-link arrived while logged out, save it for after login (then added for free)
   if(location.hash.startsWith('#add=')||location.hash.startsWith('#save=')){
     try{
-      const _au=decodeURIComponent(location.hash.slice(location.hash.indexOf('=')+1));
-      if(/^https?:\/\//i.test(_au)) localStorage.setItem('vault_pendingAdd',_au.slice(0,2048));
+      const _isSave=location.hash.startsWith('#save='), _wp=_isSave?_wishParse(location.hash.slice(6)):null;
+      const _au=_isSave?_wp.url:decodeURIComponent(location.hash.slice(location.hash.indexOf('=')+1));
+      if(/^https?:\/\//i.test(_au)){ localStorage.setItem('vault_pendingAdd',_au.slice(0,2048)); if(_wp) _wishRemember(_wp); }
     }catch(e){}
     history.replaceState(null,'',location.pathname);
   }
