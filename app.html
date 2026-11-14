@@ -2879,7 +2879,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.11.14-social104';
+const APP_BUILD='2026.11.14-social105';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -3101,7 +3101,7 @@ function _handleDeepLink(u){
   }catch(e){}
 }
 // price history dates are stored as ISO strings (or older free text): show a short local date
-function _phDate(d){ try{ const t=new Date(d); if(!isNaN(t)) return t.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}); }catch(e){} return String(d||''); }
+function _phDate(d){ try{ const t=new Date(d); if(!isNaN(t)) return t.toLocaleDateString((typeof S!=='undefined'&&S.lang)||undefined,{day:'numeric',month:'short',year:'numeric'}); }catch(e){} return String(d||''); }
 // ── Vault Business Wish Button attribution (anonymous) ──
 // wish.js opens  app.html#save=<encoded product url>&k=<partner's PUBLIC button key>.
 // We remember the key for one hour so we can count, without any personal data, that the save was
