@@ -2879,7 +2879,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let _sb=null,_sbUser=null,_sbPlan='free';
 // Bump this on every web release AND set the same value in /version.json so open
 // tabs get an "Aggiorna" button instead of silently running stale code.
-const APP_BUILD='2026.11.14-social105';
+const APP_BUILD='2026.11.15-social106';
 // Set this to the "Last updated" date on the Terms/Privacy pages. Bump BOTH together
 // whenever the policies change materially → logged-in users are prompted to re-accept,
 // and their acceptance (version + timestamp) is recorded server-side (accept_policy RPC).
@@ -7854,6 +7854,9 @@ function _reportClientError(msg,where){
   try{ if(_errSent>=3) return;
        // data minimisation: drop URL query/hash (tokens), e-mail addresses and long token-like strings
        msg=String(msg||'').replace(/(https?:\/\/[^\s?#'"]+)[?#][^\s'"]*/g,'$1?…').replace(/[\w.+-]+@[\w-]+\.[\w.]+/g,'<email>').replace(/\b(ey[\w-]{10,}\.[\w-]+\.[\w-]+|[A-Za-z0-9_-]{32,})\b/g,'<token>').slice(0,160); if(!msg||/Script error\.?$/i.test(msg)||/ResizeObserver/i.test(msg)) return;
+       // not Vault's code / not a bug: wallet & other browser extensions injecting scripts, and lost connections
+       if(/window\.ethereum|ethereum|web3|__gCrWeb|chrome-extension:|safari-extension:|moz-extension:/i.test(msg+' '+where)) return;
+       if(/^(TypeError: )?(Failed to fetch|Load failed|NetworkError when attempting to fetch resource\.?)$/i.test(msg)||/^sync push failed:\s*TypeError: (Load failed|Failed to fetch)$/i.test(msg)) return;
        _errSent++; track('client_error',{msg,where:String(where||'').slice(0,80),build:APP_BUILD}); }catch(e){}
 }
 window.addEventListener('error',e=>_reportClientError(e&&e.message,(e&&e.filename?String(e.filename).split('/').pop():'')+':'+(e&&e.lineno||'')));
@@ -10510,6 +10513,7 @@ async function _initGlobe(){
 
   let _ct=null, _lastR=null;
   ctrl.addEventListener('change',()=>{
+    if(!_globeInst) return; // map already closed
     // Radius: update immediately every frame for smooth feel
     const alt=(_globeInst.pointOfView()||{}).altitude||2;
     const r=radiusForAlt(alt);
@@ -10520,12 +10524,13 @@ async function _initGlobe(){
     // Clustering: debounced (heavier)
     clearTimeout(_ct);
     _ct=setTimeout(()=>{
+      if(!_globeInst) return; // the map was closed while this was waiting
       const c=clusterPts(pts,getThresh(alt));
       _globeInst.pointsData(c).pointRadius(p=>p._count>1?r*1.6:r);
     },200);
   });
 
-  if(pts.length) setTimeout(()=>_globeInst.pointOfView({lat:pts[0].lat,lng:pts[0].lng,altitude:2},1200),400);
+  if(pts.length) setTimeout(()=>{ if(_globeInst) _globeInst.pointOfView({lat:pts[0].lat,lng:pts[0].lng,altitude:2},1200); },400);
 }
 </script>
 
